@@ -1,4 +1,4 @@
-{git push -u origin main
+{
   description = "Basic flake.nix for nix on oracle 9";
 
   inputs = {
@@ -7,7 +7,7 @@
 
   outputs = { self, nixpkgs }:
     let
-      pkgs = import nixpkgs { system = "x86_64-linux"; };
+      pkgs = import nixpkgs { system = "aarch64-linux"; };
       openPorts = [ 8080 35909 35908 35910 ];
       firstPort = builtins.toString (builtins.elemAt openPorts 0);
       direnvBin = "${pkgs.direnv}/bin/direnv";
@@ -34,9 +34,9 @@
 
        packages.${system}.servers_init = pkgs.writeShellScriptBin "init all servers..." ''
          echo "Nginx.service, Silverbullet 2.0.0, Syncthing, Kavita servers init now"
-	 cd /home/opc/nix/nginx/
-	 nix run .#install_nginx
-	 systemctl status | grep nginx
+	 # cd /home/opc/nix/nginx/
+	 # nix run .#install_nginx
+	 # systemctl status | grep nginx
 
 	 # cd /home/opc/nix/silverBullet/
 	 # nix run .#sb_start &
