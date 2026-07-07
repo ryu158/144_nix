@@ -56,3 +56,6 @@
 }
 
 # nix run --impure .#command
+# sudo setfacl -R -m u:nginx:rx ./opc ./opc/nix ./opc/nix/prj
+# sudo setfacl -R -d -m u:nginx:rx ./opc ./opc/nix ./opc/nix/prj
+# getfacl ./opc
