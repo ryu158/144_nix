@@ -3,178 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Grid Data Entry</title>
-<style>
-:root {
-  --border: #d0d5dd;
-  --header-bg: #f4f6f8;
-  --header-fg: #6b7280;
-  --accent: #2563eb;
-  --accent-bg: #dbe7ff;
-  --active-bg: #ffffff;
-  --cell-fg: #1a1a1a;
-}
-
-* { box-sizing: border-box; }
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-  margin: 0;
-  padding: 20px;
-  background: #fafbfc;
-  color: #1a1a1a;
-}
-
-h1 { font-size: 18px; margin: 0 0 4px; }
-p.hint { margin: 0 0 16px; color: #6b7280; font-size: 13px; }
-
-.gt-root {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: white;
-  overflow: hidden;
-  user-select: none;
-}
-
-.gt-scroll {
-  position: relative;
-  overflow: auto;
-  width: 100%;
-}
-
-.gt-sizer {
-  position: relative;
-}
-
-.gt-canvas {
-  position: sticky;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.gt-canvas > * { pointer-events: auto; }
-
-.gt-corner {
-  position: absolute;
-  top: 0; left: 0;
-  background: var(--header-bg);
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  z-index: 4;
-}
-
-.gt-colheader, .gt-rowheader, .gt-cells {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.gt-colheader { z-index: 3; }
-.gt-rowheader { z-index: 3; }
-.gt-cells { z-index: 1; }
-
-.gt-header-cell {
-  position: absolute;
-  background: var(--header-bg);
-  color: var(--header-fg);
-  font-size: 12px;
-  font-weight: 600;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 8px;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.gt-header-cell.rownum { justify-content: center; padding: 0; }
-
-.gt-col-resizer, .gt-row-resizer {
-  position: absolute;
-  z-index: 5;
-  background: transparent;
-}
-.gt-col-resizer {
-  top: 0; right: -3px; width: 6px; height: 100%;
-  cursor: col-resize;
-}
-.gt-row-resizer {
-  left: 0; bottom: -3px; height: 6px; width: 100%;
-  cursor: row-resize;
-}
-.gt-col-resizer:hover, .gt-row-resizer:hover { background: var(--accent); opacity: 0.5; }
-
-.gt-cell {
-  position: absolute;
-  background: white;
-  color: var(--cell-fg);
-  font-size: 13px;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 5px 7px;
-  overflow: hidden;
-  white-space: pre;
-  text-overflow: ellipsis;
-  cursor: cell;
-}
-
-.gt-cell.selected { background: var(--accent-bg); }
-.gt-cell.active {
-  background: var(--active-bg);
-  box-shadow: inset 0 0 0 2px var(--accent);
-  z-index: 2;
-}
-.gt-cell.editing {
-  outline: none;
-  cursor: text;
-  white-space: pre-wrap;
-  overflow: visible;
-}
-
-.gt-hidden-input {
-  position: fixed;
-  top: -1000px;
-  left: -1000px;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  border: none;
-  padding: 0;
-}
-
-.gt-context-menu {
-  position: fixed;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-  padding: 4px;
-  z-index: 1000;
-  min-width: 170px;
-  font-size: 13px;
-}
-.gt-context-menu ul { list-style: none; margin: 0; padding: 0; }
-.gt-context-menu li {
-  padding: 7px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  color: #1a1a1a;
-}
-.gt-context-menu li:hover { background: var(--header-bg); }
-.gt-context-menu li.danger { color: #dc2626; }
-.gt-context-menu li.sep {
-  height: 1px;
-  margin: 4px 2px;
-  padding: 0;
-  background: var(--border);
-  cursor: default;
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -191,8 +20,8 @@ p.hint { margin: 0 0 16px; color: #6b7280; font-size: 13px; }
 <script src="grid.js"></script>
 <script>
   const grid = new GridTable(document.getElementById('gridContainer'), {
-    rows: 500,
-    cols: 60,
+    rows: 10,
+    cols: 10,
     viewportHeight: 480
   });
 
@@ -205,4 +34,4 @@ p.hint { margin: 0 0 16px; color: #6b7280; font-size: 13px; }
 </script>
 
 </body>
-</html>/html>
+</html>
