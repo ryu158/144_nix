@@ -56,6 +56,6 @@
 }
 
 # nix run --impure .#command
-# sudo setfacl -R -m u:nginx:rx ./opc ./opc/nix ./opc/nix/prj
-# sudo setfacl -R -d -m u:nginx:rx ./opc ./opc/nix ./opc/nix/prj
+# sudo setfacl -m u:nginx:x /home/opc
+# sudo setfacl -R -d -m u:nginx:rx /home/opc/nix   #-R option is recursive, follow auth for all children folders
 # getfacl ./opc
