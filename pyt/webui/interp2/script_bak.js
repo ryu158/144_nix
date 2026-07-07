@@ -238,6 +238,81 @@ function clearError() {
   errorBanner.textContent = '';
 }
 
+document.getElementById('runBtn').addEventListener('click', async () => {
+  clearError();
+
+  const { xNums, seriesResult, errors } = collectData();
+
+  const newXStart = document.getElementById('newXStart').value.trim();
+  const newXFinish = document.getElementById('newXFinish').value.trim();
+  const newXInterval = document.getElementById('newXInterval').value.trim();
+  const method = document.getElementById('methodSelect').value;
+
+  if (xNums.length < 2) errors.push('X must have at least 2 values.');
+  if ([newXStart, newXFinish, newXInterval].some(v => v === '' || isNaN(Number(v)))) {
+    errors.push('New X start/finish/interval must all be filled with numeric values.');
+  }
+
+  if (errors.length > 0) {
+    showError('Please fix the following:\n- ' + errors.join('\n- '));
+    return;
+  }
+
+  const payload = {
+    x: xNums,
+    y_series: seriesResult,
+    method,
+    new_x_start: Number(newXStart),
+    new_x_finish: Number(newXFinish),
+    new_x_interval: Number(newXInterval),
+  };
+
+  const useClientSide = document.getElementById('clientSideToggle').checked;
+
+  if (useClientSide) {
+    // Pure TypeScript/JS engine, no network call at all.
+    if (typeof Interp === 'undefined') {
+      showError('Client-side engine (interpolate.js) failed to load.');
+      return;
+    }
+    const result = Interp.run(payload);
+    if (result.error) {
+      showError(result.error);
+      return;
+    }
+    renderChart(result);
+    return;
+  }
+
+  try {
+    const resp = await fetch('/interpolate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const contentType = resp.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await resp.text();
+      showError(
+        `Server returned an unexpected (non-JSON) response, HTTP ${resp.status}.\n` +
+        `First 200 chars of response:\n${text.slice(0, 200)}`
+      );
+      return;
+    }
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      showError(data.error || `Request failed with HTTP ${resp.status}.`);
+      return;
+    }
+
+    renderChart(data);
+  } catch (err) {
+    showError('Request failed: ' + err.message);
+  }
+});
 
 // ---------- Chart rendering ----------
 
