@@ -33,7 +33,7 @@
           shellHook = ''
             echo "Interpolation project dev shell ready (Python ${pythonEnv.version or ""})."
             echo "Python server:  python app.py"
-            echo "Rebuild TS engine:  (cd ts && tsc -p tsconfig.json)"
+            echo "Rebuild TS engine:  (cd ts && tsc -p tsconfig.json)  -> writes ../interpolate.js"
             echo "Then open http://localhost:40001"
           '';
         };
@@ -44,3 +44,4 @@
         };
       });
 }
+

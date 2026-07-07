@@ -1,0 +1,105 @@
+body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    max-width: 960px;
+    margin: 30px auto;
+    padding: 0 16px;
+    color: #222;
+  }
+  h1 { font-size: 22px; }
+  p.hint { color: #666; font-size: 14px; margin-top: -8px; }
+
+  table#grid {
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+  table#grid th, table#grid td {
+    border: 1px solid #ccc;
+    padding: 0;
+  }
+  table#grid th {
+    background: #f4f4f4;
+    padding: 4px;
+    text-align: center;
+    position: relative;
+  }
+  table#grid input {
+    width: 90px;
+    height: 26px;
+    border: none;
+    text-align: center;
+    font-size: 14px;
+    outline: none;
+  }
+  table#grid input.header-input {
+    width: 90px;
+    font-weight: 600;
+    background: transparent;
+  }
+  table#grid input.invalid {
+    background: #ffdddd;
+  }
+  .col-remove, .row-remove {
+    cursor: pointer;
+    color: #a33;
+    font-size: 12px;
+    margin-left: 4px;
+    user-select: none;
+  }
+  .grid-controls {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+  }
+  .grid-controls button, .run-btn {
+    padding: 6px 12px;
+    border: 1px solid #999;
+    background: #fafafa;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .grid-controls button:hover, .run-btn:hover {
+    background: #eee;
+  }
+  .controls-row {
+    margin-top: 20px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  .field label {
+    display: block;
+    font-size: 13px;
+    color: #444;
+    margin-bottom: 4px;
+  }
+  .field input, .field select {
+    padding: 5px 8px;
+    font-size: 14px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+  }
+  .run-btn {
+    background: #2b6cb0;
+    color: white;
+    border: none;
+    font-weight: 600;
+    padding: 8px 18px;
+  }
+  .run-btn:hover { background: #1e4e8c; }
+
+  #errorBanner {
+    display: none;
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: #fdecea;
+    border: 1px solid #f5c2c0;
+    color: #9c2f2a;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    font-size: 14px;
+  }
+  #chartWrap {
+    margin-top: 30px;
+  }
