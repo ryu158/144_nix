@@ -24,6 +24,7 @@ class GridTable {
     this.rowHeaderWidth = options.rowHeaderWidth ?? 50;
     this.colHeaderHeight = options.colHeaderHeight ?? 28;
     this.viewportHeight = options.viewportHeight ?? 480;
+    this.viewportWidth = options.viewportWidth ?? null; // null = fill container (100%)
     this.buffer = 3;
 
     this.colWidths = new Array(this.numCols).fill(this.defaultColWidth);
@@ -134,10 +135,12 @@ class GridTable {
     this.root = document.createElement('div');
     this.root.className = 'gt-root';
     this.root.tabIndex = -1;
+    if (this.viewportWidth) this.root.style.width = this.viewportWidth + 'px';
 
     this.scrollEl = document.createElement('div');
     this.scrollEl.className = 'gt-scroll';
     this.scrollEl.style.height = this.viewportHeight + 'px';
+    this.scrollEl.style.width = this.viewportWidth ? (this.viewportWidth + 'px') : '100%';
 
     this.sizer = document.createElement('div');
     this.sizer.className = 'gt-sizer';
@@ -149,6 +152,8 @@ class GridTable {
     this.cornerEl.className = 'gt-corner';
     this.cornerEl.style.width = this.rowHeaderWidth + 'px';
     this.cornerEl.style.height = this.colHeaderHeight + 'px';
+    this.cornerEl.style.cursor = 'pointer';
+    this.cornerEl.addEventListener('mousedown', e => this._onCornerMouseDown(e));
 
     this.colHeaderEl = document.createElement('div');
     this.colHeaderEl.className = 'gt-colheader';
@@ -173,6 +178,17 @@ class GridTable {
   _updateSizerSize() {
     this.sizer.style.width = (this.totalWidth + this.rowHeaderWidth) + 'px';
     this.sizer.style.height = (this.totalHeight + this.colHeaderHeight) + 'px';
+    this._updateCanvasSize();
+  }
+
+  _updateCanvasSize() {
+    // The sticky "canvas" layer must be sized to the visible viewport, not to
+    // the (much larger) scrollable content. If it's sized to the full content
+    // height/width, position:sticky can only keep it pinned near the top of
+    // the scroll range — past that point the pin breaks and cells render
+    // outside the visible area (looks like blank space on scroll).
+    this.canvas.style.width = this.scrollEl.clientWidth + 'px';
+    this.canvas.style.height = this.scrollEl.clientHeight + 'px';
   }
 
   /* ---------------- Rendering ---------------- */
@@ -235,11 +251,18 @@ class GridTable {
     el.style.height = this.colHeaderHeight + 'px';
     el.textContent = GridTable.colLabel(c);
 
+    const sel = this._normSelection();
+    if (sel.r1 === 0 && sel.r2 === this.numRows - 1 && c >= sel.c1 && c <= sel.c2) {
+      el.classList.add('selected');
+    }
+
     const handle = document.createElement('div');
     handle.className = 'gt-col-resizer';
     handle.addEventListener('mousedown', e => this._startColResize(e, c));
     el.appendChild(handle);
 
+    el.addEventListener('mousedown', e => this._onColHeaderMouseDown(e, c));
+    el.addEventListener('mouseenter', () => this._onColHeaderMouseEnter(c));
     el.addEventListener('contextmenu', e => this._showColMenu(e, c));
     return el;
   }
@@ -254,11 +277,18 @@ class GridTable {
     el.style.height = this.rowHeights[r] + 'px';
     el.textContent = r + 1;
 
+    const sel = this._normSelection();
+    if (sel.c1 === 0 && sel.c2 === this.numCols - 1 && r >= sel.r1 && r <= sel.r2) {
+      el.classList.add('selected');
+    }
+
     const handle = document.createElement('div');
     handle.className = 'gt-row-resizer';
     handle.addEventListener('mousedown', e => this._startRowResize(e, r));
     el.appendChild(handle);
 
+    el.addEventListener('mousedown', e => this._onRowHeaderMouseDown(e, r));
+    el.addEventListener('mouseenter', () => this._onRowHeaderMouseEnter(r));
     el.addEventListener('contextmenu', e => this._showRowMenu(e, r));
     return el;
   }
@@ -323,9 +353,64 @@ class GridTable {
     this._requestRender();
   }
 
+  _onColHeaderMouseDown(e, c) {
+    if (this.editingCell) this._commitEdit();
+    e.preventDefault();
+    this._headerDragging = 'col';
+    if (e.shiftKey && this._headerAnchor && this._headerAnchor.type === 'col') {
+      const a = this._headerAnchor.index;
+      this._setSelection(0, Math.min(a, c), this.numRows - 1, Math.max(a, c));
+    } else {
+      this._headerAnchor = { type: 'col', index: c };
+      this._setSelection(0, c, this.numRows - 1, c);
+    }
+    this.hiddenInput.focus({ preventScroll: true });
+    this._requestRender();
+  }
+
+  _onColHeaderMouseEnter(c) {
+    if (this._headerDragging !== 'col') return;
+    this.selection.c2 = c;
+    this._requestRender();
+  }
+
+  _onRowHeaderMouseDown(e, r) {
+    if (this.editingCell) this._commitEdit();
+    e.preventDefault();
+    this._headerDragging = 'row';
+    if (e.shiftKey && this._headerAnchor && this._headerAnchor.type === 'row') {
+      const a = this._headerAnchor.index;
+      this._setSelection(Math.min(a, r), 0, Math.max(a, r), this.numCols - 1);
+    } else {
+      this._headerAnchor = { type: 'row', index: r };
+      this._setSelection(r, 0, r, this.numCols - 1);
+    }
+    this.hiddenInput.focus({ preventScroll: true });
+    this._requestRender();
+  }
+
+  _onRowHeaderMouseEnter(r) {
+    if (this._headerDragging !== 'row') return;
+    this.selection.r2 = r;
+    this._requestRender();
+  }
+
+  _onCornerMouseDown(e) {
+    e.preventDefault();
+    if (this.editingCell) this._commitEdit();
+    this._selectAll();
+    this.hiddenInput.focus({ preventScroll: true });
+  }
+
+  _selectAll() {
+    this._setSelection(0, 0, this.numRows - 1, this.numCols - 1);
+    this._requestRender();
+  }
+
   _bindGlobalMouseUp() {
     document.addEventListener('mouseup', () => {
       this._dragging = false;
+      this._headerDragging = null;
       this._resizing = null;
     });
   }
@@ -394,6 +479,11 @@ class GridTable {
   }
 
   _onHiddenKeydown(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+      e.preventDefault();
+      this._selectAll();
+      return;
+    }
     const printable = e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey;
     if (printable) {
       e.preventDefault();
@@ -577,62 +667,100 @@ class GridTable {
 
   _showRowMenu(e, r) {
     e.preventDefault();
+    const sel = this._normSelection();
+    const isFullRowSel = sel.c1 === 0 && sel.c2 === this.numCols - 1 && r >= sel.r1 && r <= sel.r2 && sel.r2 > sel.r1;
+    let r1 = r, r2 = r;
+    if (isFullRowSel) {
+      r1 = sel.r1; r2 = sel.r2;
+    } else {
+      this._setSelection(r, 0, r, this.numCols - 1);
+      this._requestRender();
+    }
+    const count = r2 - r1 + 1;
+    const noun = count > 1 ? `${count} rows` : 'row';
     this._openMenu(e.clientX, e.clientY, [
-      { label: 'Insert row above', action: () => this._insertRow(r) },
-      { label: 'Insert row below', action: () => this._insertRow(r + 1) },
+      { label: `Insert ${noun} above`, action: () => this._insertRows(r1, count) },
+      { label: `Insert ${noun} below`, action: () => this._insertRows(r2 + 1, count) },
       { sep: true },
-      { label: 'Delete row', danger: true, action: () => this._deleteRow(r) },
+      { label: `Delete ${noun}`, danger: true, action: () => this._deleteRows(r1, count) },
     ]);
   }
 
   _showColMenu(e, c) {
     e.preventDefault();
+    const sel = this._normSelection();
+    const isFullColSel = sel.r1 === 0 && sel.r2 === this.numRows - 1 && c >= sel.c1 && c <= sel.c2 && sel.c2 > sel.c1;
+    let c1 = c, c2 = c;
+    if (isFullColSel) {
+      c1 = sel.c1; c2 = sel.c2;
+    } else {
+      this._setSelection(0, c, this.numRows - 1, c);
+      this._requestRender();
+    }
+    const count = c2 - c1 + 1;
+    const noun = count > 1 ? `${count} columns` : 'column';
     this._openMenu(e.clientX, e.clientY, [
-      { label: 'Insert column left', action: () => this._insertCol(c) },
-      { label: 'Insert column right', action: () => this._insertCol(c + 1) },
+      { label: `Insert ${noun} left`, action: () => this._insertCols(c1, count) },
+      { label: `Insert ${noun} right`, action: () => this._insertCols(c2 + 1, count) },
       { sep: true },
-      { label: 'Delete column', danger: true, action: () => this._deleteCol(c) },
+      { label: `Delete ${noun}`, danger: true, action: () => this._deleteCols(c1, count) },
     ]);
   }
 
-  _insertRow(at) {
-    this.data.splice(at, 0, new Array(this.numCols).fill(''));
-    this.rowHeights.splice(at, 0, this.defaultRowHeight);
-    this.numRows++;
+  _clampSelection() {
+    const clampR = v => Math.min(this.numRows - 1, Math.max(0, v));
+    const clampC = v => Math.min(this.numCols - 1, Math.max(0, v));
+    this.selection = {
+      r1: clampR(this.selection.r1), c1: clampC(this.selection.c1),
+      r2: clampR(this.selection.r2), c2: clampC(this.selection.c2),
+    };
+    this.activeCell = { r: clampR(this.activeCell.r), c: clampC(this.activeCell.c) };
+  }
+
+  _insertRows(at, count = 1) {
+    const blankRows = Array.from({ length: count }, () => new Array(this.numCols).fill(''));
+    this.data.splice(at, 0, ...blankRows);
+    this.rowHeights.splice(at, 0, ...new Array(count).fill(this.defaultRowHeight));
+    this.numRows += count;
     this._computeOffsets();
     this._updateSizerSize();
     this._requestRender();
     this._emit('change');
   }
 
-  _deleteRow(at) {
-    if (this.numRows <= 1) return;
-    this.data.splice(at, 1);
-    this.rowHeights.splice(at, 1);
-    this.numRows--;
+  _deleteRows(at, count = 1) {
+    count = Math.min(count, this.numRows - 1);
+    if (count <= 0) return;
+    this.data.splice(at, count);
+    this.rowHeights.splice(at, count);
+    this.numRows -= count;
+    this._computeOffsets();
+    this._updateSizerSize();
+    this._clampSelection();
+    this._requestRender();
+    this._emit('change');
+  }
+
+  _insertCols(at, count = 1) {
+    const blanks = new Array(count).fill('');
+    this.data.forEach(row => row.splice(at, 0, ...blanks));
+    this.colWidths.splice(at, 0, ...new Array(count).fill(this.defaultColWidth));
+    this.numCols += count;
     this._computeOffsets();
     this._updateSizerSize();
     this._requestRender();
     this._emit('change');
   }
 
-  _insertCol(at) {
-    this.data.forEach(row => row.splice(at, 0, ''));
-    this.colWidths.splice(at, 0, this.defaultColWidth);
-    this.numCols++;
+  _deleteCols(at, count = 1) {
+    count = Math.min(count, this.numCols - 1);
+    if (count <= 0) return;
+    this.data.forEach(row => row.splice(at, count));
+    this.colWidths.splice(at, count);
+    this.numCols -= count;
     this._computeOffsets();
     this._updateSizerSize();
-    this._requestRender();
-    this._emit('change');
-  }
-
-  _deleteCol(at) {
-    if (this.numCols <= 1) return;
-    this.data.forEach(row => row.splice(at, 1));
-    this.colWidths.splice(at, 1);
-    this.numCols--;
-    this._computeOffsets();
-    this._updateSizerSize();
+    this._clampSelection();
     this._requestRender();
     this._emit('change');
   }
@@ -643,7 +771,7 @@ class GridTable {
     this.scrollEl.addEventListener('scroll', () => this._requestRender());
     this._bindGlobalMouseUp();
     this._bindHiddenInput();
-    window.addEventListener('resize', () => this._requestRender());
+    window.addEventListener('resize', () => { this._updateCanvasSize(); this._requestRender(); });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') this._closeMenu();
     });
