@@ -35,6 +35,7 @@ class Chart {
     this._toCssSize = v => (v === null || v === undefined) ? null : (typeof v === 'number' ? v + 'px' : v);
     this._series = [];
     this._hover = null;
+    this._drawPending = false;
 
     this._buildDom();
     this._bindEvents();
@@ -51,6 +52,15 @@ class Chart {
     this._series = [];
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  _requestDraw() {
+    if (this._drawPending) return;
+    this._drawPending = true;
+    requestAnimationFrame(() => {
+      this._drawPending = false;
+      this._draw();
+    });
   }
 
   /* ---------------- Data parsing ---------------- */
@@ -116,12 +126,12 @@ class Chart {
   }
 
   _bindEvents() {
-    window.addEventListener('resize', () => this._draw());
+    window.addEventListener('resize', () => this._requestDraw());
     this.canvas.addEventListener('mousemove', e => this._onMouseMove(e));
     this.canvas.addEventListener('mouseleave', () => {
       this._hover = null;
       this.tooltip.style.display = 'none';
-      this._draw();
+      this._requestDraw();
     });
   }
 
@@ -349,6 +359,6 @@ class Chart {
       this._hover = null;
       this.tooltip.style.display = 'none';
     }
-    this._draw();
+    this._requestDraw();
   }
 }

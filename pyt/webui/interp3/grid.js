@@ -138,6 +138,7 @@ class GridTable {
     this.root.className = 'gt-root';
     this.root.tabIndex = -1;
     if (this.viewportWidth) this.root.style.width = this._toCssSize(this.viewportWidth);
+    this.root.style.height = this._toCssSize(this.viewportHeight);
 
     this.scrollEl = document.createElement('div');
     this.scrollEl.className = 'gt-scroll';
