@@ -187,6 +187,15 @@ body {
   overflow: visible;
 }
 
+/* Add a global state modification flag to root */
+.gt-root.gt-readonly .gt-cell {
+  cursor: not-allowed; /* Shows block symbol on hover */
+}
+
+.gt-root.gt-readonly .gt-cell.selected {
+  background: #f2f4f7; /* Muted slate background instead of vibrant blue */
+}
+
 .gt-hidden-input {
   position: fixed;
   top: -1000px;

@@ -29,6 +29,7 @@ class GridTable {
     this._listeners = {};
     this._renderPending = false;
     this._globalListeners = [];
+	  this.readOnly = options.readOnly ?? false; // Default to editable
 
     this._computeOffsets();
     this._buildDom();
@@ -75,6 +76,23 @@ class GridTable {
     this.container.innerHTML = '';
   }
 
+	setReadOnly(readOnly) {
+		this.readOnly = !!readOnly;
+
+		// Toggle the CSS class on the root element for visual changes
+		if (this.root) {
+			this.root.classList.toggle('gt-readonly', this.readOnly);
+		}
+
+		// If runtime write-protection is forced *while* editing, cancel gracefully
+		if (this.readOnly && this.editingCell) {
+			const { r, c, original } = this.editingCell;
+			this.data[r][c] = original;
+			this.editingCell = null;
+			this._requestRender();
+			this.hiddenInput.focus({ preventScroll: true });
+		}
+	}
   /* ---------------- Core Engine ---------------- */
 
   _emit(event, payload) {
@@ -423,6 +441,7 @@ class GridTable {
   /* ---------------- Inline Editor ---------------- */
 
   _startEdit(r, c, initialChar = null) {
+	  if (this.readOnly) return; // 👇 Block editing early
     this._setSelection(r, c, r, c);
     this.editingCell = { r, c, original: this.data[r][c] ?? '' };
     if (initialChar !== null) this.data[r][c] = initialChar;
@@ -534,6 +553,7 @@ class GridTable {
       case 'Delete':
       case 'Backspace': {
         e.preventDefault();
+	if (this.readOnly) return; // 👇 Block single/multi-cell deletion
         const sel = this._normSelection();
         for (let r = sel.r1; r <= sel.r2; r++) {
           for (let c = sel.c1; c <= sel.c2; c++) this.data[r][c] = '';
@@ -587,6 +607,8 @@ class GridTable {
     }
     e.clipboardData.setData('text/plain', rows.join('\n'));
     if (isCut) {
+      if (this.readOnly) return; // 👇 Block cutting (copying will still function)
+
       for (let r = sel.r1; r <= sel.r2; r++) {
         for (let c = sel.c1; c <= sel.c2; c++) this.data[r][c] = '';
       }
@@ -597,6 +619,7 @@ class GridTable {
 
 	_onPaste(e) {
 		e.preventDefault();
+		if (this.readOnly) return; // 👇 Block clipboard pasting
 		const text = e.clipboardData.getData('text/plain');
 		if (!text) return;
 		const rawRows = text.replace(/\r/g, '').split('\n').filter((row, idx, arr) =>
@@ -784,6 +807,7 @@ if (!this.fixedColCount) {
   }
 
   _deleteRows(at, count = 1) {
+    if (this.readOnly) return; // 👇 Block row structural deletes
     count = Math.min(count, this.numRows - 1);
     if (count <= 0) return;
     this.data.splice(at, count);
@@ -813,6 +837,7 @@ if (!this.fixedColCount) {
 	}
 
   _deleteCols(at, count = 1) {
+    if (this.readOnly) return; // 👇 Block row structural deletes
     count = Math.min(count, this.numCols - 1);
     if (count <= 0) return;
     this.data.forEach(row => row.splice(at, count));
