@@ -595,35 +595,47 @@ class GridTable {
     }
   }
 
-  _onPaste(e) {
-    e.preventDefault();
-    const text = e.clipboardData.getData('text/plain');
-    if (!text) return;
-    const rawRows = text.replace(/\r/g, '').split('\n').filter((row, idx, arr) =>
-      !(idx === arr.length - 1 && row === '')
-    );
-    const delim = rawRows[0] && rawRows[0].includes('\t') ? '\t' : ',';
-    const grid = rawRows.map(row => row.split(delim));
+	_onPaste(e) {
+		e.preventDefault();
+		const text = e.clipboardData.getData('text/plain');
+		if (!text) return;
+		const rawRows = text.replace(/\r/g, '').split('\n').filter((row, idx, arr) =>
+			!(idx === arr.length - 1 && row === '')
+		);
+		const delim = rawRows[0] && rawRows[0].includes('\t') ? '\t' : ',';
+		const grid = rawRows.map(row => row.split(delim));
 
-    const sel = this._normSelection();
-    const startR = sel.r1, startC = sel.c1;
-    const neededRows = startR + grid.length;
-    let neededCols = startC + Math.max(...grid.map(row => row.length));
-    if (this.fixedColCount) {
-      neededCols = Math.min(this.numCols, neededCols);
-    }
-    this._ensureSize(neededRows, neededCols);
+		const sel = this._normSelection();
+		const startR = sel.r1, startC = sel.c1;
+		const neededRows = startR + grid.length;
 
-    grid.forEach((rowArr, ri) => {
-      rowArr.forEach((val, ci) => {
-        this.data[startR + ri][startC + ci] = val;
-      });
-    });
+		const incomingMaxCols = Math.max(...grid.map(row => row.length));
+		let neededCols = startC + incomingMaxCols;
 
-    this._setSelection(startR, startC, startR + grid.length - 1, startC + Math.max(...grid.map(r => r.length)) - 1);
-    this._emit('change');
-    this._requestRender();
-  }
+		// 👇 Check if the incoming data overflows the locked column count
+		if (this.fixedColCount && neededCols > this.numCols) {
+			alert(`Warning: Pasted data contains ${incomingMaxCols} columns, but the grid is locked. Some columns will be truncated.`);
+			neededCols = this.numCols;
+		}
+
+		this._ensureSize(neededRows, neededCols);
+
+		grid.forEach((rowArr, ri) => {
+			rowArr.forEach((val, ci) => {
+				// Prevent writing data out-of-bounds if it was truncated
+				if (startC + ci < this.numCols) {
+					this.data[startR + ri][startC + ci] = val;
+				}
+			});
+		});
+
+		// Clamp selection visual box to match actual written grid dimensions
+		const finalC2 = Math.min(this.numCols - 1, startC + incomingMaxCols - 1);
+		this._setSelection(startR, startC, startR + grid.length - 1, finalC2);
+
+		this._emit('change');
+		this._requestRender();
+	}
 
   /* ---------------- Column/Row Resize ---------------- */
 
@@ -784,16 +796,21 @@ if (!this.fixedColCount) {
     this._emit('change');
   }
 
-  _insertCols(at, count = 1) {
-    const blanks = new Array(count).fill('');
-    this.data.forEach(row => row.splice(at, 0, ...blanks));
-    this.colWidths.splice(at, 0, ...new Array(count).fill(this.defaultColWidth));
-    this.numCols += count;
-    this._computeOffsets();
-    this._updateSizerSize();
-    this._requestRender();
-    this._emit('change');
-  }
+	_insertCols(at, count = 1) {
+		if (this.fixedColCount) {
+			alert("Warning: Column insertion is disabled because the grid column count is locked.");
+			return;
+		}
+
+		const blanks = new Array(count).fill('');
+		this.data.forEach(row => row.splice(at, 0, ...blanks));
+		this.colWidths.splice(at, 0, ...new Array(count).fill(this.defaultColWidth));
+		this.numCols += count;
+		this._computeOffsets();
+		this._updateSizerSize();
+		this._requestRender();
+		this._emit('change');
+	}
 
   _deleteCols(at, count = 1) {
     count = Math.min(count, this.numCols - 1);

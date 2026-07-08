@@ -236,6 +236,7 @@ body {
   padding: 12px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   min-height: 0;
 }
 
@@ -281,4 +282,43 @@ body {
   height: 10px;
   border-radius: 2px;
   display: inline-block;
+}
+
+.ct-context-menu {
+  position: absolute;
+  background: #ffffff;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px 0;
+  min-width: 120px;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  display: none;
+}
+.ct-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: #374151;
+  user-select: none;
+}
+.ct-menu-item:hover {
+  background-color: #f3f4f6;
+}
+.ct-menu-checkbox {
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+.ct-menu-separator {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 4px 0;
 }
