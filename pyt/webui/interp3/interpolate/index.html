@@ -10,21 +10,25 @@
 <div id="app">
 
   <header class="app-header">
-    <h1>Interpolate sheet</h1>
+    <h1>Interpolate Calculator</h1>
   </header>
 
   <div class="app-toolbar">
     <button id="plotBtn" class="primary-btn">interpolate</button>
+    <span class="status" id="status"></span>
   </div>
 
   <div class="app-main">
     <section class="panel panel-grid" style="flex: 1;">
+      <h2>Input</h2>
       <div id="gridContainer" class="panel-body"></div>
     </section>
     <section class="panel panel-grid" style="flex: 1;">
+      <h2>Output</h2>
       <div id="gridContainer_2" class="panel-body"></div>
     </section>
     <section class="panel panel-chart">
+      <h2>Results</h2>
       <div id="chartContainer" class="panel-body"></div>
     </section>
   </div>
@@ -33,6 +37,7 @@
 
 <script src="../grid.js"></script>
 <script src="../chart.js"></script>
+<script src="dual-chart.js"></script>
 <script>
   const grid = new GridTable(document.getElementById('gridContainer'), {
     rows: 10,
@@ -51,23 +56,25 @@
     readOnly: false
   });
 
-  const chart = new Chart(document.getElementById('chartContainer'), {
+  const chart = new DualSeriesChart(document.getElementById('chartContainer'), {
     height: 'auto',
     xLabel: 'X (column A)',
     yLabel: 'Y',
     aspectRatio: 16 / 9
   });
 
-  const statusEl = document.getElementById('status');
-  function updateStatus() {
-    statusEl.textContent = `${grid.numRows} rows × ${grid.numCols} columns`;
+  function plotBoth() {
+    const merged = mergeGridsForChart(grid.getData(), grid_2.getData(), {
+      labelA: 'Input',
+      labelB: 'Output'
+    });
+    chart.setSeriesMeta(merged.seriesMeta);
+    chart.render(merged.data);
   }
-  updateStatus();
-  grid.on('change', updateStatus);
 
-  document.getElementById('plotBtn').addEventListener('click', () => {
-    chart.render(grid.getData());
-  });
+  document.getElementById('plotBtn').addEventListener('click', plotBoth);
+  grid.on('change', plotBoth);
+  grid_2.on('change', plotBoth);
 </script>
 
 </body>
