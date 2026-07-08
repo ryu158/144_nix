@@ -25,8 +25,6 @@ class GridTable {
     this.colHeaderHeight = options.colHeaderHeight ?? 28;
     this.viewportHeight = options.viewportHeight ?? 480;
     this.viewportWidth = options.viewportWidth ?? null; // null = fill container (100%)
-    // helper: numbers become px, strings (e.g. '80%', '90vh') pass through as-is
-    this._toCssSize = v => (v === null || v === undefined) ? null : (typeof v === 'number' ? v + 'px' : v);
     this.buffer = 3;
 
     this.colWidths = new Array(this.numCols).fill(this.defaultColWidth);
@@ -137,12 +135,12 @@ class GridTable {
     this.root = document.createElement('div');
     this.root.className = 'gt-root';
     this.root.tabIndex = -1;
-    if (this.viewportWidth) this.root.style.width = this._toCssSize(this.viewportWidth);
+    if (this.viewportWidth) this.root.style.width = this.viewportWidth + 'px';
 
     this.scrollEl = document.createElement('div');
     this.scrollEl.className = 'gt-scroll';
-    this.scrollEl.style.height = this._toCssSize(this.viewportHeight);
-    this.scrollEl.style.width = this._toCssSize(this.viewportWidth) ?? '100%';
+    this.scrollEl.style.height = this.viewportHeight + 'px';
+    this.scrollEl.style.width = this.viewportWidth ? (this.viewportWidth + 'px') : '100%';
 
     this.sizer = document.createElement('div');
     this.sizer.className = 'gt-sizer';

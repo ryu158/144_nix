@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Grid Data Entry</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Grid Data Entry</h1>
+
+<div id="gridContainer"></div>
+<div class="status" id="status" style="margin-top:10xpx; font-size:12px; color:#6b7280;"></div>
+
+<script src="grid.js"></script>
+<script>
+  const grid = new GridTable(document.getElementById('gridContainer'), {
+    rows: 10,
+    cols: 10,
+    viewportHeight: 400,
+    viewportWidth: 500
+  });
+
+  const statusEl = document.getElementById('status');
+  function updateStatus() {
+    statusEl.textContent = `${grid.numRows} rows × ${grid.numCols} columns`;
+  }
+  updateStatus();
+  grid.on('change', updateStatus);
+</script>
+
+</body>
+</html>
