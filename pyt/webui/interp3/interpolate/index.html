@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Grid Data Entry</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <header class="app-header">
+    <h1>Interpolate sheet</h1>
+  </header>
+
+  <div class="app-toolbar">
+    <button id="plotBtn" class="primary-btn">interpolate</button>
+  </div>
+
+  <div class="app-main">
+    <section class="panel panel-grid" style="flex: 1;">
+      <div id="gridContainer" class="panel-body"></div>
+    </section>
+    <section class="panel panel-grid" style="flex: 1;">
+      <div id="gridContainer_2" class="panel-body"></div>
+    </section>
+    <section class="panel panel-chart">
+      <div id="chartContainer" class="panel-body"></div>
+    </section>
+  </div>
+
+</div>
+
+<script src="../grid.js"></script>
+<script src="../chart.js"></script>
+<script>
+  const grid = new GridTable(document.getElementById('gridContainer'), {
+    rows: 10,
+    cols: 4,
+    viewportHeight: '100%',
+    viewportWidth: '100%',
+    fixedColCount: true
+  });
+
+  const grid_2 = new GridTable(document.getElementById('gridContainer_2'), {
+    rows: 10,
+    cols: 4,
+    viewportHeight: '100%',
+    viewportWidth: '100%',
+    fixedColCount: true,
+    readOnly: false
+  });
+
+  const chart = new Chart(document.getElementById('chartContainer'), {
+    height: 'auto',
+    xLabel: 'X (column A)',
+    yLabel: 'Y',
+    aspectRatio: 16 / 9
+  });
+
+  const statusEl = document.getElementById('status');
+  function updateStatus() {
+    statusEl.textContent = `${grid.numRows} rows × ${grid.numCols} columns`;
+  }
+  updateStatus();
+  grid.on('change', updateStatus);
+
+  document.getElementById('plotBtn').addEventListener('click', () => {
+    chart.render(grid.getData());
+  });
+</script>
+
+</body>
+</html>
