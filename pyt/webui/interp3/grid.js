@@ -1,31 +1,19 @@
 /**
  * GridTable
- * A virtualized, Excel-like grid.
- *
- * Features:
- *  1. Range select + copy/paste (tab-separated, works with Excel/CSV)
- *  2. Resizable column widths / row heights (drag handles on headers)
- *  3. Virtualized rendering — only visible cells exist in the DOM
- *  4. Right-click context menu on headers to insert/delete rows & columns
- *
- * Public API:
- *   new GridTable(container, options)
- *   .getData() -> string[][]
- *   .setData(array2d) -> void
- *   .on(event, cb)     event: 'change'
+ * A performance-optimized virtualized grid.
  */
 class GridTable {
   constructor(container, options = {}) {
     this.container = container;
     this.numRows = options.rows ?? 200;
     this.numCols = options.cols ?? 50;
+    this.fixedColCount = options.fixedColCount ?? false; // false by default
     this.defaultColWidth = options.colWidth ?? 90;
     this.defaultRowHeight = options.rowHeight ?? 28;
     this.rowHeaderWidth = options.rowHeaderWidth ?? 50;
     this.colHeaderHeight = options.colHeaderHeight ?? 28;
     this.viewportHeight = options.viewportHeight ?? 480;
-    this.viewportWidth = options.viewportWidth ?? null; // null = fill container (100%)
-    // helper: numbers become px, strings (e.g. '80%', '90vh') pass through as-is
+    this.viewportWidth = options.viewportWidth ?? null;
     this._toCssSize = v => (v === null || v === undefined) ? null : (typeof v === 'number' ? v + 'px' : v);
     this.buffer = 3;
 
@@ -40,6 +28,7 @@ class GridTable {
     this._resizing = null;
     this._listeners = {};
     this._renderPending = false;
+    this._globalListeners = [];
 
     this._computeOffsets();
     this._buildDom();
@@ -56,12 +45,19 @@ class GridTable {
   setData(arr2d) {
     const rows = arr2d.length;
     const cols = rows ? Math.max(...arr2d.map(r => r.length)) : 0;
-    this._ensureSize(rows, cols);
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < arr2d[r].length; c++) {
-        this.data[r][c] = arr2d[r][c] ?? '';
-      }
-    }
+    
+    // Hard reset dimensions to match incoming dataset completely
+    this.numRows = rows;
+    this.numCols = cols;
+    this.colWidths = new Array(this.numCols).fill(this.defaultColWidth);
+    this.rowHeights = new Array(this.numRows).fill(this.defaultRowHeight);
+    
+    this.data = Array.from({ length: this.numRows }, (_, r) => 
+      Array.from({ length: this.numCols }, (_, c) => arr2d[r]?.[c] ?? '')
+    );
+
+    this._computeOffsets();
+    this._updateSizerSize();
     this.renderViewport();
     this._emit('change');
   }
@@ -70,11 +66,20 @@ class GridTable {
     (this._listeners[event] ||= []).push(cb);
   }
 
+  destroy() {
+    // Unbind all global event listeners to prevent severe memory leaks
+    this._globalListeners.forEach(({ target, type, handler }) => {
+      target.removeEventListener(type, handler);
+    });
+    this._globalListeners = [];
+    this.container.innerHTML = '';
+  }
+
+  /* ---------------- Core Engine ---------------- */
+
   _emit(event, payload) {
     (this._listeners[event] || []).forEach(cb => cb(payload));
   }
-
-  /* ---------------- Offsets / sizing ---------------- */
 
   _computeOffsets() {
     this.colOffsets = [0];
@@ -102,12 +107,14 @@ class GridTable {
   }
 
   _ensureSize(rows, cols) {
+    let changed = false;
     if (rows > this.numRows) {
       for (let r = this.numRows; r < rows; r++) {
         this.data.push(new Array(this.numCols).fill(''));
         this.rowHeights.push(this.defaultRowHeight);
       }
       this.numRows = rows;
+      changed = true;
     }
     if (cols > this.numCols) {
       for (let r = 0; r < this.numRows; r++) {
@@ -115,9 +122,12 @@ class GridTable {
       }
       for (let c = this.numCols; c < cols; c++) this.colWidths.push(this.defaultColWidth);
       this.numCols = cols;
+      changed = true;
     }
-    this._computeOffsets();
-    this._updateSizerSize();
+    if (changed) {
+      this._computeOffsets();
+      this._updateSizerSize();
+    }
   }
 
   static colLabel(n) {
@@ -129,8 +139,6 @@ class GridTable {
     }
     return s;
   }
-
-  /* ---------------- DOM construction ---------------- */
 
   _buildDom() {
     this.container.innerHTML = '';
@@ -185,16 +193,11 @@ class GridTable {
   }
 
   _updateCanvasSize() {
-    // The sticky "canvas" layer must be sized to the visible viewport, not to
-    // the (much larger) scrollable content. If it's sized to the full content
-    // height/width, position:sticky can only keep it pinned near the top of
-    // the scroll range — past that point the pin breaks and cells render
-    // outside the visible area (looks like blank space on scroll).
     this.canvas.style.width = this.scrollEl.clientWidth + 'px';
     this.canvas.style.height = this.scrollEl.clientHeight + 'px';
   }
 
-  /* ---------------- Rendering ---------------- */
+  /* ---------------- Rendering Engine ---------------- */
 
   renderViewport() {
     const sl = this.scrollEl.scrollLeft;
@@ -206,26 +209,35 @@ class GridTable {
     let c1 = this._indexForOffset(this.colOffsets, sl + viewW) + this.buffer + 1;
     let r0 = this._indexForOffset(this.rowOffsets, st) - this.buffer;
     let r1 = this._indexForOffset(this.rowOffsets, st + viewH) + this.buffer + 1;
+    
     c0 = Math.max(0, c0); c1 = Math.min(this.numCols, c1);
     r0 = Math.max(0, r0); r1 = Math.min(this.numRows, r1);
 
-    this.colHeaderEl.innerHTML = '';
+    // Fast DOM Clears
+    this.colHeaderEl.textContent = '';
+    this.rowHeaderEl.textContent = '';
+    this.cellsEl.textContent = '';
+
+    const fragmentCols = document.createDocumentFragment();
     for (let c = c0; c < c1; c++) {
-      this.colHeaderEl.appendChild(this._buildColHeaderCell(c, sl));
+      fragmentCols.appendChild(this._buildColHeaderCell(c, sl));
     }
+    this.colHeaderEl.appendChild(fragmentCols);
 
-    this.rowHeaderEl.innerHTML = '';
+    const fragmentRows = document.createDocumentFragment();
     for (let r = r0; r < r1; r++) {
-      this.rowHeaderEl.appendChild(this._buildRowHeaderCell(r, st));
+      fragmentRows.appendChild(this._buildRowHeaderCell(r, st));
     }
+    this.rowHeaderEl.appendChild(fragmentRows);
 
-    this.cellsEl.innerHTML = '';
+    const fragmentCells = document.createDocumentFragment();
     const sel = this._normSelection();
     for (let r = r0; r < r1; r++) {
       for (let c = c0; c < c1; c++) {
-        this.cellsEl.appendChild(this._buildDataCell(r, c, sl, st, sel));
+        fragmentCells.appendChild(this._buildDataCell(r, c, sl, st, sel));
       }
     }
+    this.cellsEl.appendChild(fragmentCells);
 
     if (this.editingCell) {
       const el = this.cellsEl.querySelector(
@@ -317,7 +329,7 @@ class GridTable {
     return el;
   }
 
-  /* ---------------- Selection helpers ---------------- */
+  /* ---------------- Interaction Handling ---------------- */
 
   _normSelection() {
     const { r1, c1, r2, c2 } = this.selection;
@@ -329,14 +341,12 @@ class GridTable {
     this.activeCell = { r: r1, c: c1 };
   }
 
-  /* ---------------- Mouse interaction ---------------- */
-
   _onCellMouseDown(e, r, c) {
-    if (this.editingCell && (this.editingCell.r !== r || this.editingCell.c !== c)) {
+    if (this.editingCell) {
+      if (this.editingCell.r === r && this.editingCell.c === c) {
+        return; // Allow intentional inner text selection during editing
+      }
       this._commitEdit();
-    }
-    if (this.editingCell && this.editingCell.r === r && this.editingCell.c === c) {
-      return; // let native text-cursor placement happen
     }
     e.preventDefault();
     this._dragging = true;
@@ -410,15 +420,7 @@ class GridTable {
     this._requestRender();
   }
 
-  _bindGlobalMouseUp() {
-    document.addEventListener('mouseup', () => {
-      this._dragging = false;
-      this._headerDragging = null;
-      this._resizing = null;
-    });
-  }
-
-  /* ---------------- Editing ---------------- */
+  /* ---------------- Inline Editor ---------------- */
 
   _startEdit(r, c, initialChar = null) {
     this._setSelection(r, c, r, c);
@@ -431,10 +433,15 @@ class GridTable {
     el.classList.add('editing');
     el.contentEditable = 'true';
     el.spellcheck = false;
-    el.addEventListener('keydown', e => this._onEditKeydown(e));
-    el.addEventListener('blur', () => this._commitEdit());
+    
+    const keydownHandler = e => this._onEditKeydown(e);
+    const blurHandler = () => this._commitEdit();
+    
+    el.addEventListener('keydown', keydownHandler);
+    el.addEventListener('blur', blurHandler, { once: true });
     el.focus();
-    // place cursor at end
+    
+    // Select trailing offset range
     const range = document.createRange();
     range.selectNodeContents(el);
     range.collapse(false);
@@ -470,16 +477,41 @@ class GridTable {
     this.editingCell = null;
     this._emit('change');
     this._requestRender();
+    this.hiddenInput.focus({ preventScroll: true });
   }
 
-  /* ---------------- Keyboard (navigation / copy / paste / delete) ---------------- */
+  /* ---------------- Global Event Registration ---------------- */
 
-  _bindHiddenInput() {
+  _addGlobalListener(target, type, handler) {
+    target.addEventListener(type, handler);
+    this._globalListeners.push({ target, type, handler });
+  }
+
+  _bindEvents() {
+    this.scrollEl.addEventListener('scroll', () => this._requestRender());
+    
+    this._addGlobalListener(document, 'mouseup', () => {
+      this._dragging = false;
+      this._headerDragging = null;
+      this._resizing = null;
+    });
+
+    this._addGlobalListener(window, 'resize', () => {
+      this._updateCanvasSize();
+      this._requestRender();
+    });
+
+    this._addGlobalListener(document, 'keydown', e => {
+      if (e.key === 'Escape') this._closeMenu();
+    });
+
     this.hiddenInput.addEventListener('keydown', e => this._onHiddenKeydown(e));
     this.hiddenInput.addEventListener('copy', e => this._onCopy(e));
     this.hiddenInput.addEventListener('cut', e => this._onCopy(e, true));
     this.hiddenInput.addEventListener('paste', e => this._onPaste(e));
   }
+
+  /* ---------------- Navigation / Clipboard ---------------- */
 
   _onHiddenKeydown(e) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
@@ -544,8 +576,6 @@ class GridTable {
     else if (bottom > st + viewH) this.scrollEl.scrollTop = bottom - viewH;
   }
 
-  /* ---------------- Copy / Paste ---------------- */
-
   _onCopy(e, isCut = false) {
     e.preventDefault();
     const sel = this._normSelection();
@@ -578,7 +608,10 @@ class GridTable {
     const sel = this._normSelection();
     const startR = sel.r1, startC = sel.c1;
     const neededRows = startR + grid.length;
-    const neededCols = startC + Math.max(...grid.map(row => row.length));
+    let neededCols = startC + Math.max(...grid.map(row => row.length));
+    if (this.fixedColCount) {
+      neededCols = Math.min(this.numCols, neededCols);
+    }
     this._ensureSize(neededRows, neededCols);
 
     grid.forEach((rowArr, ri) => {
@@ -592,7 +625,7 @@ class GridTable {
     this._requestRender();
   }
 
-  /* ---------------- Resize ---------------- */
+  /* ---------------- Column/Row Resize ---------------- */
 
   _startColResize(e, c) {
     e.preventDefault();
@@ -636,7 +669,7 @@ class GridTable {
     document.addEventListener('mouseup', onUp);
   }
 
-  /* ---------------- Context menus ---------------- */
+  /* ---------------- Context Menus ---------------- */
 
   _closeMenu() {
     if (this._menuEl) { this._menuEl.remove(); this._menuEl = null; }
@@ -702,12 +735,19 @@ class GridTable {
     }
     const count = c2 - c1 + 1;
     const noun = count > 1 ? `${count} columns` : 'column';
-    this._openMenu(e.clientX, e.clientY, [
+    const menuItems = [];
+if (!this.fixedColCount) {
+    menuItems.push(
       { label: `Insert ${noun} left`, action: () => this._insertCols(c1, count) },
       { label: `Insert ${noun} right`, action: () => this._insertCols(c2 + 1, count) },
-      { sep: true },
-      { label: `Delete ${noun}`, danger: true, action: () => this._deleteCols(c1, count) },
-    ]);
+      { sep: true }
+    );
+  }
+
+  menuItems.push({ label: `Delete ${noun}`, danger: true, action: () => this._deleteCols(c1, count) });
+
+  this._openMenu(e.clientX, e.clientY, menuItems);
+
   }
 
   _clampSelection() {
@@ -766,17 +806,5 @@ class GridTable {
     this._clampSelection();
     this._requestRender();
     this._emit('change');
-  }
-
-  /* ---------------- Event wiring ---------------- */
-
-  _bindEvents() {
-    this.scrollEl.addEventListener('scroll', () => this._requestRender());
-    this._bindGlobalMouseUp();
-    this._bindHiddenInput();
-    window.addEventListener('resize', () => { this._updateCanvasSize(); this._requestRender(); });
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') this._closeMenu();
-    });
   }
 }
