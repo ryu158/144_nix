@@ -75,9 +75,9 @@ body {
 
 /* ---- Grid root ---- */
 .gt-root {
-  border: 1px solid var(--border);
+  border: 0px solid var(--border);
   border-radius: 8px;
-  background: white;
+  background: #fafbfc;
   overflow: hidden;
   user-select: none;
 }
@@ -133,10 +133,12 @@ body {
   font-size: 12px;
   font-weight: 600;
   border-right: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  padding: 0 8px;
+  padding: 0 5px;
   overflow: hidden;
   white-space: nowrap;
 }

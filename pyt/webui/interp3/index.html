@@ -19,8 +19,11 @@
   </div>
 
   <div class="app-main">
-    <section class="panel panel-grid">
+    <section class="panel panel-grid" style="flex: 1;">
       <div id="gridContainer" class="panel-body"></div>
+    </section>
+    <section class="panel panel-grid" style="flex: 1;">
+      <div id="gridContainer_2" class="panel-body"></div>
     </section>
     <section class="panel panel-chart">
       <div id="chartContainer" class="panel-body"></div>
@@ -39,8 +42,15 @@
     viewportWidth: '100%'
   });
 
+  const grid_2 = new GridTable(document.getElementById('gridContainer_2'), {
+    rows: 10,
+    cols: 5,
+    viewportHeight: '100%',
+    viewportWidth: '100%'
+  });
+
   const chart = new Chart(document.getElementById('chartContainer'), {
-    height: '70%',
+    height: 'auto',
     xLabel: 'X (column A)',
     yLabel: 'Y'
   });
