@@ -51,6 +51,25 @@ class Chart {
 		this._draw();
 	}
 
+	// Renders multiple datasets as stacked layers in one chart.
+	// Draw order = array order: first layer = back, last layer = front.
+	// Same column index across layers reuses the same color automatically
+	// (color is assigned by series index within _parseData).
+	renderLayers(layers) {
+		this._series = layers.flatMap(layer =>
+			this._parseDataWithMode(layer.data2d, layer)
+		);
+		this._draw();
+	}
+
+	// Convenience wrapper for the common Input(scatter,front) / Output(line,back) case.
+	renderInputOutput(inputData2d, outputData2d, opts = {}) {
+		this.renderLayers([
+			{ data2d: outputData2d, showLines: true,  showPoints: false, labelSuffix: opts.outputSuffix ?? ' (out)' },
+			{ data2d: inputData2d,  showLines: false, showPoints: true,  labelSuffix: opts.inputSuffix  ?? ' (in)'  },
+		]);
+	}
+
 	clear() {
 		this._series = [];
 		if (this.ctx && this.canvas) {
@@ -115,6 +134,19 @@ class Chart {
 		series.forEach(s => s.points.sort((a, b) => a.x - b.x));
 		return series.filter(s => s.points.length > 0);
 	}
+
+	// Wraps _parseData, tagging each resulting series with a per-series
+	// draw mode + optional label suffix, without touching _parseData itself.
+	_parseDataWithMode(data2d, mode = {}) {
+		const series = this._parseData(data2d);
+		series.forEach(s => {
+			if (mode.showLines !== undefined) s.showLines = mode.showLines;
+			if (mode.showPoints !== undefined) s.showPoints = mode.showPoints;
+			if (mode.labelSuffix) s.label += mode.labelSuffix;
+		});
+		return series;
+	}
+
 
 	/* ---------------- DOM & Styles ---------------- */
 
@@ -354,7 +386,7 @@ class Chart {
 		ctx.clip();
 
 		for (const series of this._series) {
-			if (this.showLines && series.points.length > 1) {
+			if ((series.showLines ?? this.showLines) && series.points.length > 1) {
 				ctx.strokeStyle = series.color;
 				ctx.lineWidth = 2;
 				ctx.beginPath();
@@ -364,7 +396,7 @@ class Chart {
 				});
 				ctx.stroke();
 			}
-			if (this.showPoints) {
+			if (series.showPoints ?? this.showPoints) {
 				ctx.fillStyle = series.color;
 				for (const p of series.points) {
 					ctx.beginPath();
