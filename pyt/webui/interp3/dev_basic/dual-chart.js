@@ -13,6 +13,37 @@ class DualSeriesChart extends Chart {
     this.seriesMeta = meta || {};
   }
 
+	// Override of Chart._parseDataWithMode: same behavior, but also lets a
+	// layer carry its own seriesMeta (temporarily swapped in for the parse),
+	// so two independently-numbered datasets (Input col1, Output col1, ...)
+	// don't collide on the same seriesMeta keys.
+	_parseDataWithMode(data2d, mode = {}) {
+		const prevMeta = this.seriesMeta;
+		if (mode.seriesMeta) this.seriesMeta = mode.seriesMeta;
+
+		const series = this._parseData(data2d);
+
+		this.seriesMeta = prevMeta; // restore, no lingering side effects
+
+		series.forEach(s => {
+			if (mode.showLines !== undefined) s.showLines = mode.showLines;
+			if (mode.showPoints !== undefined) s.showPoints = mode.showPoints;
+			if (mode.labelSuffix) s.label += mode.labelSuffix;
+		});
+		return series;
+	}
+
+	// Input = scatter, drawn in front. Output = line, drawn behind.
+	// opts: { inputMeta, outputMeta } — seriesMeta objects keyed by local
+	// column index (1-based), same shape as setSeriesMeta() expects.
+	renderInputOutput(inputData2d, outputData2d, opts = {}) {
+		this.renderLayers([
+			{ data2d: outputData2d, showLines: true,  showPoints: false, seriesMeta: opts.outputMeta },
+			{ data2d: inputData2d,  showLines: false, showPoints: true,  seriesMeta: opts.inputMeta  },
+		]);
+	}
+
+
   // Same parsing contract as Chart._parseData, but applies seriesMeta overrides.
   _parseData(data2d) {
     if (!data2d || !data2d.length) return [];
@@ -94,4 +125,36 @@ function mergeGridsForChart(dataA, dataB, opts = {}) {
   }
 
   return { data: rows, seriesMeta };
+}
+
+/**
+ * buildInputOutputMeta
+ * Like mergeGridsForChart's label/color logic, but for the layered
+ * (non-merged) case: each dataset keeps its own local column numbering,
+ * so seriesMeta is returned as two separate maps instead of one offset map.
+ */
+function buildInputOutputMeta(dataA, dataB, opts = {}) {
+	const labelA = opts.labelA || 'Input';
+	const labelB = opts.labelB || 'Output';
+	const colorsA = opts.colorsA || ['#2563eb', '#0891b2', '#4f46e5'];
+	const colorsB = opts.colorsB || ['#dc2626', '#d97706', '#db2777'];
+
+	const yColsA = Math.max(0, ...dataA.map(r => (r ? r.length : 0)), 1) - 1;
+	const yColsB = Math.max(0, ...dataB.map(r => (r ? r.length : 0)), 1) - 1;
+
+	const inputMeta = {};
+	for (let c = 0; c < yColsA; c++) {
+		inputMeta[c + 1] = {
+			label: yColsA > 1 ? `${labelA} ${Chart.colLabel(c + 1)}` : labelA,
+			color: colorsA[c % colorsA.length],
+		};
+	}
+	const outputMeta = {};
+	for (let c = 0; c < yColsB; c++) {
+		outputMeta[c + 1] = {
+			label: yColsB > 1 ? `${labelB} ${Chart.colLabel(c + 1)}` : labelB,
+			color: colorsB[c % colorsB.length],
+		};
+	}
+	return { inputMeta, outputMeta };
 }

@@ -64,12 +64,11 @@
   });
 
   function plotBoth() {
-    const merged = mergeGridsForChart(grid.getData(), grid_2.getData(), {
-      labelA: 'Input',
-      labelB: 'Output'
-    });
-    chart.setSeriesMeta(merged.seriesMeta);
-    chart.render(merged.data);
+	  const { inputMeta, outputMeta } = buildInputOutputMeta(grid.getData(), grid_2.getData(), {
+		  labelA: 'Input',
+		  labelB: 'Output'
+	  });
+	  chart.renderInputOutput(grid.getData(), grid_2.getData(), { inputMeta, outputMeta });
   }
 
   document.getElementById('plotBtn').addEventListener('click', plotBoth);
