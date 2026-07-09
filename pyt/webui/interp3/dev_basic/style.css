@@ -68,6 +68,11 @@ body {
 .panel-grid { flex: 3; }
 .panel-chart { flex: 2; }
 
+.panel-ad {
+  flex: 0 0 160px;
+  max-width: 160px;
+}
+
 .panel-body {
   flex: 1;
   min-height: 0;

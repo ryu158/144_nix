@@ -28,12 +28,18 @@
     <section class="panel panel-chart">
       <div id="chartContainer" class="panel-body"></div>
     </section>
+    <aside class="panel panel-ad">
+	    <div id="adContainer"></div>
+    </aside>
   </div>
 
 </div>
 
 <script src="grid.js"></script>
 <script src="chart.js"></script>
+<script src="ads.js"></script>
+<script src="bmc.js"></script>
+
 <script>
   const grid = new GridTable(document.getElementById('gridContainer'), {
     rows: 10,
@@ -65,6 +71,8 @@
   }
   updateStatus();
   grid.on('change', updateStatus);
+  AdSenseModule.init('adContainer');
+  BmcModule.init();
 
   document.getElementById('plotBtn').addEventListener('click', () => {
     chart.render(grid.getData());
