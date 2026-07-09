@@ -1,22 +1,40 @@
 # Working Log
 
+## 260709 — Overlay Input/Output on interpolate chart
+**task:** Input (scatter) + Output (line) on one chart, Output behind Input
+**approach:** additive only, reused existing `renderLayers` draw-order in `Chart`
+
+- `dual-chart.js`: `_parseDataWithMode()` override — per-layer seriesMeta, avoids key collisions
+- `dual-chart.js`: `renderInputOutput()` override — draws Output (line, back) then Input (scatter, front)
+- `dual-chart.js`: `buildInputOutputMeta()` — separate label/color maps
+- `interpolate/index.html`: `plotBoth()` now calls `renderInputOutput()` instead of `mergeGridsForChart` + `render()`
+
+**why:** base `Chart.renderInputOutput` lacked seriesMeta support; subclassed in `DualSeriesChart` instead of editing base class
+**result:** scatter in front, line behind, independent styling, shared chart
+
 ---
 
-## 2026-07-09 — Overlay Input (scatter) / Output (line) on interpolate chart
+## 260709 — AdSense + BMC integration (modularized)
+**task:** add adsense + bmc without touching grid/chart code
+**approach:** new standalone files, 2 script includes, 1 new aside panel
 
-**Task:** Overlay Input (scatter points) and Output (line) on the same chart in the interpolate calculator, with Output drawn behind Input.
+- `ads.js` (new): `AdSenseModule` — `loadScript()`, `renderUnit()`, `init()`
+- `bmc.js` (new): `BmcModule` — `init()`
+- `index_dev_basic.html`: added `ads.js`/`bmc.js` includes, `#adContainer` in new `.panel-ad` aside, init calls after `grid.on('change', ...)`
+- `style.css`: added `.panel-ad { flex: 0 0 160px; max-width: 160px; }`
 
-**Approach:** Purely additive — no changes to existing code in `chart.js`, `dual-chart.js`'s existing methods, or `mergeGridsForChart`. Used the existing `renderLayers` mechanism in `Chart`, which already supports draw-order layering (first = back, last = front).
+**result:** dom wiring confirmed correct (iframe chain, bmc script loaded), nothing visible yet — client/slot/id still placeholders, adsense also needs approval. see error_log 260709.
 
-**Changes:**
+---
 
-| File | Change | Type |
-|---|---|---|
-| `dual-chart.js` | Added `_parseDataWithMode()` override on `DualSeriesChart` | New method — lets each layer carry its own `seriesMeta` without colliding on column-index keys |
-| `dual-chart.js` | Added `renderInputOutput()` override on `DualSeriesChart` | New method — draws Output (line, back) then Input (scatter, front) |
-| `dual-chart.js` | Added `buildInputOutputMeta()` | New standalone helper — generates separate label/color maps for Input and Output series |
-| `interpolate/index.html` | Replaced `plotBoth()` body | Now calls `chart.renderInputOutput(...)` instead of `mergeGridsForChart` + `render()` |
+## 260709 — BMC donation popup (proposed, not applied)
+**task:** popup/notification on BMC donation
+**finding:** no backend in project; bmc widget has no client-side success callback → real confirmation needs server-side webhook
 
-**Why not touch existing code:** `Chart.renderInputOutput` already existed but didn't support `seriesMeta`, and `DualSeriesChart` never overrode it. Rather than editing the base class, subclassing/overriding kept the base `Chart` fully reusable for other charts that don't need per-series metadata.
+**proposed (client-only approx):**
+- `bmc.js`: add `attachReturnListener()` + `showThankYouPopup()`, called from `init()`
+- `style.css`: add `.bmc-popup` / `.bmc-popup-visible`
 
-**Result:** Input points render as scatter markers in front; Output renders as a connected line behind them, each with independent labels/colors, on a shared chart.
+**mechanism:** click on bmc button → popup fires on next tab `visibilitychange`
+**caveat:** not real payment confirmation — abandoned checkout still triggers popup
+**status:** not yet implemented — pending decision on backend + webhook route

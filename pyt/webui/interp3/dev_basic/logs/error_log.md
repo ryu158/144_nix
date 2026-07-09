@@ -1,20 +1,27 @@
-1. style.css apply fail
- a. it can be found in index.html
- b. it can be seen in browser dev tools as source
- c. script.js applied well
- -> nginx.conf -> root directory or index file setting (index.html -> /index.html)
+# Error Log
 
+## style.css apply fail
+- found in index.html, visible in dev tools, script.js loads fine
+- **cause:** nginx.conf root dir / index file setting
+- **fix:** index.html → /index.html
 
- 260708
- Bug log — grid/chart build:
+## 260708 — grid/chart build
+- **css not load** → link tag fail → inlined css in html
+- **click no work** → header divs cover grid (transparent, high z-index) → pointer-events: none on header container, auto on header cell
+- **scroll breaks past ~20 rows** → sticky canvas sized to full content not viewport → set canvas w/h = scrollEl.clientWidth/Height in js
+- **select row/col + select-all** → added mousedown+mouseenter on headers, corner = select-all, ctrl+a
+- **multi-row/col context menu** → detect right-click inside existing multi-selection
+- **fixed width not applying** → snippet given but never written to file → applied edit for real
+- **% width/height broken** → % height needs every ancestor with explicit height → use vh for height, % ok for width
+- **layout heavy, no scrollbar** → grid root height never set (only width) → mirror height onto root. bonus: throttled chart mousemove redraw via rAF
 
-css not load. link tag fail. fix: css inline in html.
-click no work. header divs cover whole grid (full-size transparent layer, high z-index). fix: pointer-events none on header container, auto on header cell only.
-scroll break past ~20 rows, big blank space. cause: sticky "canvas" sized to full content height not viewport. fix: set canvas width/height = scrollEl.clientWidth/clientHeight in js, not css 100%.
-want select whole row/col + select all. add: mousedown+mouseenter on header cells, corner cell = select all, ctrl+a.
-want multi-row/col context menu. add: detect if right-click target inside existing multi-selection, act on whole range not just one.
-fixed width option not applying. cause: gave user code snippet but never actually wrote it into index.html file. fix: applied edit for real.
-percent width/height not working, grid shows all rows no scroll. cause: css % height needs every ancestor to have explicit height, body/container had none → resolves to auto. fix: use vh for height (no ancestor needed), % fine for width.
-layout heavy again + no scrollbar after adding flex page layout. cause: grid root height was never set (only width was), so root grew to fit all content, virtualizer thought everything visible. fix: mirror height onto root same as width. bonus: throttled chart's mousemove redraw via rAF, was redrawing full canvas every pixel of mouse movement.
+> **pattern:** something (css link, height mirror, file edit) skipped in one layer while working in another — check full render chain, not just JS
 
-Pattern across most bugs: something (css link, height mirror, actual file edit) got skipped in one layer while working in another — always check the full render chain (css load → pointer-events → sizing → percent/ancestor chain), not just the JS logic.
+## 260709 — AdSense / BMC not visible
+- dev tools show correct dom (aswift iframes, aframe, adtrafficquality.google, google_esf, bmc script loaded) but nothing renders
+- **cause (adsense):** placeholder client/slot id → invalid → no ad served → `<ins>` has no intrinsic size → collapses to 0×0
+- **cause (bmc):** placeholder `data-id` → unmatched page → script loads silently, button never renders
+- **fix:** pending — need real adsense publisher/slot id + real bmc username
+- **note:** adsense also needs account approval before ads serve
+
+> **pattern:** config-layer placeholders left in place while code-layer wiring was correct — same lesson as 260708

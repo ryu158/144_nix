@@ -1,6 +1,11 @@
-column count(number) lock option for grid, done;
-aspect ratio setting option for chart, done;
-legend on/off in chart context menu, done;
-chart popup option in context menu, done;
-writing protection option for grid, done;
-interpolate page: show Input grid and Output grid on one chart simultaneously, done;
+# Request Log
+
+- [x] column count(number) lock option for grid
+- [x] aspect ratio setting for chart
+- [x] legend on/off in chart context menu
+- [x] chart popup option in context menu
+- [x] writing protection option for grid
+- [x] interpolate page: show Input + Output grid on one chart
+- [ ] google adsense integration — config placeholders not replaced
+- [ ] buy me a coffee integration — config placeholders not replaced
+- [ ] popup on BMC donation — no backend, client-only approx proposed
