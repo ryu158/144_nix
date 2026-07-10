@@ -1,8 +1,8 @@
 /* ---------------- AdSense Module ---------------- */
 const AdSenseModule = {
   config: {
-    client: 'ca-pub-XXXXXXXXXXXXXXXX',
-    slot: 'XXXXXXXXXX'
+    client: 'ca-pub-6452790596934933',
+    slot: '9842525526'
   },
 
   loadScript() {
