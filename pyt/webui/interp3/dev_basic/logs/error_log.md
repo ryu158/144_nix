@@ -1,5 +1,13 @@
 # Error Log
 
+## 260710 — Ad container zero-height + wrong placement
+- **found:** `#adContainer` inside `.panel-ad` had no height rule → `panel-body` class never applied to it (only sibling panels got it) → 0×0 collapse regardless of ad-serve status
+- **cause:** `.panel-ad` (flex child of `.app-main`) only reserved width (`flex: 0 0 160px`), no height path
+- **fix:** removed ad from `.app-main` entirely, moved to new `<footer class="app-footer-ad">` after `.app-main`, sized as fixed 728×90 (`.ad-slot-banner`) instead of relying on flex/responsive sizing
+- **also:** switched from `renderUnit()` (responsive `data-full-width-responsive`) to new `renderFixedUnit()` — fixed-size units shouldn't use the responsive flag
+
+> **pattern:** same class as 260708/260709 — new container added without confirming it inherits a sizing path from its parent chain
+
 ## style.css apply fail
 - found in index.html, visible in dev tools, script.js loads fine
 - **cause:** nginx.conf root dir / index file setting

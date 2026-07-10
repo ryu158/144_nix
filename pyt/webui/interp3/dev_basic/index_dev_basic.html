@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Grid Data Entry</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -28,10 +29,11 @@
     <section class="panel panel-chart">
       <div id="chartContainer" class="panel-body"></div>
     </section>
-    <aside class="panel panel-ad">
-	    <div id="adContainer"></div>
-    </aside>
   </div>
+  <footer class="app-footer-ad">
+	  <div id="adContainer" class="ad-slot-banner"></div>
+  </footer>
+
 
 </div>
 
@@ -71,7 +73,7 @@
   }
   updateStatus();
   grid.on('change', updateStatus);
-  AdSenseModule.init('adContainer');
+  AdSenseModule.initFixed('adContainer', 728, 90);
   BmcModule.init();
 
   document.getElementById('plotBtn').addEventListener('click', () => {

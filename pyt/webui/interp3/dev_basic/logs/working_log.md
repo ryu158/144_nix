@@ -1,5 +1,17 @@
 # Working Log
 
+## 260710 — Ad repositioned: app-main → footer, fixed 728×90
+**task:** move banner out of side panel into bottom footer at real leaderboard size
+**approach:** additive — new footer section + new ad.js methods, old panel-ad rule left untouched
+
+- `index_dev_basic.html`: removed `<aside class="panel panel-ad">` from `.app-main`; added `<footer class="app-footer-ad">` after `.app-main` closes, containing `#adContainer`
+- `index_dev_basic.html`: init call swapped to `AdSenseModule.initFixed('adContainer', 728, 90)`
+- `style.css`: added `.app-footer-ad` (centered flex footer) + `.ad-slot-banner` (728×90, dashed border placeholder)
+- `ads.js`: added `renderFixedUnit()` + `initFixed()` — fixed-size sibling to existing responsive `renderUnit()`/`init()`, base methods untouched
+
+**open question:** confirm AdSense slot `9842525526` was created as a fixed 728×90 unit on Google's side, not responsive — mismatched slot type may ignore inline width/height
+**result:** layout wired, pending live-render confirmation once slot type is confirmed
+
 ## 260709 — Overlay Input/Output on interpolate chart
 **task:** Input (scatter) + Output (line) on one chart, Output behind Input
 **approach:** additive only, reused existing `renderLayers` draw-order in `Chart`

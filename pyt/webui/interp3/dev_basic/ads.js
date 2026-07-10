@@ -31,5 +31,23 @@ const AdSenseModule = {
     this.loadScript();
     const container = document.getElementById(containerId);
     if (container) this.renderUnit(container);
-  }
+  },
+
+	renderFixedUnit(container, width, height) {
+		const ins = document.createElement('ins');
+		ins.className = 'adsbygoogle';
+		ins.style.display = 'inline-block';
+		ins.style.width = `${width}px`;
+		ins.style.height = `${height}px`;
+		ins.setAttribute('data-ad-client', this.config.client);
+		ins.setAttribute('data-ad-slot', this.config.slot);
+		container.appendChild(ins);
+		(window.adsbygoogle = window.adsbygoogle || []).push({});
+	},
+
+	initFixed(containerId, width, height) {
+		this.loadScript();
+		const container = document.getElementById(containerId);
+		if (container) this.renderFixedUnit(container, width, height);
+	}
 };

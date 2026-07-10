@@ -73,6 +73,29 @@ body {
   max-width: 160px;
 }
 
+.app-footer-ad {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.ad-slot-banner {
+  width: 728px;
+  height: 90px;
+  max-width: 100%; /* graceful shrink on narrow viewports */
+  border: 1px dashed var(--border); /* remove once ads confirmed rendering */
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ad-slot {
+	min-height: 250px; /* reserves space for a standard rectangle unit before load */
+	border: 1px dashed var(--border); /* optional: visualize the reserved slot pre-approval */
+	border-radius: 6px;
+}
+
 .panel-body {
   flex: 1;
   min-height: 0;
