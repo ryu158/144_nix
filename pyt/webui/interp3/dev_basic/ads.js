@@ -5,15 +5,15 @@ const AdSenseModule = {
     slot: '9842525526'
   },
 
-  loadScript() {
-    if (document.querySelector('script[data-adsense-loader]')) return;
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${this.config.client}`;
-    script.crossOrigin = 'anonymous';
-    script.setAttribute('data-adsense-loader', 'true');
-    document.head.appendChild(script);
-  },
+loadScript() {
+  const existing = document.querySelector('script[src*="adsbygoogle.js"]');
+  if (existing) return;
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${this.config.client}`;
+  script.crossOrigin = 'anonymous';
+  document.head.appendChild(script);
+},
 
   renderUnit(container) {
     const ins = document.createElement('ins');

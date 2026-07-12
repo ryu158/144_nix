@@ -1,6 +1,7 @@
 # Error Log
 
 ## 260710 — Ad container zero-height + wrong placement
+- **update:** confirmed via AdSense dashboard's own generated snippet — client/slot/fixed-size markup in `renderFixedUnit()` matches Google's official code exactly. Ruled out slot-type mismatch. 400s isolated to pending site approval.
 - **found:** `#adContainer` inside `.panel-ad` had no height rule → `panel-body` class never applied to it (only sibling panels got it) → 0×0 collapse regardless of ad-serve status
 - **cause:** `.panel-ad` (flex child of `.app-main`) only reserved width (`flex: 0 0 160px`), no height path
 - **fix:** removed ad from `.app-main` entirely, moved to new `<footer class="app-footer-ad">` after `.app-main`, sized as fixed 728×90 (`.ad-slot-banner`) instead of relying on flex/responsive sizing
