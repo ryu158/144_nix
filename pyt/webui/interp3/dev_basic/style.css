@@ -51,6 +51,26 @@ body {
 }
 .primary-btn:hover { background: #1d4ed8; }
 
+.controls-row {
+	margin-top: 20px;
+	display: flex;
+	gap: 20px;
+	align-items: flex-end;
+	flex-wrap: wrap;
+}
+.field label {
+	display: block;
+	font-size: 13px;
+	color: #444;
+	margin-bottom: 4px;
+}
+.field input, .field select {
+	padding: 5px 8px;
+	font-size: 14px;
+	border: 1px solid #bbb;
+	border-radius: 4px;
+}
+
 .app-main {
   flex: 1;
   display: flex;
