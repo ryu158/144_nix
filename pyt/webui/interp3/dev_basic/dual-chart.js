@@ -159,30 +159,13 @@ function buildInputOutputMeta(dataA, dataB, opts = {}) {
 	return { inputMeta, outputMeta };
 }
 
-function plotBoth() {
-	const { inputMeta, outputMeta } = buildInputOutputMeta(grid.getData(), grid_2.getData(), {
-		labelA: 'Input',
-		labelB: 'Output'
+// Convenience wrapper: takes two GridTable instances directly (instead of
+// raw data2d), builds seriesMeta automatically, and renders both layers.
+// Generic — any page with two grids feeding one dual chart can use this.
+plotFromGrids(gridA, gridB, opts = {}) {
+	const { inputMeta, outputMeta } = buildInputOutputMeta(gridA.getData(), gridB.getData(), {
+		labelA: opts.labelA ?? 'Input',
+		labelB: opts.labelB ?? 'Output',
 	});
-	chart.renderInputOutput(grid.getData(), grid_2.getData(), { inputMeta, outputMeta });
-}
-
-// 👇 INSERT: pulls query X's from Output grid's column A
-function getQueryXs() {
-	return grid_2.getData()
-		.map(row => row[0])
-		.filter(v => v !== '' && v !== undefined && v !== null)
-		.map(Number)
-		.filter(x => !Number.isNaN(x));
-}
-
-// 👇 INSERT: computes Output from Input, writes it back, then plots
-function interpolateAndPlot() {
-	const inputData = grid.getData();
-	const queryXs = getQueryXs();
-	if (!queryXs.length) { plotBoth(); return; }
-
-	const outputTable = InterpEngine.buildOutputTable(inputData, queryXs);
-	grid_2.setData(outputTable);
-	plotBoth();
+	this.renderInputOutput(gridA.getData(), gridB.getData(), { inputMeta, outputMeta });
 }
