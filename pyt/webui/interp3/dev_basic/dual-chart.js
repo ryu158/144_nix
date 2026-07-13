@@ -38,8 +38,8 @@ class DualSeriesChart extends Chart {
 	// column index (1-based), same shape as setSeriesMeta() expects.
 	renderInputOutput(inputData2d, outputData2d, opts = {}) {
 		this.renderLayers([
-			{ data2d: outputData2d, showLines: true,  showPoints: false, seriesMeta: opts.outputMeta },
-			{ data2d: inputData2d,  showLines: false, showPoints: true,  seriesMeta: opts.inputMeta  },
+			{ data2d: outputData2d, showLines: false,  showPoints: true, seriesMeta: opts.outputMeta },
+			{ data2d: inputData2d,  showLines: true, showPoints: false,  seriesMeta: opts.inputMeta  },
 		]);
 	}
 
@@ -83,12 +83,13 @@ class DualSeriesChart extends Chart {
  * Combines two grid.getData() tables (each: col0 = X, col1..N = Y series)
  * into one table for DualSeriesChart, keeping Input and Output columns
  * separate so they render as distinct series with independent X domains.
- */
+ * Plotly Python color codes default - 
+*/
 function mergeGridsForChart(dataA, dataB, opts = {}) {
   const labelA = opts.labelA || 'Input';
   const labelB = opts.labelB || 'Output';
-  const colorsA = opts.colorsA || ['#2563eb', '#0891b2', '#4f46e5'];
-  const colorsB = opts.colorsB || ['#dc2626', '#d97706', '#db2777'];
+  const colorsA = opts.colorsA || ['#636EFA', '#EF553B', '#00CC96'];
+  const colorsB = opts.colorsB || ['#19D3F3', '#FF6692', '#B6E880'];
 
   const yColsA = Math.max(0, ...dataA.map(r => (r ? r.length : 0)), 1) - 1;
   const yColsB = Math.max(0, ...dataB.map(r => (r ? r.length : 0)), 1) - 1;
@@ -136,8 +137,8 @@ function mergeGridsForChart(dataA, dataB, opts = {}) {
 function buildInputOutputMeta(dataA, dataB, opts = {}) {
 	const labelA = opts.labelA || 'Input';
 	const labelB = opts.labelB || 'Output';
-	const colorsA = opts.colorsA || ['#2563eb', '#0891b2', '#4f46e5'];
-	const colorsB = opts.colorsB || ['#dc2626', '#d97706', '#db2777'];
+	const colorsA = opts.colorsA || ['#636EFA', '#EF553B', '#00CC96'];
+	const colorsB = opts.colorsB || ['#19D3F3', '#FF6692', '#B6E880'];
 
 	const yColsA = Math.max(0, ...dataA.map(r => (r ? r.length : 0)), 1) - 1;
 	const yColsB = Math.max(0, ...dataB.map(r => (r ? r.length : 0)), 1) - 1;
