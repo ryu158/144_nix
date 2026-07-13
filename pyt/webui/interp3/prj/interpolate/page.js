@@ -30,7 +30,7 @@ const chart = new DualSeriesChart(document.getElementById('chartContainer'), {
 });
 
 function plotBoth() {
-  chart.plotFromGrids(grid_2, grid, { labelA: 'Input', labelB: 'Output' });
+  chart.plotFromGrids(grid_2, grid, { labelA: 'Output', labelB: 'Input' });
 }
 
 function getQueryXs() {

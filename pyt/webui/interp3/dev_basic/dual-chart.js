@@ -88,8 +88,8 @@ class DualSeriesChart extends Chart {
 function mergeGridsForChart(dataA, dataB, opts = {}) {
   const labelA = opts.labelA || 'Input';
   const labelB = opts.labelB || 'Output';
-  const colorsA = opts.colorsA || ['#636EFA', '#EF553B', '#00CC96'];
-  const colorsB = opts.colorsB || ['#7F0000', '#FF6692', '#B6E880'];
+  const colorsA = opts.colorsA || ['#19D3F3', '#EF553B', '#B6E880'];
+  const colorsB = opts.colorsB || ['#636EFA', '#7F0000', '#00CC96'];
 
   const yColsA = Math.max(0, ...dataA.map(r => (r ? r.length : 0)), 1) - 1;
   const yColsB = Math.max(0, ...dataB.map(r => (r ? r.length : 0)), 1) - 1;
@@ -137,8 +137,8 @@ function mergeGridsForChart(dataA, dataB, opts = {}) {
 function buildInputOutputMeta(dataA, dataB, opts = {}) {
 	const labelA = opts.labelA || 'Input';
 	const labelB = opts.labelB || 'Output';
-	const colorsA = opts.colorsA || ['#636EFA', '#EF553B', '#00CC96'];
-	const colorsB = opts.colorsB || ['#7F0000', '#FF6692', '#B6E880'];
+	const colorsA = opts.colorsA || ['#19D3F3', '#EF553B', '#B6E880'];
+	const colorsB = opts.colorsB || ['#636EFA', '#7F0000', '#00CC96'];
 
 	const yColsA = Math.max(0, ...dataA.map(r => (r ? r.length : 0)), 1) - 1;
 	const yColsB = Math.max(0, ...dataB.map(r => (r ? r.length : 0)), 1) - 1;
