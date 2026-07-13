@@ -19,7 +19,7 @@ const grid_2 = new GridTable(document.getElementById('gridContainer_2'), {
   viewportHeight: '100%',
   viewportWidth: '100%',
   fixedColCount: true,
-  readOnly: false
+  readOnly: true
 });
 
 const chart = new DualSeriesChart(document.getElementById('chartContainer'), {
@@ -48,7 +48,6 @@ function getManualRangeXs() {
   return InterpEngine.generateRange(min, max, interval);
 }
 
-// 👇 INSERT NEAR interpolateAndPlot() 👇
 function interpolateAndPlotManual() {
   const inputData = grid.getData();
   const queryXs = getManualRangeXs();
@@ -59,7 +58,6 @@ function interpolateAndPlotManual() {
   plotBoth();
 }
 
-// 👇 INSERT AT BOTTOM, ALONGSIDE EXISTING LISTENERS 👇
 document.getElementById('genRangeBtn').addEventListener('click', interpolateAndPlotManual);
 
 function interpolateAndPlot() {
