@@ -38,6 +38,7 @@
 <script src="../../dev_basic/grid.js"></script>
 <script src="../../dev_basic/chart.js"></script>
 <script src="../../dev_basic/dual-chart.js"></script>
+<script src="interp_engine.js"></script>
 <script>
   const grid = new GridTable(document.getElementById('gridContainer'), {
     rows: 10,
@@ -71,8 +72,8 @@
 	  chart.renderInputOutput(grid.getData(), grid_2.getData(), { inputMeta, outputMeta });
   }
 
-  document.getElementById('plotBtn').addEventListener('click', plotBoth);
-  grid.on('change', plotBoth);
+  document.getElementById('plotBtn').addEventListener('click', interpolateAndPlot);
+  grid.on('change', interpolateAndPlot);
   grid_2.on('change', plotBoth);
 </script>
 
