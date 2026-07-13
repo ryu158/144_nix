@@ -1,5 +1,24 @@
 # Error Log
 
+## 260713 — dual-chart.js parse failure (DualSeriesChart never defined)
+- **found:** `plotFromGrids(...)` written as bare method-shorthand at top level, outside any class/object body
+- **cause:** invalid JS syntax outside a class → parse error for entire file → `DualSeriesChart` class never registers → `new DualSeriesChart(...)` fails in page.js
+- **fix:** moved to `DualSeriesChart.prototype.plotFromGrids = function(...)`, attached after class definition — class body itself untouched
+
+## 260713 — index_interpolate.html duplicate declarations
+- **found:** inline `<script>` block at bottom of HTML re-declared `const grid`, `grid_2`, `chart`, duplicate `.on('change', ...)` listeners — page.js already declares these
+- **cause:** `page.js` loads first via `<script src="page.js">`, inline block re-runs same `const` names in same top-level scope → `Identifier 'grid' has already been declared`, halts before inline block's plotBoth (which also skipped InterpEngine) ever runs
+- **fix:** removed inline script block entirely — page.js is sole source of grid/chart wiring
+
+## 260713 — interp_engine.js / page.js not loading on /interpolate
+- **found:** two copies of interp_engine.js and page.js exist — real ones in `prj/interpolate/`, stray duplicates in `dev_basic/` (stray copies contained unrelated link-map HTML, not JS)
+- **cause (files):** duplicate files left in dev_basic/ from earlier session, easy to edit/view wrong copy
+- **cause (paths):** relative script paths (`interp_engine.js`, `../interpolate/interp_engine.js`) resolve against served URL, not disk layout; `/interpolate` route ambiguous on trailing slash (nginx rewrite) → relative paths resolved one level off from actual `prj/interpolate/` folder
+- **fix:** switched to root-absolute paths (`/prj/interpolate/interp_engine.js`, `/prj/interpolate/page.js`) — confirmed correct against `root /home/opc/nix/pyt/webui/interp3;` in nginx config, works regardless of how `/interpolate` itself is routed
+- **note:** typo'd path `../../prj/interpolat/interp_engine.js` appeared to "work" — actually stale cached/already-defined `InterpEngine` from a prior successful load, not a real resolution
+
+> **pattern:** third occurrence of same root class of bug (260708, 260709, 260710) — file/path resolution issue disguised as a code bug; check served-URL + root config before assuming JS logic is wrong
+
 ## 260710 — Ad container zero-height + wrong placement
 - **update:** confirmed via AdSense dashboard's own generated snippet — client/slot/fixed-size markup in `renderFixedUnit()` matches Google's official code exactly. Ruled out slot-type mismatch. 400s isolated to pending site approval.
 - **found:** `#adContainer` inside `.panel-ad` had no height rule → `panel-body` class never applied to it (only sibling panels got it) → 0×0 collapse regardless of ad-serve status

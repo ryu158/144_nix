@@ -10,3 +10,7 @@
 - [x] google adsense integration — config placeholders not replaced
 - [ ] buy me a coffee integration — config placeholders not replaced
 - [ ] popup on BMC donation — no backend, client-only approx proposed
+- [x] fix dual-chart.js: plotFromGrids syntax error (floating method broke whole file parse)
+- [x] fix index_interpolate.html: duplicate inline script re-declaring grid/grid_2/chart
+- [x] diagnose interp_engine.js / page.js not loading — path resolution bug
+- [x] find + flag stray duplicate interp_engine.js / page.js inside dev_basic/

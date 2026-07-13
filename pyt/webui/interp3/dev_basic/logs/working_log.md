@@ -1,5 +1,23 @@
 # Working Log
 
+## 260713 — dual-chart.js + index_interpolate.html syntax/scope bugs fixed
+**task:** restore working input→interpolate→output→chart flow on interpolate page
+**approach:** fix syntax/scope errors only, no logic changes — existing InterpEngine/page.js flow was already correct in design
+
+- `dual-chart.js`: `plotFromGrids` moved from invalid top-level block to `DualSeriesChart.prototype.plotFromGrids`
+- `index_interpolate.html`: removed duplicate inline `<script>` block; `page.js` is now sole init source
+**result:** both files now valid, page.js's interpolateAndPlot → InterpEngine → grid_2.setData → plotBoth flow intact
+
+## 260713 — interp_engine.js / page.js path resolution fixed
+**task:** figure out why interp_engine.js / page.js failed to load under some relative paths but not others
+**approach:** traced disk layout vs served URL vs nginx root config, ruled out JS logic
+
+- confirmed duplicate stray `interp_engine.js` / `page.js` in `dev_basic/` (unrelated content) vs real files in `prj/interpolate/`
+- confirmed nginx `root /home/opc/nix/pyt/webui/interp3;` — root-absolute paths resolve directly off this
+- `index_interpolate.html`: script paths switched to root-absolute (`/prj/interpolate/interp_engine.js`, `/prj/interpolate/page.js`)
+**open item:** stray duplicate files in `dev_basic/` still on disk — recommend deleting to avoid future confusion
+**result:** path resolution now stable regardless of `/interpolate` route's trailing-slash behavior
+
 ## 260710 — Ad repositioned: app-main → footer, fixed 728×90
 **task:** move banner out of side panel into bottom footer at real leaderboard size
 **approach:** additive — new footer section + new ad.js methods, old panel-ad rule left untouched
