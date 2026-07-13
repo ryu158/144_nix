@@ -162,10 +162,13 @@ function buildInputOutputMeta(dataA, dataB, opts = {}) {
 // Convenience wrapper: takes two GridTable instances directly (instead of
 // raw data2d), builds seriesMeta automatically, and renders both layers.
 // Generic — any page with two grids feeding one dual chart can use this.
-plotFromGrids(gridA, gridB, opts = {}) {
+// 👇 FIX: attached via prototype instead of a bare method-shorthand block
+// (the original file had this floating at top level, which is invalid JS
+// outside a class/object body and threw a parse error for the whole file).
+DualSeriesChart.prototype.plotFromGrids = function (gridA, gridB, opts = {}) {
 	const { inputMeta, outputMeta } = buildInputOutputMeta(gridA.getData(), gridB.getData(), {
 		labelA: opts.labelA ?? 'Input',
 		labelB: opts.labelB ?? 'Output',
 	});
 	this.renderInputOutput(gridA.getData(), gridB.getData(), { inputMeta, outputMeta });
-}
+};

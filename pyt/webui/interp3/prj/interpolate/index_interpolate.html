@@ -40,43 +40,6 @@
 <script src="../../dev_basic/dual-chart.js"></script>
 <script src="interp_engine.js"></script>
 <script src="page.js"></script>
-<script>
-  const grid = new GridTable(document.getElementById('gridContainer'), {
-    rows: 10,
-    cols: 4,
-    viewportHeight: '100%',
-    viewportWidth: '100%',
-    fixedColCount: true
-  });
-
-  const grid_2 = new GridTable(document.getElementById('gridContainer_2'), {
-    rows: 10,
-    cols: 4,
-    viewportHeight: '100%',
-    viewportWidth: '100%',
-    fixedColCount: true,
-    readOnly: false
-  });
-
-  const chart = new DualSeriesChart(document.getElementById('chartContainer'), {
-    height: 'auto',
-    xLabel: 'X (column A)',
-    yLabel: 'Y',
-    aspectRatio: 16 / 9
-  });
-
-  function plotBoth() {
-	  const { inputMeta, outputMeta } = buildInputOutputMeta(grid.getData(), grid_2.getData(), {
-		  labelA: 'Input',
-		  labelB: 'Output'
-	  });
-	  chart.renderInputOutput(grid.getData(), grid_2.getData(), { inputMeta, outputMeta });
-  }
-
-  document.getElementById('plotBtn').addEventListener('click', interpolateAndPlot);
-  grid.on('change', interpolateAndPlot);
-  grid_2.on('change', plotBoth);
-</script>
 
 </body>
 </html>
