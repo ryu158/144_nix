@@ -73,8 +73,8 @@
   }
   updateStatus();
   grid.on('change', updateStatus);
-  // AdSenseModule.initFixed('adContainer', 728, 90);
-  AdSenseModule.init('adContainer');
+  AdSenseModule.initFixed('adContainer', 728, 90);
+  // AdSenseModule.init('adContainer');
   BmcModule.init();
 
   document.getElementById('plotBtn').addEventListener('click', () => {
