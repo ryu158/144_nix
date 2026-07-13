@@ -16,18 +16,17 @@
   <div class="app-toolbar">
 	  <span class="status" id="status"></span>
 	  <span class="manual-range-controls">
-		  <button id="plotBtn" class="primary-btn">interpolate</button>
 		  <div class="controls-row">
 			  <div class="field">
-				  <label for="outputXMin">New X start</label>
+				  <label for="outputXMin">Output X start</label>
 				  <input id="outputXMin" type="text" value="0" style="width: 90px;">
 			  </div>
 			  <div class="field">
-				  <label for="outputXMax">New X finish</label>
+				  <label for="outputXMax">Output X finish</label>
 				  <input id="outputXMax" type="text" value="1000", style="width: 90px;">
 			  </div>
 			  <div class="field">
-				  <label for="outputXInterval">New X interval</label>
+				  <label for="outputXInterval">Output X interval</label>
 				  <input id="outputXInterval" type="text" value="1", style="width: 90px;">
 			  </div>
 			  <div class="field">
@@ -39,7 +38,9 @@
 					  <option value="nearest">nearest</option>
 				  </select>
 			  </div>
-			  <button id="genRangeBtn" class="primary-btn">generate range</button>
+			  <button id="genRangeBtn" class="primary-btn">gen output X </button>
+
+			  <button id="plotBtn" class="primary-btn">interpolate</button>
 		  </div>
 	  </span>
   </div>
