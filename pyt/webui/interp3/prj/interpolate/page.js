@@ -41,6 +41,27 @@ function getQueryXs() {
     .filter(x => !Number.isNaN(x));
 }
 
+function getManualRangeXs() {
+  const min = document.getElementById('outputXMin').value;
+  const max = document.getElementById('outputXMax').value;
+  const interval = document.getElementById('outputXInterval').value;
+  return InterpEngine.generateRange(min, max, interval);
+}
+
+// 👇 INSERT NEAR interpolateAndPlot() 👇
+function interpolateAndPlotManual() {
+  const inputData = grid.getData();
+  const queryXs = getManualRangeXs();
+  if (!queryXs.length) { plotBoth(); return; }
+
+  const outputTable = InterpEngine.buildOutputTable(inputData, queryXs);
+  grid_2.setData(outputTable);
+  plotBoth();
+}
+
+// 👇 INSERT AT BOTTOM, ALONGSIDE EXISTING LISTENERS 👇
+document.getElementById('genRangeBtn').addEventListener('click', interpolateAndPlotManual);
+
 function interpolateAndPlot() {
   const inputData = grid.getData();
   const queryXs = getQueryXs();

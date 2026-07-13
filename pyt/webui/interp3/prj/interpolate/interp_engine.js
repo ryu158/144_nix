@@ -59,4 +59,16 @@ const InterpEngine = {
       return row;
     });
   },
+
+	// Public: generate an ascending array of query X's from min/max/interval.
+	// No side effects, no extrapolation logic here — just the range.
+	generateRange(xMinRaw, xMaxRaw, xIntervalRaw) {
+		const xMin = Number(xMinRaw), xMax = Number(xMaxRaw), xInterval = Number(xIntervalRaw);
+		if ([xMin, xMax, xInterval].some(Number.isNaN)) return [];
+		if (xInterval <= 0 || xMax < xMin) return [];
+		const steps = Math.floor((xMax - xMin) / xInterval + 1e-9);
+		const xs = [];
+		for (let i = 0; i <= steps; i++) xs.push(this._round(xMin + i * xInterval, 9));
+		return xs;
+	},
 };
