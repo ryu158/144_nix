@@ -20,15 +20,15 @@
 		  <div class="controls-row">
 			  <div class="field">
 				  <label for="outputXMin">New X start</label>
-				  <input id="outputXMin" type="text" value="0" style="width: 90px;">
+				  <input id="outputXMin" type="text" value-"0">
 			  </div>
 			  <div class="field">
 				  <label for="outputXMax">New X finish</label>
-				  <input id="outputXMax" type="text" value="1000", style="width: 90px;">
+				  <input id="outputXMax" type="text" value-"1000">
 			  </div>
 			  <div class="field">
 				  <label for="outputXInterval">New X interval</label>
-				  <input id="outputXInterval" type="text" value="1", style="width: 90px;">
+				  <input id="outputXInterval" type="text" value-"1">
 			  </div>
 			  <div class="field">
 				  <label for="methodSelect">Method</label>
