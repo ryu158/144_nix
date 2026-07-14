@@ -166,12 +166,17 @@ function buildInputOutputMeta(dataA, dataB, opts = {}) {
 // 👇 FIX: attached via prototype instead of a bare method-shorthand block
 // (the original file had this floating at top level, which is invalid JS
 // outside a class/object body and threw a parse error for the whole file).
-DualSeriesChart.prototype.plotFromGrids = function (gridA, gridB, opts = {}) {
-	const { inputMeta, outputMeta } = buildInputOutputMeta(gridA.getData(), gridB.getData(), {
-		labelA: opts.labelA ?? 'Input',
-		labelB: opts.labelB ?? 'Output',
+// Input = scatter dots, drawn first (back).
+// Output = line, drawn second (front).
+DualSeriesChart.prototype.plotFromGridsIndexed = function (gridA, gridB, opts = {}) {
+	const { inputMeta, outputMeta } = buildInputOutputMetaIndexed(gridA.getData(), gridB.getData(), {
+		suffixA: opts.suffixA ?? 'input',
+		suffixB: opts.suffixB ?? 'output',
 	});
-	this.renderInputOutput(gridA.getData(), gridB.getData(), { inputMeta, outputMeta });
+	this.renderLayers([
+		{ data2d: gridA.getData(), showLines: false, showPoints: true, seriesMeta: inputMeta  }, // input = dots, back
+		{ data2d: gridB.getData(), showLines: true,  showPoints: false, seriesMeta: outputMeta }, // output = line, front
+	]);
 };
 
 /**
