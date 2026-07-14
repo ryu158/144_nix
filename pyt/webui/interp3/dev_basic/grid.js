@@ -148,16 +148,15 @@ class GridTable {
     }
   }
 
-  static colLabel(n) {
-    let s = '', v = n + 1;
-    while (v > 0) {
-      const rem = (v - 1) % 26;
-      s = String.fromCharCode(65 + rem) + s;
-      v = Math.floor((v - 1) / 26);
-    }
-    return s;
-  }
+	static colLabel(n) {
+		let v = n + 1;
 
+		if (v === 1) {
+			return 'x';
+		} else {
+			return `y ${v - 1}`;
+		}
+	};
   _buildDom() {
     this.container.innerHTML = '';
     this.root = document.createElement('div');

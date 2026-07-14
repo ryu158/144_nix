@@ -379,3 +379,10 @@ body {
   background-color: #e5e7eb;
   margin: 4px 0;
 }
+/* Forces legend items after this point onto a new row (used to separate
+the Input group from the Output group). Purely additive — new class. */
+	.ct-legend-break {
+		flex-basis: 100%;
+		height: 0;
+	}
+

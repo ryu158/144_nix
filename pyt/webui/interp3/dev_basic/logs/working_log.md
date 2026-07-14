@@ -1,5 +1,8 @@
 # Working Log
 
+
+## 260713 — grid.js colLabel function change from alphabet to x,y1,y2...
+
 ## 260713 — dual-chart.js + index_interpolate.html syntax/scope bugs fixed
 **task:** restore working input→interpolate→output→chart flow on interpolate page
 **approach:** fix syntax/scope errors only, no logic changes — existing InterpEngine/page.js flow was already correct in design

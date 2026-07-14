@@ -173,3 +173,132 @@ DualSeriesChart.prototype.plotFromGrids = function (gridA, gridB, opts = {}) {
 	});
 	this.renderInputOutput(gridA.getData(), gridB.getData(), { inputMeta, outputMeta });
 };
+
+/**
+ * Header-based legend naming (additive extension).
+ * Reads column names from row 0 of grid.getData() — col0 is the X header,
+ * col1..N are the Y-series headers — instead of always using "Input B" etc.
+ * Falls back to the original colLabel-based name if a header cell is blank.
+ */
+function _extractHeaderLabels(data2d) {
+	const headerRow = (data2d && data2d[0]) || [];
+	return headerRow.map(v => (v ?? '').toString().trim());
+}
+
+function buildInputOutputMetaFromHeaders(dataA, dataB, opts = {}) {
+	const labelA = opts.labelA || 'Input';
+	const labelB = opts.labelB || 'Output';
+	const colorsA = opts.colorsA || ['#19D3F3', '#EF553B', '#B6E880'];
+	const colorsB = opts.colorsB || ['#636EFA', '#7F0000', '#00CC96'];
+
+	const headersA = _extractHeaderLabels(dataA);
+	const headersB = _extractHeaderLabels(dataB);
+
+	const yColsA = Math.max(0, ...dataA.map(r => (r ? r.length : 0)), 1) - 1;
+	const yColsB = Math.max(0, ...dataB.map(r => (r ? r.length : 0)), 1) - 1;
+
+	const inputMeta = {};
+	for (let c = 0; c < yColsA; c++) {
+		const headerName = headersA[c + 1];
+		inputMeta[c + 1] = {
+			label: headerName || (yColsA > 1 ? `${labelA} ${Chart.colLabel(c + 1)}` : labelA),
+			color: colorsA[c % colorsA.length],
+		};
+	}
+	const outputMeta = {};
+	for (let c = 0; c < yColsB; c++) {
+		const headerName = headersB[c + 1];
+		outputMeta[c + 1] = {
+			label: headerName || (yColsB > 1 ? `${labelB} ${Chart.colLabel(c + 1)}` : labelB),
+			color: colorsB[c % colorsB.length],
+		};
+	}
+	return { inputMeta, outputMeta };
+}
+
+// New prototype method, parallel to the existing plotFromGrids, but using
+// header-row-derived legend labels instead of auto-generated column letters.
+DualSeriesChart.prototype.plotFromGridsWithHeaders = function (gridA, gridB, opts = {}) {
+	const { inputMeta, outputMeta } = buildInputOutputMetaFromHeaders(gridA.getData(), gridB.getData(), {
+		labelA: opts.labelA ?? 'Input',
+		labelB: opts.labelB ?? 'Output',
+	});
+	this.renderInputOutput(gridA.getData(), gridB.getData(), { inputMeta, outputMeta });
+};
+
+/**
+ * Positional legend naming (additive extension).
+ * Produces labels like y1_input, y2_input, ... and y1_output, y2_output, ...
+ * based purely on column position within each dataset — no header lookup.
+ */
+function buildInputOutputMetaIndexed(dataA, dataB, opts = {}) {
+	const suffixA = opts.suffixA || 'input';
+	const suffixB = opts.suffixB || 'output';
+	const colorsA = opts.colorsA || ['#19D3F3', '#EF553B', '#B6E880'];
+	const colorsB = opts.colorsB || ['#636EFA', '#7F0000', '#00CC96'];
+
+	const yColsA = Math.max(0, ...dataA.map(r => (r ? r.length : 0)), 1) - 1;
+	const yColsB = Math.max(0, ...dataB.map(r => (r ? r.length : 0)), 1) - 1;
+
+	const inputMeta = {};
+	for (let c = 0; c < yColsA; c++) {
+		inputMeta[c + 1] = { label: `y${c + 1}_${suffixA}`, color: colorsA[c % colorsA.length] };
+	}
+	const outputMeta = {};
+	for (let c = 0; c < yColsB; c++) {
+		outputMeta[c + 1] = { label: `y${c + 1}_${suffixB}`, color: colorsB[c % colorsB.length] };
+	}
+	return { inputMeta, outputMeta };
+}
+
+// New convenience entry point, parallel to plotFromGrids/plotFromGridsWithHeaders.
+DualSeriesChart.prototype.plotFromGridsIndexed = function (gridA, gridB, opts = {}) {
+	const { inputMeta, outputMeta } = buildInputOutputMetaIndexed(gridA.getData(), gridB.getData(), {
+		suffixA: opts.suffixA ?? 'input',
+		suffixB: opts.suffixB ?? 'output',
+	});
+	// renderInputOutput (existing, untouched) keeps output-behind/input-front
+	// draw order intact — only the *labels* change here.
+	this.renderInputOutput(gridA.getData(), gridB.getData(), { inputMeta, outputMeta });
+};
+
+/**
+ * Legend grouping override (new method — DualSeriesChart doesn't currently
+ * define _renderLegend, so this is an addition, not a modification of
+ * inherited Chart behavior). Groups legend entries by "_input"/"_output"
+ * label suffix so Input items render together, then Output items on their
+ * own row, regardless of internal series draw order (which must stay
+ * output-behind/input-front for correct chart layering).
+ */
+DualSeriesChart.prototype._renderLegend = function () {
+	if (!this.showLegend) { this.legendEl.innerHTML = ''; return; }
+	this.legendEl.innerHTML = '';
+
+	const isInput = s => /_input$/.test(s.label);
+	const isOutput = s => /_output$/.test(s.label);
+
+	const inputSeries = this._series.filter(isInput);
+	const outputSeries = this._series.filter(isOutput);
+	const otherSeries = this._series.filter(s => !isInput(s) && !isOutput(s));
+
+	const appendGroup = (group) => {
+		group.forEach(s => {
+			const item = document.createElement('span');
+			item.className = 'ct-legend-item';
+			const swatch = document.createElement('span');
+			swatch.className = 'ct-legend-swatch';
+			swatch.style.background = s.color;
+			item.append(swatch, document.createTextNode(s.label));
+			this.legendEl.appendChild(item);
+		});
+	};
+
+	appendGroup(inputSeries);
+	if (inputSeries.length && outputSeries.length) {
+		const rowBreak = document.createElement('span');
+		rowBreak.className = 'ct-legend-break';
+		this.legendEl.appendChild(rowBreak);
+	}
+	appendGroup(outputSeries);
+	appendGroup(otherSeries);
+};
