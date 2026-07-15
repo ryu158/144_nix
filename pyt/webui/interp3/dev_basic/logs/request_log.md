@@ -13,4 +13,9 @@
 - [x] fix dual-chart.js: plotFromGrids syntax error (floating method broke whole file parse)
 - [x] fix index_interpolate.html: duplicate inline script re-declaring grid/grid_2/chart
 - [x] diagnose interp_engine.js / page.js not loading — path resolution bug
-- [x] find + flag stray duplicate interp_engine.js / page.js inside dev_basic/
+- [x] find + flag stray duplicate interp_engine.js / page.js inside dev_basic/; update
+- [x] markdown function/class summaries generated for grid.js, chart.js, dual-chart.js, style.css
+- [x] dual chart legend: show positional column names (y1_input, y2_input, ... / y1_output, ...) instead of auto-generated Input B/Input C labels
+- [x] dual chart legend: group Input series on one row, Output series on next row
+- [x] fix dual-chart.js: duplicate plotFromGridsIndexed definition reversing scatter/line shapes (grid=Input=scatter/back, grid_2=Output=line/front now consistent)
+- [x] reduce scatter point size via pointRadius option in page.js chart init

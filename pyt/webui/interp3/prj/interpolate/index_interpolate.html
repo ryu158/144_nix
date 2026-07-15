@@ -10,62 +10,84 @@
 </head>
 <body>
 
-<div id="app">
+	<div id="app">
+		<header class="app-header">
+			<div class="controls-row">
+				<div class="field">
+					<h1>Interpolate Calculator</h1>
+				</div>
+				<div class="field">
+					<script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'>
+					</script>
+					<script type='text/javascript'>kofiwidget2.init('Buy me a coffee?', '#21c2b5', 'N6P8238CBS');kofiwidget2.draw();
+					</script>
+				</div>
+		</header>
 
-  <header class="app-header">
-    <h1>Interpolate Calculator</h1>
-  </header>
-
-  <div class="app-toolbar">
-	  <span class="status" id="status"></span>
-	  <span class="manual-range-controls">
-		  <div class="controls-row">
-			  <div class="field">
-				  <label for="outputXMin">Output X start</label>
-				  <input id="outputXMin" type="text" value="0" style="width: 90px;">
-			  </div>
-			  <div class="field">
-				  <label for="outputXMax">Output X finish</label>
-				  <input id="outputXMax" type="text" value="1000", style="width: 90px;">
-			  </div>
-			  <div class="field">
-				  <label for="outputXInterval">Output X interval</label>
-				  <input id="outputXInterval" type="text" value="1", style="width: 90px;">
-			  </div>
-			  <div class="field">
-				  <label for="methodSelect">Method</label>
-				  <select id="methodSelect">
-					  <option value="linear">linear</option>
-				  </select>
-			  </div>
-			  <button id="genRangeBtn" class="primary-btn">interpolate</button>
-		  </div>
-	  </span>
-  </div>
+		<div class="app-toolbar">
+			<span class="status" id="status"></span>
+			<span class="manual-range-controls">
+				<div class="controls-row">
+					<div class="field">
+						<label for="outputXMin">Output X start</label>
+						<input id="outputXMin" type="text" value="0" style="width: 90px;">
+					</div>
+					<div class="field">
+						<label for="outputXMax">Output X finish</label>
+						<input id="outputXMax" type="text" value="1000", style="width: 90px;">
+					</div>
+					<div class="field">
+						<label for="outputXInterval">Output X interval</label>
+						<input id="outputXInterval" type="text" value="1", style="width: 90px;">
+					</div>
+					<div class="field">
+						<label for="methodSelect">Method</label>
+						<select id="methodSelect">
+							<option value="linear">linear</option>
+						</select>
+					</div>
+					<button id="genRangeBtn" class="primary-btn">interpolate</button>
 
 
-  <div class="app-main">
-    <section class="panel panel-grid" style="flex: 1;">
-      <h2>Input</h2>
-      <div id="gridContainer" class="panel-body"></div>
-    </section>
-    <section class="panel panel-grid" style="flex: 1;">
-      <h2>Output</h2>
-      <div id="gridContainer_2" class="panel-body"></div>
-    </section>
-    <section class="panel panel-chart">
-      <h2>Results</h2>
-      <div id="chartContainer" class="panel-body"></div>
-    </section>
-  </div>
+					
 
-</div>
+					<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+					<script>
+						kofiWidgetOverlay.draw('shinyoungryu', {
+							'type': 'floating-chat',
+							'floating-chat.donateButton.text': 'Tip Me',
+							'floating-chat.donateButton.background-color': '#00bfa5',
+							'floating-chat.donateButton.text-color': '#fff'
+						});
+					</script>
 
-<script src="/dev_basic/grid.js"></script>
-<script src="/dev_basic/chart.js"></script>
-<script src="/dev_basic/dual-chart.js"></script>
-<script src="/prj/interpolate/interp_engine.js"></script>
-<script src="/prj/interpolate/page.js"></script>
+				</div>
+			</span>
+		</div>
+
+
+		<div class="app-main">
+			<section class="panel panel-grid" style="flex: 1;">
+				<h2>Input</h2>
+				<div id="gridContainer" class="panel-body"></div>
+			</section>
+			<section class="panel panel-grid" style="flex: 1;">
+				<h2>Output</h2>
+				<div id="gridContainer_2" class="panel-body"></div>
+			</section>
+			<section class="panel panel-chart">
+				<h2>Results</h2>
+				<div id="chartContainer" class="panel-body"></div>
+			</section>
+		</div>
+
+	</div>
+
+	<script src="/dev_basic/grid.js"></script>
+	<script src="/dev_basic/chart.js"></script>
+	<script src="/dev_basic/dual-chart.js"></script>
+	<script src="/prj/interpolate/interp_engine.js"></script>
+	<script src="/prj/interpolate/page.js"></script>
 
 </body>
 </html>

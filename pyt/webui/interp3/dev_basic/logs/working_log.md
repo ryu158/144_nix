@@ -1,5 +1,26 @@
 # Working Log
 
+## 260714 — Dual chart legend: positional naming, grouping, and scatter/line reversal fix
+**task:** legend should show input/output series by position (y1_input, y2_input, ... / y1_output, ...) instead of auto-generated column-letter labels, grouped Input-then-Output, with input as scatter (back) and output as line (front)
+**approach:** additive-first (new functions/methods alongside existing ones), then a targeted deletion once a duplicate definition was found causing a visual regression
+
+- `dual-chart.js`: added `buildInputOutputMetaIndexed()` — builds `y#_input`/`y#_output` seriesMeta maps by column position, no header/grid-name lookup
+- `dual-chart.js`: added `DualSeriesChart.prototype.plotFromGridsIndexed()` — calls `renderLayers` directly (input=dots/back, output=line/front), bypassing the existing `renderInputOutput` override
+- `dual-chart.js`: added `DualSeriesChart.prototype._renderLegend()` override — groups legend items by `_input`/`_output` label suffix onto separate rows, independent of internal series draw order
+- `style.css`: added `.ct-legend-break` (forces legend row wrap between Input and Output groups)
+- `page.js`: `plotBoth()` switched to `chart.plotFromGridsIndexed(grid, grid_2)`
+
+**bug found:** a second, later `plotFromGridsIndexed` definition existed in `dual-chart.js` (from an earlier header-based-labels attempt) and silently overwrote the first — it called the old `renderInputOutput` override instead of `renderLayers` directly, so labels stayed correct but scatter/line shapes and draw order came out reversed
+- **fix:** deleted the second, incorrect `plotFromGridsIndexed` definition — kept the first; see error_log 260714
+
+**also:**
+- `page.js`: added `pointRadius: 2.5` to `DualSeriesChart` construction options (default 3.5) — smaller scatter dots
+- generated standalone markdown function/class summaries for `grid.js`, `chart.js`, `dual-chart.js`, `style.css`
+
+**leftover from this session (not removed, flagged only):** `plotFromGridsWithHeaders()` + `buildInputOutputMetaFromHeaders()` in `dual-chart.js` — superseded by the indexed approach, currently unused dead code
+**result:** legend now reads `y1_input, y2_input, ... / y1_output, y2_output, ...` on two grouped rows; input renders as smaller scatter dots behind, output as line in front — matches confirmed rules (grid=Input=scatter/back, grid_2=Output=line/front)
+
+---
 
 ## 260713 — grid.js colLabel function change from alphabet to x,y1,y2...
 

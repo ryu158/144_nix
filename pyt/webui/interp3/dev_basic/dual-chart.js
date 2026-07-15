@@ -193,8 +193,8 @@ function _extractHeaderLabels(data2d) {
 function buildInputOutputMetaFromHeaders(dataA, dataB, opts = {}) {
 	const labelA = opts.labelA || 'Input';
 	const labelB = opts.labelB || 'Output';
-	const colorsA = opts.colorsA || ['#19D3F3', '#EF553B', '#B6E880'];
-	const colorsB = opts.colorsB || ['#636EFA', '#7F0000', '#00CC96'];
+	const colorsA = opts.colorsA || ['#636EFA', '#7F0000', '#00CC96'];
+	const colorsB = opts.colorsB || ['#19D3F3', '#EF553B', '#B6E880'];
 
 	const headersA = _extractHeaderLabels(dataA);
 	const headersB = _extractHeaderLabels(dataB);
@@ -239,8 +239,8 @@ DualSeriesChart.prototype.plotFromGridsWithHeaders = function (gridA, gridB, opt
 function buildInputOutputMetaIndexed(dataA, dataB, opts = {}) {
 	const suffixA = opts.suffixA || 'input';
 	const suffixB = opts.suffixB || 'output';
-	const colorsA = opts.colorsA || ['#19D3F3', '#EF553B', '#B6E880'];
-	const colorsB = opts.colorsB || ['#636EFA', '#7F0000', '#00CC96'];
+	const colorsA = opts.colorsA || ['#636EFA', '#7F0000', '#00CC96'];
+	const colorsB = opts.colorsB || ['#19D3F3', '#EF553B', '#B6E880'];
 
 	const yColsA = Math.max(0, ...dataA.map(r => (r ? r.length : 0)), 1) - 1;
 	const yColsB = Math.max(0, ...dataB.map(r => (r ? r.length : 0)), 1) - 1;
@@ -255,17 +255,6 @@ function buildInputOutputMetaIndexed(dataA, dataB, opts = {}) {
 	}
 	return { inputMeta, outputMeta };
 }
-
-// New convenience entry point, parallel to plotFromGrids/plotFromGridsWithHeaders.
-DualSeriesChart.prototype.plotFromGridsIndexed = function (gridA, gridB, opts = {}) {
-	const { inputMeta, outputMeta } = buildInputOutputMetaIndexed(gridA.getData(), gridB.getData(), {
-		suffixA: opts.suffixA ?? 'input',
-		suffixB: opts.suffixB ?? 'output',
-	});
-	// renderInputOutput (existing, untouched) keeps output-behind/input-front
-	// draw order intact — only the *labels* change here.
-	this.renderInputOutput(gridA.getData(), gridB.getData(), { inputMeta, outputMeta });
-};
 
 /**
  * Legend grouping override (new method — DualSeriesChart doesn't currently

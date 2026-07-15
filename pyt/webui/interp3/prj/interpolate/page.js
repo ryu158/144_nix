@@ -26,7 +26,8 @@ const chart = new DualSeriesChart(document.getElementById('chartContainer'), {
   height: 'auto',
   xLabel: 'X (column A)',
   yLabel: 'Y',
-  aspectRatio: 16 / 9
+  aspectRatio: 16 / 9,
+  pointRadius: 2.5
 });
 
 function plotBoth() {

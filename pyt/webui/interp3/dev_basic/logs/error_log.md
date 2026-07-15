@@ -1,5 +1,13 @@
 # Error Log
 
+## 260714 — dual-chart.js: legend correct but scatter/line shapes reversed
+- **found:** two separate `DualSeriesChart.prototype.plotFromGridsIndexed` definitions existed in the same file — a later one silently overwrote the earlier, correct one (last assignment to the same prototype property wins in JS)
+- **cause:** the later definition called the old `renderInputOutput` override (input=line/front, output=dots/back) instead of building the layer array directly — labels stayed correct (still sourced from `buildInputOutputMetaIndexed`), but draw shape/order flipped
+- **fix:** deleted the second, incorrect `plotFromGridsIndexed` definition; kept the first (input=dots/back, output=line/front), matching confirmed rules: `grid`=Input=scatter/back, `grid_2`=Output=line/front
+- **also confirmed:** `page.js`'s `plotBoth()` was already correct (`plotFromGridsIndexed(grid, grid_2)`) — bug was isolated entirely to `dual-chart.js`
+
+> **pattern:** fourth occurrence of same root class of bug (260708, 260709, 260710, 260713) — but this variant is new: not a missing/stale file, a **duplicate same-name definition inside one file** silently shadowing the correct version. Same lesson though — symptom (wrong visual output) looked like a logic bug but was actually a "which code is really running" problem; grep for duplicate method/function names before re-debugging logic.
+
 ## 260713 — dual-chart.js parse failure (DualSeriesChart never defined)
 - **found:** `plotFromGrids(...)` written as bare method-shorthand at top level, outside any class/object body
 - **cause:** invalid JS syntax outside a class → parse error for entire file → `DualSeriesChart` class never registers → `new DualSeriesChart(...)` fails in page.js
