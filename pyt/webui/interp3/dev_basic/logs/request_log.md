@@ -19,3 +19,4 @@
 - [x] dual chart legend: group Input series on one row, Output series on next row
 - [x] fix dual-chart.js: duplicate plotFromGridsIndexed definition reversing scatter/line shapes (grid=Input=scatter/back, grid_2=Output=line/front now consistent)
 - [x] reduce scatter point size via pointRadius option in page.js chart init
+- [x] insert ko-fi (buy me a coffee), insert links, index_interpolate.html style.css
