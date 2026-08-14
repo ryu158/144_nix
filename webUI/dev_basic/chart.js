@@ -81,13 +81,6 @@ class Chart {
 		return this._series;
 	}
 
-	destroy() {
-		if (this._resizeHandler) {
-			window.removeEventListener('resize', this._resizeHandler);
-		}
-		this.container.innerHTML = '';
-	}
-
 	/* ---------------- Core Internal Mechanics ---------------- */
 
 	_requestDraw() {

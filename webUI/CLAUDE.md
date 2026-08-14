@@ -8,15 +8,18 @@ Static HTML/CSS/JS site, served by nginx with document root pointed at
 `interp3/`. No build step, no bundler, no framework — vanilla JS only.
 
 - `dev_basic/` — canonical shared components (`chart.js`, `dual-chart.js`,
-  `grid.js`, `ads.js`, `bmc.js`, `style.css`). **`prj/dev_basic/` is a stale
-  duplicate — always edit the root `dev_basic/`, never `prj/dev_basic/`.**
+  `grid.js`, `ads.js`, `bmc.js`, `style.css`). A stale duplicate used to
+  live at `prj/dev_basic/`; it has been deleted — always edit the root
+  `dev_basic/`.
 - `prj/interpolate/` — the interpolation calculator (`interp_engine.js`,
   `page.js`, `index_interpolate.html`). Linear interpolation only.
 - `prj/test/` — an earlier standalone prototype (Chart.js via CDN, inline TS
   namespace, supports quadratic/cubic/nearest interpolation too). Not part
   of the main grid/chart pipeline.
-- Root `index.html` is currently a broken placeholder (byte-identical to
-  `flake.nix`), not a real homepage.
+- Root `index.html` is a simple link-map homepage (buttons to
+  Interpolate / dev_basic / test), not `flake.nix`-placeholder content
+  anymore. Uses root-absolute paths (`/dev_basic/style.css`) like the rest
+  of the site.
 
 See `project_plan.md` (repo root, one level up) for the overall project
 vision — a tech blog + a "practice" (real-data calculation) section, of
@@ -47,7 +50,9 @@ whether the route has a trailing slash.
 JS object literals here define methods positionally — if the same method
 name is assigned twice on one object, the last one silently wins. Before
 debugging "wrong" behavior in `chart.js`/`grid.js`/etc., grep for duplicate
-method definitions on the object first.
+method definitions on the object first. (`chart.js` had a duplicate
+`destroy()` from this pattern; fixed 2026-08-14 — kept the later, more
+complete definition.)
 
 ## Local dev
 
