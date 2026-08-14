@@ -1,5 +1,73 @@
 # Working Log
 
+## 260814 — Cleanup pass: dead code, stale duplicate, path convention, stale docs
+**task:** user asked for an optimization review (report-only first, then "fix all")
+**approach:** additive/low-risk fixes only — no refactors
+
+- `chart.js`: removed the dead first `destroy()` definition (object-literal
+  gotcha — second definition was already winning and is more complete,
+  also cleans up `_documentClickHandler`)
+- deleted stale `prj/dev_basic/` (228K, full duplicate of root `dev_basic/`
+  including its own nested `backup/`) — flagged as do-not-edit in
+  `CLAUDE.md` for a while, now actually gone
+- `index.html` (root): stylesheet link changed from relative
+  `./dev_basic/style.css` to root-absolute `/dev_basic/style.css`
+- `CLAUDE.md`: corrected stale "index.html is a broken placeholder"
+  description (it's a real link-map homepage now), removed references to
+  the now-deleted `prj/dev_basic/`, noted the chart.js fix under the
+  object-literal gotcha
+- wrote `project_summary.md` (repo root) — plain-language project summary
+- `.claude/hooks/block-prj-dev-basic.sh` left in place as a no-op safety
+  net in case `prj/dev_basic/` ever gets recreated
+**result:** all four flagged items fixed; logged in `claude_log/2026-08-14.md`
+
+## 260814 — Interpolate blog post added
+**task:** writeup explaining how the interpolation calculator works, per
+`project_plan.md`'s tech-blog vision
+**approach:** static content page, reuses shared header/button styling
+
+- new page written explaining: linear interpolation math, the binary-search
+  bracket lookup in `interp_engine.js`, why extrapolation is rejected
+  (returns blank instead of guessing), the shared grid/chart data contract,
+  and the two ways the page picks output X's
+- user relocated the page to `prj/interpolate/interpolate_blog.html`
+  (alongside the calculator) and wired the calculator's "❓interpolation"
+  header link in `index_interpolate.html` to point at it
+**result:** `prj/interpolate/interpolate_blog.html` live, linked from the calculator
+
+## 260814 — Blog styles consolidated into dev_basic/style.css
+**task:** integrate the blog page's design with the calculator instead of
+duplicating styles per-page
+**approach:** tried a separate shared `prj/interpolate/interpolate.css`
+first; user preferred folding it into the canonical `dev_basic/style.css`
+so the whole project shares one stylesheet — reverted the per-folder file,
+redid it in the canonical file
+
+- `style.css`: added `.post`/`.post h1`/`.post h2`/`.post pre`/`.post code`/
+  `.post .note` article-prose rules, plus `body.blog-page { overflow: auto; }`
+  scoped so it doesn't affect the calculator's fixed-viewport layout
+- body/list text uses `var(--header-fg)` (soft grey `#6b7280`, same as the
+  calculator's labels) instead of near-black, per user request for
+  "a little bit grey" text
+- `interpolate_blog.html`: removed inline `<style>` block, added
+  `class="blog-page"` to `<body>`, now only links `/dev_basic/style.css`
+**result:** one shared stylesheet drives both the calculator and the blog page
+
+## 260814 — Header vertical alignment fix
+**task:** "webUI blog" heading and the Calculator/Home buttons weren't
+aligned vertically in the header
+**finding:** shared `.controls-row` (`align-items: flex-end`) and
+`.teal-button-link` (`margin: 25px -5px`) were tuned for the toolbar's
+label-above-input fields, not a plain heading+buttons header row
+
+- `style.css`: added `.app-header .controls-row { align-items: center; margin-top: 0; }`
+  and `.app-header .teal-button-link { margin-top: 0; margin-bottom: 0; }`
+  overrides, scoped to the header so the toolbar row is unaffected
+**result:** heading and header buttons now share a baseline on both
+`index_interpolate.html` and `interpolate_blog.html`
+
+---
+
 ## 260714 — Dual chart legend: positional naming, grouping, and scatter/line reversal fix
 **task:** legend should show input/output series by position (y1_input, y2_input, ... / y1_output, ...) instead of auto-generated column-letter labels, grouped Input-then-Output, with input as scatter (back) and output as line (front)
 **approach:** additive-first (new functions/methods alongside existing ones), then a targeted deletion once a duplicate definition was found causing a visual regression

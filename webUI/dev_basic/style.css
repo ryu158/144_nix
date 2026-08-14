@@ -32,6 +32,15 @@ body {
 
 .app-header { flex: none; }
 
+.app-header .controls-row {
+  margin-top: 0;
+  align-items: center; /* .controls-row defaults to flex-end for label+input toolbar fields; the header just has a heading + buttons */
+}
+.app-header .teal-button-link {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .app-toolbar {
   flex: none;
   display: flex;
@@ -416,9 +425,55 @@ body {
   transition: background-color 0.2s ease, transform 0.2s ease; 
 }
 .teal-button-link:hover {
-  background-color: #00bfa5;  
-  color: #ffffff;          
-  text-decoration: none;  
-  
-  transform: scale(1.02);       
+  background-color: #00bfa5;
+  color: #ffffff;
+  text-decoration: none;
+
+  transform: scale(1.02);
+}
+
+/* ---- Blog / article pages (e.g. interpolate_blog.html) ---- */
+body.blog-page { overflow: auto; } /* articles run taller than the viewport; calculator pages keep overflow:hidden */
+
+/* header shares the post's max-width so both start at the same left edge */
+body.blog-page .app-header {
+  max-width: 720px;
+}
+
+.post {
+  max-width: 720px;
+  padding-bottom: 60px;
+}
+.post h1 { margin-bottom: 4px; }
+.post .subtitle { color: var(--header-fg); font-size: 15px; margin-bottom: 28px; }
+.post h2 { margin-top: 36px; font-size: 20px; }
+.post p, .post li {
+  line-height: 1.65;
+  font-size: 15px;
+  color: var(--header-fg); /* soft grey body text, matches the calculator's label/header grey */
+}
+.post code {
+  background: var(--header-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.post pre {
+  background: #1a1a1a;
+  color: #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.post pre code { background: none; border: none; padding: 0; color: inherit; }
+.post .note {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg);
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
 }

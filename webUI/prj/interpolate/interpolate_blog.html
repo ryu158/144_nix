@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Linear Interpolation: The Math Behind Estimating Between Data Points</title>
+<meta name="description" content="A plain explanation of linear interpolation: the formula, where it comes from, why the straight-line assumption is only ever an approximation, and why interpolation stops being reliable once you step outside the known data.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://ryuora144.duckdns.org/blog/interpolate">
+<link rel="stylesheet" href="/dev_basic/style.css">
+</head>
+<body class="blog-page">
+  <div id="app" style="height: auto;">
+    <header class="app-header">
+      <div class="controls-row">
+        <div class="field">
+          <h1 style="margin:0;">Interpolation❓</h1>
+        </div>
+        <a href="/prj/interpolate/index_interpolate.html" class="teal-button-link">
+          <strong>🧮 Try the calculator</strong>
+        </a>
+        <a href="https://ryuora144.duckdns.org" class="teal-button-link">
+          <strong>🏠 Home</strong>
+        </a>
+      </div>
+    </header>
+
+    <article class="post">
+      <div class="controls-row">
+        <h1>Linear Interpolation</h1>
+        <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+        <script
+          type='text/javascript'>kofiwidget2.init('Buy me a coffee?', '#21c2b5', 'N6P8238CBS'); kofiwidget2.draw();</script>
+      </div>
+      <p style="color: black; font-weight: bold;">The Math Behind Estimating Between Data Points
+      <p>
+      <p class="subtitle">What it means to estimate a value between two known points, where the formula comes from, and why that estimate stops being trustworthy once you step outside the data.</p>
+
+      <h2>What interpolation is</h2>
+      <p>
+        Say you know a quantity <code>y</code> at two points,
+        <code>x1</code> and <code>x2</code>, but not at some <code>x</code>
+        in between. Interpolation is the act of estimating that missing
+        value using only the neighbors you already have. It makes no claim
+        about the true underlying process — it's a best guess built from an
+        assumption about how <code>y</code> behaves between the points you
+        do know.
+      </p>
+
+      <h2>The straight-line assumption</h2>
+      <p>
+        The simplest assumption is that <code>y</code> changes at a constant
+        rate between <code>x1</code> and <code>x2</code> — in other words,
+        that a straight line connects <code>(x1, y1)</code> and
+        <code>(x2, y2)</code>. That's linear interpolation. Once you accept
+        that assumption, the value at any <code>x</code> between them is
+        fixed by simple geometry: it's the same fraction of the way from
+        <code>y1</code> to <code>y2</code> as <code>x</code> is from
+        <code>x1</code> to <code>x2</code>.
+      </p>
+
+      <h2>Deriving the formula</h2>
+      <p>
+        Call that fraction <code>t</code> — how far across the gap in
+        <code>x</code> our query point sits, from 0 (at <code>x1</code>) to
+        1 (at <code>x2</code>):
+      </p>
+      <pre><code>t = (x - x1) / (x2 - x1)</code></pre>
+      <p>
+        Because the line has constant slope, the same fraction <code>t</code>
+        applies to the <code>y</code> side of the gap. Starting at
+        <code>y1</code> and moving <code>t</code> of the way to
+        <code>y2</code> gives:
+      </p>
+      <pre><code>y = y1 + t * (y2 - y1)</code></pre>
+      <p>
+        This is the same line written in point-slope form — the slope
+        <code>(y2 - y1) / (x2 - x1)</code> multiplied by the distance from
+        <code>x1</code>, added to the starting height <code>y1</code>. Two
+        equivalent ways of saying the same thing.
+      </p>
+
+      <h2>A worked example</h2>
+      <p>
+        Suppose you know <code>y = 10</code> at <code>x = 0</code> and
+        <code>y = 30</code> at <code>x = 10</code>, and you want the value
+        at <code>x = 4</code>:
+      </p>
+      <pre><code>t = (4 - 0) / (10 - 0) = 0.4
+y = 10 + 0.4 * (30 - 10) = 10 + 8 = 18</code></pre>
+      <p>
+        <code>x = 4</code> sits 40% of the way from 0 to 10, so the estimate
+        sits 40% of the way from 10 to 30. That's all linear interpolation
+        ever does — it never looks at any point beyond the pair bracketing
+        the query.
+      </p>
+
+      <h2>When the straight line is wrong</h2>
+      <p>
+        Linear interpolation is only exact if the true relationship between
+        <code>x</code> and <code>y</code> really is a straight line between
+        those two samples. For anything curved — acceleration, growth,
+        decay — a straight line between two samples will systematically
+        miss the true curve in between, and the error grows with how far
+        apart the two known points are and how much the real function bends
+        between them. Methods that fit a curve instead of a straight
+        segment — a quadratic through three points, a cubic spline through
+        a whole series, matching a curve's slope as well as its value at
+        each sample — trade that error for more assumptions about how
+        smoothly the data behaves. None of them are "more correct"; they're
+        different bets about the shape of what you didn't measure.
+      </p>
+
+      <h2>Interpolation vs. extrapolation</h2>
+      <div class="note">
+        Interpolation only makes sense strictly between two known points.
+        Estimating past the last known point isn't interpolation anymore —
+        it's extrapolation, and it's a fundamentally different kind of
+        guess.
+      </div>
+      <p>
+        Inside the known range, a value is pinned down by data on both
+        sides — the line (or curve) is constrained at both ends. Outside
+        that range, nothing pins the estimate down at all: infinitely many
+        different curves pass through the same known points but diverge
+        the moment you step past them, and nothing in the data tells you
+        which one is right. Projecting the last line segment onward is just
+        one arbitrary choice among all of those — a straight-line guess
+        dressed up as a calculation. That's why interpolation is only ever
+        defined for <code>x</code> values that fall between two points you
+        actually know.
+      </p>
+    </article>
+  </div>
+
+  <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+  <script>
+    kofiWidgetOverlay.draw('shinyoungryu', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Tip Me',
+    'floating-chat.donateButton.background-color': '#00bfa5',
+    'floating-chat.donateButton.text-color': '#fff'
+    });
+  </script>
+</body>
+</html>
