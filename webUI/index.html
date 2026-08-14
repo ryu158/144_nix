@@ -1,46 +1,42 @@
-{
-  description = "Data interpolation web app (Flask + NumPy + SciPy)";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Calculator</title>
+<link rel="stylesheet" href="./dev_basic/style.css">
+</head>
+<body>
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
-    flake-utils.url = "github:numtide/flake-utils";
-  };
+<div id="app">
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
+  <header class="app-header">
+    <h1>List (Link Map)</h1>
+  </header>
 
-        pythonEnv = pkgs.python3.withPackages (ps: with ps; [
-          flask
-          numpy
-          scipy
-        ]);
+  <div class="app-toolbar">
+    <button id="btn_interp" class="primary-btn">interpolate</button> 
+    <button id="btn_dev_basic" class="primary-btn">dev_basic</button>
+    <button id="btn_test" class="primary-btn">test</button>
+  </div>
 
-        # Wrapper so `nix run` always executes app.py from this flake's own
-        # directory, regardless of the caller's current working directory —
-        # otherwise Flask can't find templates/index.html.
-        runApp = pkgs.writeShellScriptBin "run-interp-app" ''
-          set -euo pipefail
-          cd "${self}"
-          exec ${pythonEnv}/bin/python app.py
-        '';
-      in
-      {
-        devShells.default = pkgs.mkShell {
-          packages = [ pythonEnv pkgs.nodejs pkgs.typescript ];
+</div>
 
-          shellHook = ''
-            echo "Interpolation project dev shell ready (Python ${pythonEnv.version or ""})."
-            echo "Python server:  python app.py"
-            echo "Rebuild TS engine:  (cd ts && tsc -p tsconfig.json)  -> writes ../interpolate.js"
-            echo "Then open http://localhost:40001"
-          '';
-        };
 
-        apps.default = {
-          type = "app";
-          program = "${runApp}/bin/run-interp-app";
-        };
-      });
-}
+<script>
+  document.getElementById('btn_interp').addEventListener('click', () => {
+   window.location.href = 'https://ryuora144.duckdns.org/interpolate'; 
+  });
+
+   document.getElementById('btn_dev_basic').addEventListener('click', () => {
+   window.location.href = 'https://ryuora144.duckdns.org/dev_basic'; 
+  });
+
+ document.getElementById('btn_test').addEventListener('click', () => {
+   window.location.href = 'https://ryuora144.duckdns.org/test'; 
+  });
+
+
+</script>
+
+</body>
+</html>
