@@ -1,0 +1,22 @@
+# Request Log
+
+- [x] column count(number) lock option for grid
+- [x] aspect ratio setting for chart
+- [x] legend on/off in chart context menu
+- [x] chart popup option in context menu
+- [x] writing protection option for grid
+- [x] interpolate page: show Input + Output grid on one chart
+- [x] adsense banner repositioned — moved out of app-main into fixed 728×90 footer strip
+- [x] google adsense integration — config placeholders not replaced
+- [ ] buy me a coffee integration — config placeholders not replaced
+- [ ] popup on BMC donation — no backend, client-only approx proposed
+- [x] fix dual-chart.js: plotFromGrids syntax error (floating method broke whole file parse)
+- [x] fix index_interpolate.html: duplicate inline script re-declaring grid/grid_2/chart
+- [x] diagnose interp_engine.js / page.js not loading — path resolution bug
+- [x] find + flag stray duplicate interp_engine.js / page.js inside dev_basic/; update
+- [x] markdown function/class summaries generated for grid.js, chart.js, dual-chart.js, style.css
+- [x] dual chart legend: show positional column names (y1_input, y2_input, ... / y1_output, ...) instead of auto-generated Input B/Input C labels
+- [x] dual chart legend: group Input series on one row, Output series on next row
+- [x] fix dual-chart.js: duplicate plotFromGridsIndexed definition reversing scatter/line shapes (grid=Input=scatter/back, grid_2=Output=line/front now consistent)
+- [x] reduce scatter point size via pointRadius option in page.js chart init
+- [x] insert ko-fi (buy me a coffee), insert links, index_interpolate.html style.css
