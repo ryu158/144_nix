@@ -1,1 +1,21 @@
+# Personal Claude Code instructions
 CLAUDE.local.md
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# direnv
+.direnv/
+
+# Nix build output
+result
+result-*
+
+# Node
+node_modules/
+dist/
+.astro/
+
+# Python (fixture generation)
+__pycache__/
+*.pyc
