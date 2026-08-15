@@ -6,7 +6,7 @@ and more topics added over time. Solo-authored.
 ## Environment
 
 Nix flake dev shell on Oracle Linux 9. Node and Python come from `flake.nix`, not from
-the system.
+the system, but neither is currently exercised by a build step — see Stack.
 
 **Every command runs inside the dev shell.** If a command fails with "not found", the
 shell is not active. Do not install the missing tool — `dnf`, `pip install`, and
@@ -16,24 +16,19 @@ shell is not active. Do not install the missing tool — `dnf`, `pip install`, a
 nix develop            # automatic if direnv is set up
 ```
 
-To add a language-level dependency, edit `flake.nix` and commit `flake.lock`. Adding a
-project npm package is normal: `npm install` inside the shell is correct.
+`flake.nix` currently provisions Python + Flask/NumPy/SciPy for an `app.py` that does
+not exist, and Node + TypeScript that no build script currently uses. Treat these as
+available tooling, not evidence that a Flask app or a TS build is in use today.
 
 ## Stack
 
-<!-- EDIT THIS SECTION once the stack is chosen. Astro assumed below. -->
-<!-- If the project already exists, replace this with the real scripts from package.json. -->
-
-- Astro (static output, islands for interactivity)
-- Vanilla TypeScript for math and plotting; no charting library
-- Python + NumPy/SciPy for generating numeric fixtures only (not shipped)
-
-```
-npm run dev       # local server
-npm run build     # static build to dist/
-npm run test      # math correctness tests against fixtures
-npm run verify    # test + build + link check; run before publishing a topic
-```
+- No framework, no bundler, no build step. Pages are static, hand-written HTML files
+  served as-is.
+- Vanilla JavaScript, loaded via `<script src="...">` tags: shared components live in
+  `dev_basic/` (`grid.js`, `chart.js`, `dual-chart.js`, `ads.js`, `bmc.js`,
+  `style.css`), per-topic code lives in `prj/<topic>/`.
+- No `package.json` and no npm scripts exist. There is no `npm run dev/build/test`
+  today — changes are verified by opening the HTML file directly.
 
 ## Layout
 
