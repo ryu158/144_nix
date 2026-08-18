@@ -1,3 +1,5 @@
+Every time I ask with English, modify it for better answer and show me the modified sentence then answer me as simple as possible as, leave only essential like a 'cave man' skill style
+
 Small static site: interactive explainers for computational math/science.
 
 Stack

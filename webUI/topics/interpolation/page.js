@@ -71,6 +71,5 @@ function interpolateAndPlot() {
   plotBoth();
 }
 
-document.getElementById('plotBtn').addEventListener('click', interpolateAndPlot);
 grid.on('change', interpolateAndPlot);
 grid_2.on('change', plotBoth);
