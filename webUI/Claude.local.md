@@ -1,44 +1,44 @@
-# Personal notes
-
-Not committed. Add `CLAUDE.local.md` to `.gitignore`.
+# CLAUDE.local.md
+Personal, uncommitted notes. Add this file to `.gitignore`.
 
 ## English
+I am a Korean speaker writing in English.
+For **every chat message**, before answering:
 
-I am a Korean speaker writing in English. When I write to you in chat, correct my
-sentences first — show the corrected version, then briefly explain what changed and why
-— and answer the question afterward. Do this every time, including for short messages.
-
-Explain the reasoning behind grammar fixes, not just the fix. Point out patterns that
-come from Korean sentence structure, so I stop repeating them.
+1. Show my corrected English.
+2. Briefly explain what changed and why.
+3. Point out Korean-structure patterns when relevant.
+4. Then answer my actual question.
+Do this even for short messages.
 
 ## Machine
+* Oracle Linux 9.
+* Claude Code: `~/.local/bin/claude` via native installer.
+* Claude's runtime is independent of the flake's Node.
+* Start sessions with:
 
-Oracle Linux 9. Claude Code was installed with the native installer at
-`~/.local/bin/claude` — it bundles its own runtime and does not use the flake's Node.
-
-I launch sessions like this:
-
-```
+```bash
 cd <project> && nix develop
 claude
 ```
+If a command is `not found`:
+* Assume `nix develop` was not entered.
+* Tell me to enter the dev shell.
+* **Do not install the missing tool.**
 
-If a shell command fails with "not found", I forgot `nix develop`. Tell me — do not try
-to install the tool another way.
+Never use `sudo`.
+Never assume root.
+Do not create root-owned project files.
 
-Never run commands with `sudo` and never assume root. Root-owned files in the project
-break `npm install` and `git` for my normal user afterward.
-
-## Working style
-
-- Explain the reasoning behind a suggestion, not just the conclusion.
-- Push back when a plan has a flaw. Do not agree by default.
-- Ask before making architectural decisions I have not settled yet.
+## Working Style
+* Explain reasoning, not just conclusions.
+* Challenge flawed plans; do not agree automatically.
+* Ask before making unsettled architectural decisions.
+* Prefer the smallest solution consistent with project rules.
 
 ## Scratch
+Keep this section local and messy.
 
-<!-- Local URLs, test data, sprint notes, half-finished ideas. Keep this section messy. -->
-
-- Draft prototype lives at: <path>
-- Deploy target: <url>
-- Topics queued after FFT: convolution, aliasing, windowing, least squares
+* Prototype: `<path>`
+* Deploy: `<url>`
+* Queue: convolution, aliasing, windowing, least squares

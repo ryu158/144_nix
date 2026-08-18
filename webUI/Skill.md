@@ -1,78 +1,133 @@
----
 name: new-topic
-description: Use when adding a new topic to the explainer site, or building any page for an existing topic — blog, calculator, or advanced. Covers the full sequence from writing the spec through verifying the math and publishing. Trigger on requests like "add a topic on convolution", "start the FFT topic", "build the calculator page for smoothing", or "what's next on this topic".
----
+description: Add or extend a topic. Use for requests like "add convolution", "start FFT", "build smoothing calculator", or "what's next?"
 
-# Adding a topic
+# New Topic
 
-The per-topic workflow, in order. Do not skip ahead to generating HTML — steps 1 and 2
-are what keep the article and the demo from disagreeing with each other.
+**Goal:** one topic = one `topics/<slug>/` folder. Complete it before starting another.
 
-## 1. Write the spec
+## 0. Check
 
-Create `topics/<slug>/spec.json` (schema in `.claude/rules/topics.md`).
+Work inside `nix develop`.
 
-Settle these before writing any prose:
+Read:
 
-- **The insight.** One sentence naming what the reader should leave knowing. If it can't
-  be written in one sentence, the topic is really two topics.
-- **The dataset.** Small enough to reason about by eye — 5 to 12 points for most topics.
-  It appears in both the article's figures and the calculator's default state.
-- **The parameters.** Name, type, range, default. These become the sliders.
-- **Which levels exist.** Most topics need only `blog` and `calculator`. Add `advanced`
-  only when there is genuinely more to say, not to fill the shape.
+* `CLAUDE.md`
+* `.claude/rules/topics.md` if present
+* existing `src/kit/` components
+* 1–2 existing topics for patterns
 
-Confirm the spec with the author before continuing. Everything downstream depends on it.
+Do not add dependencies.
 
-## 2. Build the numeric reference
+## 1. Spec — FIRST
 
-Write `tools/fixtures/<slug>.py` using NumPy/SciPy to compute expected outputs for the
-spec's dataset across the parameter range. Run it to produce `topics/<slug>/fixture.json`.
+Create:
 
-This must be an independent implementation. Never generate the fixture from the
-TypeScript that will later be tested against it.
+`topics/<slug>/spec.json`
 
-## 3. Blog page
+Define:
 
-Draft `blog.md`, then revise with the author until satisfied.
+* `insight` — one sentence
+* `dataset` — usually 5–12 points
+* `parameters` — name, type, range, default
+* `levels` — usually `blog`, `calculator`; add `advanced` only if needed
+* metadata: title, description, social image
+* `related`
 
-- Open with the searchable question, not the definition.
-- State the insight in plain language before any formula.
-- Every figure references the spec's dataset.
-- The prose must stand alone as a useful explanation with JavaScript disabled.
+**Stop and confirm the spec with the author before continuing.**
 
-## 4. Calculator page
+Everything else must use this spec.
 
-Implement `calculator.ts` against the spec.
+## 2. Numeric Fixture
 
-- Import plotting and controls from `src/kit/`; pass semantic roles, never raw colors.
-- Write the test asserting output matches `fixture.json` within tolerance.
-- Run `npm run test` — a passing eye check is not a passing test.
-- Register the topic's analytics events.
+Create:
 
-## 5. Advanced page
+`tools/fixtures/<slug>.py`
 
-Only if `levels` includes it. Same rules as the blog page.
+Use independent NumPy/SciPy calculations.
 
-## 6. Cross-link and extract
+Generate:
 
-- Fill in `related` in the spec; verify generated navigation picks up every level.
-- Review what was written inside this topic that a **second** topic now also needs.
-  Extract those to `src/kit/` and update the earlier topic to import the extracted
-  version. Nothing moves to the kit on its first use.
+`topics/<slug>/fixture.json`
+
+Rules:
+
+* Fixture must NOT use the TypeScript implementation.
+* Cover representative parameter values/ranges.
+* Fixture is the numeric authority.
+
+## 3. Blog
+
+Create:
+
+`topics/<slug>/blog.md`
+
+Rules:
+
+* Start with the question readers search for.
+* State the core insight before formulas.
+* Use the spec dataset.
+* Explanation must work with JavaScript disabled.
+* Keep one core idea per page.
+* Preserve technical meaning; silently fix English.
+
+## 4. Calculator
+
+Create:
+
+`topics/<slug>/calculator.ts`
+
+Rules:
+
+* Follow the spec exactly.
+* Reuse `src/kit/`.
+* Use semantic roles/tokens, never raw colors.
+* Test numerical output against `fixture.json` within tolerance.
+* Never trust visual similarity alone.
+* Add analytics events through the existing shell/kit mechanism.
+
+**Do not invent a build/test command. Use the project's actual verification method.**
+
+## 5. Advanced
+
+Only if `levels` contains `advanced`.
+
+Create:
+
+`topics/<slug>/advanced.md`
+
+Same writing rules as `blog.md`.
+
+## 6. Cross-links / Extraction
+
+* Set `related` in `spec.json`.
+* Verify generated navigation, homepage, sitemap, and links discover the topic automatically.
+* Never edit a topic list manually.
+* If a component is needed by a second topic, extract it to `src/kit/`.
+* Do not abstract first-use code.
 
 ## 7. Verify
 
-Run `npm run verify`. Then, **for the first topic only**, confirm the shell works end to
-end — after that it is proven and this check is not repeated:
+Check:
 
-- Search Console shows the page indexed with no coverage errors
-- Rich Results Test validates the structured data
-- Pasting the URL into a chat app renders the social preview correctly
-- A real visit in a private window produces a pageview **and** a slider event
+* `spec.json` is valid.
+* Fixture is reproducible.
+* Calculator matches fixture within tolerance.
+* HTML contains the explanation without JS.
+* Navigation discovers the topic.
+* Sitemap discovers the topic.
+* No hardcoded topic list.
+* No topic-level colors/fonts/spacing.
+* No new dependency.
+* Open the HTML/page and manually test interaction.
+* If `src/shell/` changed, explicitly report it.
 
-## Done when
+For the first topic only, also verify the existing shell/SEO/analytics/social-preview setup end-to-end.
 
-All pages read from one spec, the calculator matches the fixture, the explanation
-survives JavaScript being disabled, and the topic appears in navigation and sitemap
-without anyone having edited a list.
+## Done
+
+A topic is complete when:
+
+`spec → fixture → article → calculator → links → verification`
+
+all agree, and adding the topic required **no manual topic-list edits**.
+
