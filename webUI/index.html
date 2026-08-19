@@ -2,41 +2,44 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Calculator</title>
-<link rel="stylesheet" href="/dev_basic/style.css">
-</head>
-<body>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
 
-<div id="app">
+<!-- Google Search Console ownership proof. Do not remove - deleting it un-verifies
+     the property and cuts off indexing reports. -->
+<meta name="google-site-verification" content="rFZefTUBFg1J7H1GcNTkXL7AqfdiJhWLs4f0UvOZ-SY" />
+<link rel="canonical" href="https://ryuora144.duckdns.org/">
+<title>Interactive Math &amp; Science Explainers</title>
+<meta name="description" content="Interactive explainers for computational math and science. Read the reasoning, then adjust the parameters and watch the math respond.">
+<link rel="stylesheet" href="/dev_basic/style.css">
+<script src="/src/shell/analytics.js"></script>
+<script src="/src/shell/consent.js"></script>
+<script src="/home.js" defer></script>
+</head>
+<body class="home-page">
+
+<div id="app" style="height: auto;">
 
   <header class="app-header">
-    <h1>List (Link Map)</h1>
+    <h1 style="margin:0;">Interactive Math &amp; Science Explainers</h1>
   </header>
 
-  <div class="app-toolbar">
-    <button id="btn_interp" class="primary-btn">interpolate</button> 
-    <button id="btn_dev_basic" class="primary-btn">dev_basic</button>
-    <button id="btn_test" class="primary-btn">test</button>
-  </div>
+  <!-- Rows are rendered by /home.js from topics/topics.json + each spec.json.
+       Never hardcode a topic here. -->
+  <main class="topic-list" id="topicList">
+    <p class="topic-detail" id="topicListStatus">Loading topics…</p>
+  </main>
+
+  <section class="dev-section">
+    <h3>Dev</h3>
+    <div class="topic-links">
+      <a href="/dev_basic" class="teal-button-link">dev_basic</a>
+      <a href="/test" class="teal-button-link">test</a>
+    </div>
+  </section>
 
 </div>
 
-
-<script>
-  document.getElementById('btn_interp').addEventListener('click', () => {
-   window.location.href = 'https://ryuora144.duckdns.org/interpolate_blog'; 
-  });
-
-   document.getElementById('btn_dev_basic').addEventListener('click', () => {
-   window.location.href = 'https://ryuora144.duckdns.org/dev_basic'; 
-  });
-
- document.getElementById('btn_test').addEventListener('click', () => {
-   window.location.href = 'https://ryuora144.duckdns.org/test'; 
-  });
-
-
-</script>
 
 </body>
 </html>

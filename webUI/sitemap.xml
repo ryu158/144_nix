@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Hand-maintained. No build step exists, so nothing generates this.
+  New topic: add one <url> per entry in that topic's spec.json "pages".
+  Use the pretty URLs only - never the /topics/.../*.html paths.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url>
+    <loc>https://ryuora144.duckdns.org/</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- topics/interpolation -->
+  <url>
+    <loc>https://ryuora144.duckdns.org/interpolate_blog</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ryuora144.duckdns.org/interpolate_cal</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>

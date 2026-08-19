@@ -477,3 +477,91 @@ body.blog-page .app-header {
   border-radius: 0 6px 6px 0;
   font-size: 14px;
 }
+
+/* ---- Home / topic index (index.html) ---- */
+/* Shares the article max-width so home and blog line up at the same left edge. */
+body.home-page { overflow: auto; }
+body.home-page .app-header { max-width: 720px; }
+
+.topic-list {
+  max-width: 720px;
+  padding-bottom: 40px;
+}
+
+/* One topic = one compact row: name, level buttons, toggle. Detail hides until asked. */
+.topic-item { border-bottom: 1px solid var(--border); }
+.topic-item:first-child { border-top: 1px solid var(--border); }
+
+.topic-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 4px;
+}
+.topic-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--cell-fg);
+  margin-right: 4px; /* buttons sit just after the title, not pushed to the edge */
+}
+/* base .teal-button-link carries `margin: 25px -5px !important` for the blog header;
+   inside these compact rows the negative margin eats the flex gap, so cancel it. */
+.topic-row .teal-button-link {
+  font-size: 13px;
+  margin: 0 !important;
+}
+
+/* bare caret - no chrome, the glyph itself is the affordance */
+.topic-toggle {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  line-height: 1;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--header-fg);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.topic-toggle:hover { color: var(--accent); }
+.topic-toggle[aria-expanded="true"] { color: var(--accent); }
+
+.topic-detail {
+  padding: 0 4px 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--header-fg);
+  max-width: 640px;
+}
+.topic-detail .topic-meta {
+  margin: 6px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* de-emphasized dev links, below the real content */
+.dev-section {
+  max-width: 720px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.dev-section h3 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--header-fg);
+  font-weight: 600;
+}
+.topic-links { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.dev-section .topic-links a {
+  font-size: 13px;
+  opacity: 0.75;
+  margin: 0 !important; /* same negative-margin cancel as .topic-row */
+}

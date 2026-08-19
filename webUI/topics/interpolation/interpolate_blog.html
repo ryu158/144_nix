@@ -2,10 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://ryuora144.duckdns.org/interpolate_blog">
+
+<!-- Static copies of spec.json blog.title/description. Crawlers read these without
+     running JS; seo.js overwrites them at runtime and warns if they drift. -->
+<title>Interpolation: The Math Behind Estimating Between Data Points</title>
+<meta name="description" content="How interpolation estimates a value between two known points: where the formula comes from, and why the estimate breaks down outside your data.">
+
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://ryuora144.duckdns.org/interpolate_blog">
+<meta property="og:title" content="Interpolation: The Math Behind Estimating Between Data Points">
+<meta property="og:description" content="How interpolation estimates a value between two known points: where the formula comes from, and why the estimate breaks down outside your data.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Interpolation: The Math Behind Estimating Between Data Points">
+<meta name="twitter:description" content="How interpolation estimates a value between two known points: where the formula comes from, and why the estimate breaks down outside your data.">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Interpolation: The Math Behind Estimating Between Data Points",
+  "description": "How interpolation estimates a value between two known points: where the formula comes from, and why the estimate breaks down outside your data.",
+  "mainEntityOfPage": "https://ryuora144.duckdns.org/interpolate_blog",
+  "author": { "@type": "Person", "name": "Shinyoung Ryu" },
+  "inLanguage": "en"
+}
+</script>
+
 <link rel="stylesheet" href="/dev_basic/style.css">
-<script src="/src/shell/seo.js" data-level="blog"></script>
+<script src="/src/shell/seo.js" data-slug="interpolation" data-level="blog"></script>
 <script src="/src/shell/analytics.js"></script>
 <script src="/src/shell/consent.js"></script>
 </head>
@@ -16,10 +43,10 @@
         <div class="field">
           <h1 style="margin:0;">Interpolation❓</h1>
         </div>
-        <a href="/topics/interpolation/interpolate_cal.html" class="teal-button-link">
+        <a href="/interpolate_cal" class="teal-button-link">
           <strong>🧮 Try the calculator</strong>
         </a>
-        <a href="/index.html" class="teal-button-link">
+        <a href="/" class="teal-button-link">
           <strong>🏠 Home</strong>
         </a>
       </div>

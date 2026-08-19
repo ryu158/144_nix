@@ -1,0 +1,19 @@
+/* Topic-only CSS for interpolation. Loaded after dev_basic/style.css.
+   Tokens only. If a second topic needs any of this, move it to dev_basic/style.css. */
+
+/* Footer note under the calculator. Exists in HTML before JS runs: it is the
+   page's only real crawlable text, and it tells a first-time visitor how to
+   get data in.
+   Sits at the bottom so it does not push the tool down. Full width and small
+   type keep it to ~2 lines - #app is a column flex at height:100%, so every
+   line here is a line taken from the grids. */
+.page-intro {
+  flex: none;
+  margin: 0;
+  padding: 8px 4px 0;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--header-fg);
+}
+.page-intro strong { color: var(--cell-fg); font-weight: 600; }

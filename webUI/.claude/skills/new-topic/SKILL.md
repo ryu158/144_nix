@@ -3,131 +3,63 @@ description: Add or extend a topic. Use for requests like "add convolution", "st
 
 # New Topic
 
-**Goal:** one topic = one `topics/<slug>/` folder. Complete it before starting another.
+Goal: one `topics/<slug>/` folder. Finish current topic before next.
 
 ## 0. Check
 
 Work inside `nix develop`.
 
-Read:
+Read: `CLAUDE.md`, `.claude/rules/topics.md` if present, 1-2 existing topics for pattern, `dev_basic/` for shared components, `src/shell/` (seo.js, consent.js, analytics.js).
 
-* `CLAUDE.md`
-* `.claude/rules/topics.md` if present
-* existing `src/kit/` components
-* 1–2 existing topics for patterns
+No new dependencies.
 
-Do not add dependencies.
+## 1. Blog
 
-## 1. Spec — FIRST
+Create `topics/<slug>/<slug>_blog.html`.
 
-Create:
+Static HTML, article text before JS. Start with reader's question. Core insight before formula. Confirm contents with user.
 
-`topics/<slug>/spec.json`
+## 2. Calculator
 
-Define:
+Create `topics/<slug>/<slug>_cal.html` + JS (page.js, engine file).
 
-* `insight` — one sentence
-* `dataset` — usually 5–12 points
-* `parameters` — name, type, range, default
-* `levels` — usually `blog`, `calculator`; add `advanced` only if needed
-* metadata: title, description, social image
-* `related`
+Reuse `dev_basic/` components. Use design tokens, no raw colors. Debug.
 
-**Stop and confirm the spec with the author before continuing.**
+## 3. Validate
 
-Everything else must use this spec.
+Test `<slug>_cal.html` against `topics/<slug>/test_in_data.md` / `test_out_data.md`. Exact match within tolerance. Never validate by eye. Debug.
 
-## 2. Numeric Fixture
+## 4. Spec + register
 
-Create:
+Update `topics/<slug>/spec.json`: `slug`, `name` (short, for home card), `pages` (public URL per level), `levels`, blog/calculator title+description, `insight`, dataset, parameters, related.
 
-`tools/fixtures/<slug>.py`
+Add slug to `topics/topics.json`. Skip this = topic invisible on home.
 
-Use independent NumPy/SciPy calculations.
+Confirm the card renders on index.html.
 
-Generate:
+## 5. SEO
 
-`topics/<slug>/fixture.json`
+Static tags in each page, copied verbatim from spec.json — viewport, robots, canonical, `<title>`, meta description, og:, twitter:, JSON-LD. Crawlers do not run JS; a JS-only title is invisible. See `.claude/rules/topics.md` for the full block.
 
-Rules:
+Then wire `src/shell/seo.js` to sync, `data-slug` required:
 
-* Fixture must NOT use the TypeScript implementation.
-* Cover representative parameter values/ranges.
-* Fixture is the numeric authority.
+```html
+<script src="/src/shell/seo.js" data-slug="<slug>" data-level="blog"></script>
+```
 
-## 3. Blog
+Add both public urls to `/sitemap.xml`.
 
-Create:
+Internal links use public urls, never `/topics/.../*.html`.
 
-`topics/<slug>/blog.md`
+Validate:
+- `curl <public-url> | grep '<title>'` — must be in RAW HTML. DevTools shows post-JS DOM and hides this failure.
+- Browser: no `[seo]` drift warning in console, spec.json request 200.
+- Body text actually contains the terms the description promises.
 
-Rules:
+## 6. Analytics
 
-* Start with the question readers search for.
-* State the core insight before formulas.
-* Use the spec dataset.
-* Explanation must work with JavaScript disabled.
-* Keep one core idea per page.
-* Preserve technical meaning; silently fix English.
+Wire through `src/shell/analytics.js` + `consent.js`: GA4 event on topic interaction. Validate: consent banner works, event fires, no reappear on reload.
 
-## 4. Calculator
+## Always
 
-Create:
-
-`topics/<slug>/calculator.ts`
-
-Rules:
-
-* Follow the spec exactly.
-* Reuse `src/kit/`.
-* Use semantic roles/tokens, never raw colors.
-* Test numerical output against `fixture.json` within tolerance.
-* Never trust visual similarity alone.
-* Add analytics events through the existing shell/kit mechanism.
-
-**Do not invent a build/test command. Use the project's actual verification method.**
-
-## 5. Advanced
-
-Only if `levels` contains `advanced`.
-
-Create:
-
-`topics/<slug>/advanced.md`
-
-Same writing rules as `blog.md`.
-
-## 6. Cross-links / Extraction
-
-* Set `related` in `spec.json`.
-* Verify generated navigation, homepage, sitemap, and links discover the topic automatically.
-* Never edit a topic list manually.
-* If a component is needed by a second topic, extract it to `src/kit/`.
-* Do not abstract first-use code.
-
-## 7. Verify
-
-Check:
-
-* `spec.json` is valid.
-* Fixture is reproducible.
-* Calculator matches fixture within tolerance.
-* HTML contains the explanation without JS.
-* Navigation discovers the topic.
-* Sitemap discovers the topic.
-* No hardcoded topic list.
-* No topic-level colors/fonts/spacing.
-* No new dependency.
-* Open the HTML/page and manually test interaction.
-* If `src/shell/` changed, explicitly report it.
-
-For the first topic only, also verify the existing shell/SEO/analytics/social-preview setup end-to-end.
-
-## Done
-
-A topic is complete when:
-
-`spec → fixture → article → calculator → links → verification`
-
-all agree, and adding the topic required **no manual topic-list edits**.
-
+No hardcoded topic list. No topic-level colors/fonts/spacing. No new deps. One topic at a time. `src/shell/` change -> tell user first.

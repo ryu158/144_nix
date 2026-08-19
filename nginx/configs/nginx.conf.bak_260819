@@ -18,7 +18,7 @@ http {
 
         ssl_certificate /etc/letsencrypt/live/@domain@/fullchain.pem;
         ssl_certificate_key /etc/letsencrypt/live/@domain@/privkey.pem;
-
+        
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_prefer_server_ciphers on;
 
@@ -27,45 +27,43 @@ http {
 
         include /etc/nginx/mime.types;
 
+        # root /home/opc/nix/pyt/webui/interp3;
         root /home/opc/nix/webUI;
         index index.html;
 
-        location ~ \.conf$ {
-            deny all;
-        }
-
         location / {
-            try_files $uri $uri/ =404;
+            try_files $uri $uri/ /index.html;
         }
 
-        location = /interpolate_cal {
-            try_files /topics/interpolation/interpolate_cal.html =404;
+        location /interpolate_cal {
+            try_files $uri $uri/ /topics/interpolation/interpolate_cal.html;
         }
 
-        location = /interpolate_blog {
-            try_files /topics/interpolation/interpolate_blog.html =404;
+        location /interpolate_blog {
+            try_files $uri $uri/ /topics/interpolation/interpolate_blog.html;
         }
+
 
         location /dev_basic {
-            index index_dev_basic.html;
-            try_files $uri $uri/ =404;
+	    index index_dev_basic.html #for the case nginx already enrolled another index html file as default, so I need to add another index html file as index
+            try_files $uri $uri/ /dev_basic/index_dev_basic.html;
         }
 
         location /test {
-            try_files $uri $uri/ /topics/test/index_test.html =404;
+            try_files $uri $uri/ /prj/test/index_test.html;
         }
+
     }
 
     server {
         listen 35908;
         server_name localhost;
-
+        
         root @web_root@;
         index index.html;
 
         location / {
-            try_files $uri $uri/ =404;
+            try_files $uri $uri/ /index.html;
         }
     }
 }
-
