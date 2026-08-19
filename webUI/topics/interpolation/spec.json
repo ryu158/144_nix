@@ -1,7 +1,13 @@
 {
   "slug": "interpolation",
-  "title": "Linear Interpolation: The Math Behind Estimating Between Data Points",
-  "description": "A plain explanation of linear interpolation: the formula, where it comes from, why the straight-line assumption is only ever an approximation, and why interpolation stops being reliable once you step outside the known data.",
+  "blog": {
+    "title": "Linear Interpolation: The Math Behind Estimating Between Data Points",
+    "description": "A plain explanation of linear interpolation: the formula, where it comes from, why the straight-line assumption is only ever an approximation, and why interpolation stops being reliable once you step outside the known data."
+  },
+  "calculator": {
+    "title": "Online Interpolation Calculator, Multiple line, Vector, Matrix, Sheet type data, Fast calculation & Plot results (Graph)",
+    "description": "Free browser-based calculator for vectorized and matrix interpolation(multiple line data). Compute linear interpolation datasets instantly. No upload required."
+  },
   "category": "numerical-methods",
   "difficulty": "intro",
   "prerequisites": [],

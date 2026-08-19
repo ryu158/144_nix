@@ -57,6 +57,7 @@ function interpolateAndPlotManual() {
   const outputTable = InterpEngine.buildOutputTable(inputData, queryXs);
   grid_2.setData(outputTable);
   plotBoth();
+  if (window.trackEvent) window.trackEvent('interpolate_run', { query_count: queryXs.length });
 }
 
 document.getElementById('genRangeBtn').addEventListener('click', interpolateAndPlotManual);
