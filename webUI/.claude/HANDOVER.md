@@ -13,6 +13,7 @@ CLAUDE.md = repo-wide rules. .claude/rules/topics.md = topic detail (spec.json s
 Each fact lives in ONE of those. Adding a rule? Pick the owner, do not copy it into a second file.
 No hooks, no settings.json — the old hook guarded prj/, deleted 2026-08-14. component-summary skill deleted, its dev_basic/summary/ never existed.
 Claude.local.md untracked 2026-08-20 (.gitignore had wrong case). Still in old git history.
+.claude/refs/ = outside knowledge, summarised. Not rules. SEO_ref.md is the only one so far.
 
 ## Open bug
 None.
@@ -32,6 +33,10 @@ Static <title>/meta description/og/twitter/JSON-LD in every page. Crawlers do no
 seo.ts syncs from spec.json, console.warns on drift. data-slug required.
 robots.txt + sitemap.xml at root. Internal links use public urls (/interpolate_cal), never /topics/*.html.
 Validate with curl, NOT DevTools — DevTools shows post-JS DOM and hides a missing title.
+
+Method + gap list -> .claude/refs/SEO_ref.md (4 talks, summarised).
+Biggest gap is NOT on-page: this site has zero distribution. Nothing has ever been posted where computational-math readers gather. One source puts content+links at 74% of ranking weight, technical work at the tail.
+Its two case studies both won by shipping something usable, not longer prose. This site IS a working tool — that asset is currently invisible.
 
 ## nginx — fixed, reloaded, verified
 webUI/nginx.conf is the master copy; deployed to ~/nix/nginx/configs/nginx.conf.
@@ -90,6 +95,12 @@ Anything downloaded goes to the scratchpad, NEVER into webUI/ — nginx serves t
 - 🪄Advanced button in interpolate_cal.html links to itself (placeholder, page not built)
 - og:image / socialImage missing — social previews have no picture
 - /favicon.ico missing — 404 on every page, browser tabs blank. Found 2026-08-21 by the Playwright console check, which now ignores it.
+- interpolate_blog.html has TWO <h1> — "Interpolation❓" (header) + "Linear Interpolation" (article). One H1 only
+- interpolate_cal.html headings are Input / Output / Results — zero keywords
+- interpolate_cal.html body is one paragraph. Short content does not rank
+- Mobile friendliness never scored. Cal page is a full-height 3-panel grid with `body { overflow: hidden }`
+- No SERP rank monitoring at all
+- /interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical
 - Files served from repo root are public (CLAUDE.md, .claude/, flake.nix, Claude.local.md). Known, accepted. nginx.conf denies *.conf only.
 
 ## Confirmed, don't touch

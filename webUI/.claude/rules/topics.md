@@ -81,6 +81,8 @@ Description promises "CSV, TSV, copy and paste"? The visible HTML must say those
 
 ## Target the question, not the term
 
+Worked example of the whole flow -> .claude/refs/SEO_ref.md.
+
 "Interpolation" loses to Wikipedia. "Why does cubic interpolation overshoot" is thin competition and a demo answers it better than prose. `<h1>` matches that question.
 
 ## Analytics events
