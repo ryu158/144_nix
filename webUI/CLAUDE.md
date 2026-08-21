@@ -6,16 +6,19 @@ Small static site: interactive explainers for computational math/science.
 Work only inside webUI/. No write/modify/exec outside. Read outside = last resort, rare.
 
 Stack
-Static HTML + vanilla JS. No framework, bundler, build step. Pages are hand-written HTML.
-nginx root IS this repo. Edit = live. No deploy step.
-flake.nix gives Node/Python. Always inside `nix develop`. No npm/pip/dnf/global installs.
+Static HTML. No framework, no bundler. Pages are hand-written HTML.
+Scripts are TypeScript. Source = .ts, served = .js. Never edit a .js — it is generated.
+Build: `tsc -p tsconfig.json` (watch: `tsc -w`). Shared types in types/globals.d.ts.
+No imports/exports — every .ts is a classic script, classes are global. Keep it that way.
+nginx root IS this repo. Build = live. No deploy step, so .js/.js.map are committed.
+flake.nix gives Node/TS/Python. Always inside `nix develop`. No npm/pip/dnf/global installs.
 
 Map
-index.html + home.js — home. Renders rows from topics/topics.json -> each spec.json.
-src/shell/ — seo.js, consent.js, analytics.js. Global. Tell user before touching.
-dev_basic/ — shared components (chart.js, dual-chart.js, grid.js, ads.js, bmc.js) + style.css. Tokens in :root.
+index.html + home.ts — home. Renders rows from topics/topics.json -> each spec.json.
+src/shell/ — seo.ts, consent.ts, analytics.ts. Global. Tell user before touching.
+dev_basic/ — shared components (chart.ts, dual-chart.ts, grid.ts, ads.ts, bmc.ts) + style.css. Tokens in :root.
 topics/topics.json — slug list. Not listed = invisible on home.
-topics/<slug>/ — spec.json, <slug>_blog.html, <slug>_cal.html + its .js, test_in_data.md / test_out_data.md, optional <slug>_style.css.
+topics/<slug>/ — spec.json, <slug>_blog.html, <slug>_cal.html + its .ts, test_in_data.md / test_out_data.md, optional <slug>_style.css.
 
 New topic or new level -> skill `new-topic`.
 Topic detail (spec.json shape, SEO block, validation) -> .claude/rules/topics.md.

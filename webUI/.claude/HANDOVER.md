@@ -3,8 +3,9 @@
 Current status only. Not history — daily detail in .claude/log/.
 
 ## Reality
-Static HTML/JS, no build step. dev_basic/ = shared components + style.css (tokens in :root). src/shell/ = seo.js, consent.js, analytics.js. home.js = home page renderer.
-nginx root IS the repo (/home/opc/nix/webUI). Edits go live on save. No deploy step.
+Static HTML. Scripts are TypeScript — source .ts, served .js, built by `tsc -p tsconfig.json`. Never edit a .js.
+dev_basic/ = shared components + style.css (tokens in :root). src/shell/ = seo.ts, consent.ts, analytics.ts. home.ts = home page renderer.
+nginx root IS the repo (/home/opc/nix/webUI). Build goes live on write. No deploy step, so generated .js/.js.map are committed.
 Scope: work only inside webUI/.
 
 ## Claude config — cleaned 2026-08-20
@@ -18,17 +19,17 @@ None.
 
 ## topics/interpolation — done
 6-step workflow complete. Renamed "Linear Interpolation" -> "Interpolation" (advanced page planned, concept still forming).
-Files: interpolate_blog.html, interpolate_cal.html, interp_engine.js, page.js, spec.json, test_in_data.md, test_out_data.md, interpolation_style.css.
+Files: interpolate_blog.html, interpolate_cal.html, interp_engine.ts, page.ts, spec.json, test_in_data.md, test_out_data.md, interpolation_style.css.
 
 ## Home page — data-driven
-index.html renders rows from topics/topics.json -> each spec.json. JS in /home.js.
+index.html renders rows from topics/topics.json -> each spec.json. Source in /home.ts.
 Row = name, toggle (insight), one button per level.
 spec.json gained `name` (short, card) and `pages` (public URL per level).
 New topic MUST be added to topics/topics.json or it stays invisible.
 
 ## SEO — done, live
 Static <title>/meta description/og/twitter/JSON-LD in every page. Crawlers do not run JS.
-seo.js syncs from spec.json, console.warns on drift. data-slug required.
+seo.ts syncs from spec.json, console.warns on drift. data-slug required.
 robots.txt + sitemap.xml at root. Internal links use public urls (/interpolate_cal), never /topics/*.html.
 Validate with curl, NOT DevTools — DevTools shows post-JS DOM and hides a missing title.
 
@@ -43,6 +44,12 @@ Sitemap submitted ("Couldn't fetch" right after submit is normal, clears in ~2 d
 Indexing requested: homepage only. Daily quota hit.
 TODO next session: request indexing for /interpolate_cal and /interpolate_blog.
 Then wait 1-2 weeks before judging search results.
+
+## TypeScript — migrated 2026-08-21
+Every site script is .ts now. `tsc -p tsconfig.json`, strict, target ES2020.
+No imports/exports anywhere: each file is a classic script, classes (GridTable, Chart, DualSeriesChart, InterpEngine) are globals. Adding an import would break the <script src> tags.
+Shared/browser types in types/globals.d.ts (Window.trackEvent, CssSize, Grid2D, GridSource, Spec). Reuse them, do not redeclare.
+Source maps on and publicly served — decided, .ts source is web-readable. Same accepted category as CLAUDE.md/flake.nix.
 
 ## Not done
 - MS Clarity (later, GA4 first)

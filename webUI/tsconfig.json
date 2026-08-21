@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ES2020",
+    "strict": true,
+    "allowJs": false,
+    "sourceMap": true,
+    "removeComments": false,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "home.ts",
+    "dev_basic/**/*.ts",
+    "src/**/*.ts",
+    "topics/**/*.ts",
+    "types/**/*.d.ts"
+  ]
+}
