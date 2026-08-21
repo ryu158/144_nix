@@ -30,3 +30,9 @@ Much of that blocked traffic blocked on purpose. Cookieless first-party analytic
 
 - MS Clarity (deferred, GA4 first)
 - test_data.csv orphaned, keep/delete undecided
+
+## Claude.local.md in git history
+
+Untracked 2026-08-20, but already-pushed commits still hold it. Repo root is served by nginx, so it is web-readable too (nginx.conf denies *.conf only).
+Options: leave it (contents are mild — machine notes, style prefs, topic queue) / deny dotfiles + *.local.md in nginx.conf / rewrite history (breaks any clone).
+Not urgent. Nothing secret in it today.

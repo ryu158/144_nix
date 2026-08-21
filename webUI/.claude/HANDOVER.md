@@ -7,6 +7,12 @@ Static HTML/JS, no build step. dev_basic/ = shared components + style.css (token
 nginx root IS the repo (/home/opc/nix/webUI). Edits go live on save. No deploy step.
 Scope: work only inside webUI/.
 
+## Claude config — cleaned 2026-08-20
+CLAUDE.md = repo-wide rules. .claude/rules/topics.md = topic detail (spec.json shape, SEO head block, validate order). .claude/skills/new-topic/SKILL.md = 6-step checklist.
+Each fact lives in ONE of those. Adding a rule? Pick the owner, do not copy it into a second file.
+No hooks, no settings.json — the old hook guarded prj/, deleted 2026-08-14. component-summary skill deleted, its dev_basic/summary/ never existed.
+Claude.local.md untracked 2026-08-20 (.gitignore had wrong case). Still in old git history.
+
 ## Open bug
 None.
 
@@ -43,7 +49,7 @@ Then wait 1-2 weeks before judging search results.
 - test_data.csv (orphaned, keep/delete undecided)
 - 🪄Advanced button in interpolate_cal.html links to itself (placeholder, page not built)
 - og:image / socialImage missing — social previews have no picture
-- Files served from repo root are public (CLAUDE.md, .claude/, flake.nix). Known, accepted.
+- Files served from repo root are public (CLAUDE.md, .claude/, flake.nix, Claude.local.md). Known, accepted. nginx.conf denies *.conf only.
 
 ## Confirmed, don't touch
 - Hardcoded nav/colors in interpolation pages - intentional, not a cleanup target
