@@ -55,9 +55,20 @@ Source maps on and publicly served — decided, .ts source is web-readable. Same
 `run-browser-tests` from webUI/ (flake script; re-enter `nix develop` if the command is missing). Or `npx playwright test`.
 Uses the Nix chromium via PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH — PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1, a download would write outside webUI/.
 Tests hit the real served site (baseURL https://localhost, self-signed cert ignored). No webServer block — nginx root IS the repo.
-tests/interpolate_cal.spec.ts covers the paste -> generate-range -> output path and the no-extrapolation blanks.
-page.ts keeps its grid/chart instances private, so tests drive the UI (paste event, DOM cells), never page internals. Keep it that way.
 node_modules/ is gitignored; package.json + package-lock.json are committed. `npm ci` to restore.
+
+34 specs, ~8s. `tests/helpers/` + `tests/interpolation/{calculator,fixture,seo,nav,analytics}.spec.ts`.
+- calculator — load, generate-range, re-interpolate on input change, no extrapolation, invalid ranges, read-only output grid, 4-column truncation alert, method list vs spec.json.
+- fixture — the CLAUDE.md hard rule, in-browser. Pastes test_in_data.md, copies the output back, compares every cell to an independent implementation. 1770 cells, max error 5.0e-7.
+- seo — raw HTML (crawler view) and rendered, both levels, asserted against spec.json. Zero `[seo]` drift warnings. Plus sitemap and robots.
+- nav — cross-links, home card from spec.json, public-URL-only rule, raw HTML canonical, 404s.
+- analytics — consent granted/denied/undecided, `interpolate_run` and `topic_detail_open`, no page-level tags.
+
+Rules the suite depends on. Break these and tests fail for the wrong reason:
+- page.ts keeps grid/chart private, so tests drive the UI (paste/copy events, DOM cells), never internals. Keep it that way.
+- Third parties are stubbed with `route.fulfill`, never `abort` — both pages call `kofiwidget2.init(...)` inline, and an aborted script leaves that throwing.
+- Assertions read spec.json. Never copy a string from the HTML into a test; that is what the drift check exists to catch.
+- The grid is virtualized — off-screen rows have no DOM node. Read bulk data with `copyFromGrid`, not cell locators.
 
 ## Not done
 - MS Clarity (later, GA4 first)

@@ -65,6 +65,8 @@ No analytics tags in the page — shell only.
 2. Browser: title/description match spec.json, no `[seo]` warning in console, spec.json request 200.
 3. Search Console > URL Inspection > Test Live URL. Request indexing.
 
+Steps 1-2 are automated per topic in `tests/interpolation/seo.spec.ts` — `run-browser-tests`. Step 3 stays manual.
+
 Indexing takes days-weeks. Ranking weeks-months. Not instant.
 
 ## Links + sitemap
