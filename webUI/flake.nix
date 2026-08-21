@@ -78,6 +78,14 @@
 
             # Local headless browser
             pkgs.chromium
+
+            # The test runner the shellHook advertises. Without this it only
+            # existed as `nix run .#browser-test`, so `run-browser-tests` was
+            # never actually on PATH.
+            # runApp is NOT here on purpose: it interpolates ${self}, which
+            # would copy the repo into the store every time the shell starts.
+            # Use `nix run .` for the Flask app.
+            runBrowserTests
           ];
 
           shellHook = ''

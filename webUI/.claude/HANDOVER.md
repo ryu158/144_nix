@@ -52,7 +52,9 @@ Shared/browser types in types/globals.d.ts (Window.trackEvent, CssSize, Grid2D, 
 Source maps on and publicly served — decided, .ts source is web-readable. Same accepted category as CLAUDE.md/flake.nix.
 
 ## Browser tests — Playwright, added 2026-08-21
-`run-browser-tests` from webUI/ (flake script; re-enter `nix develop` if the command is missing). Or `npx playwright test`.
+`run-browser-tests` from webUI/. Or `npx playwright test`, or `nix run .#browser-test`.
+It is in devShells packages, so a missing command means a stale shell — exit and re-enter `nix develop`.
+`run-interp-app` is NOT in the shell on purpose: it interpolates `${self}`, which would copy the repo into the store on every shell start. Use `nix run .` for the Flask app.
 Uses the Nix chromium via PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH — PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1, a download would write outside webUI/.
 Tests hit the real served site (baseURL https://localhost, self-signed cert ignored). No webServer block — nginx root IS the repo.
 node_modules/ is gitignored; package.json + package-lock.json are committed. `npm ci` to restore.
