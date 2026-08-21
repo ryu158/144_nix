@@ -70,6 +70,18 @@ Rules the suite depends on. Break these and tests fail for the wrong reason:
 - Assertions read spec.json. Never copy a string from the HTML into a test; that is what the drift check exists to catch.
 - The grid is virtualized — off-screen rows have no DOM node. Read bulk data with `copyFromGrid`, not cell locators.
 
+## flake.nix — two nixpkgs inputs, deliberate
+`nixpkgs` = nixos-24.05 (Node 20.18.1, TS 5.4.5, chromium 131, ffmpeg 6.1.2, Python). Everything the site builds and tests with.
+`nixpkgs-unstable` = yt-dlp ONLY. 24.05 ships yt-dlp 2024.12.06; YouTube rejects it outright. Do NOT collapse this back into one input, and do NOT move other packages across.
+YouTube broken again -> `nix flake update nixpkgs-unstable`. Not a whole-flake bump.
+ffmpeg stays on 24.05 on purpose — subtitle extraction never calls it.
+
+## yt-dlp — works, but YouTube wants a login
+2026-08-21: bumped to yt-dlp 2026.07.04. Still `Sign in to confirm you're not a bot` on `https://youtu.be/eTBFhU0prqE`, every player client.
+Not a version problem any more. YouTube wants a signed-in session for this endpoint.
+Unblocking needs `--cookies cookies.txt` exported from a browser where the user is logged in, or `--cookies-from-browser`. This box is headless with no YouTube session. User's call — do not go rummaging in ~/.config/chromium.
+Anything downloaded goes to the scratchpad, NEVER into webUI/ — nginx serves the repo root, so a file dropped here is instantly public.
+
 ## Not done
 - MS Clarity (later, GA4 first)
 - test_data.csv (orphaned, keep/delete undecided)
@@ -82,7 +94,10 @@ Rules the suite depends on. Break these and tests fail for the wrong reason:
 - Hardcoded nav/colors in interpolation pages - intentional, not a cleanup target
 - Ko-fi widget - keep, exempted from monetization ban
 - .teal-button-link has `margin: 25px -5px !important` - cancel it locally in compact rows, do not change the base rule
+- interpolate_cal input grid locked to 4 columns (`cols: 4, fixedColCount: true`) - intentional. Pasting more alerts and truncates; a Playwright test asserts that. The column lock gets unlocked on the ADVANCED page, not here. Note: test_in_data.md carries 10 columns, so the basic page only ever sees X + 3 series.
 
 ## Next
 Advanced interpolation page (cubic/spline). Add "advanced" to spec.json levels + pages; home row grows the button by itself.
+Also unlocks the column limit - that page takes the full 10-column fixture, the basic one stays at 4.
+Fixing the 🪄Advanced placeholder link comes with it; tests/interpolation/nav.spec.ts exempts that one href today, drop the exemption then.
 One topic at a time.

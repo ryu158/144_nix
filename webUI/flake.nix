@@ -3,13 +3,21 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+
+    # yt-dlp ONLY. YouTube rotates its extractor surface constantly, so yt-dlp
+    # is the one package here that cannot sit on a release pin - 24.05 ships
+    # 2024.12.06, which YouTube now rejects with a bot check. Everything the
+    # site actually depends on stays on 24.05 on purpose.
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
+        unstable = import nixpkgs-unstable { inherit system; };
 
         pythonEnv = pkgs.python3.withPackages (ps: with ps; [
           flask
@@ -61,8 +69,11 @@
             pkgs.nodejs
             pkgs.typescript
 
-            # YouTube processing
-            pkgs.yt-dlp
+            # YouTube processing.
+            # yt-dlp from unstable (see the input comment). ffmpeg stays on
+            # 24.05 - subtitle extraction never invokes it, and a second ffmpeg
+            # closure would buy nothing.
+            unstable.yt-dlp
             pkgs.ffmpeg
 
             # Local headless browser
@@ -89,7 +100,7 @@
 
             echo ""
             echo "YouTube:"
-            echo "  yt-dlp --version"
+            echo "  yt-dlp --version          # from nixpkgs-unstable, not the 24.05 pin"
 
             echo ""
             echo "Browser:"
@@ -104,6 +115,8 @@
             echo "YouTube summary:"
             echo "  yt-dlp --write-auto-subs --sub-langs en,ko \\"
             echo "    --sub-format vtt --skip-download URL"
+            echo "  Bot check? add --cookies-from-browser or --cookies cookies.txt"
+            echo "  Still failing? nix flake update nixpkgs-unstable"
 
             echo "========================================"
           '';

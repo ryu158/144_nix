@@ -11,7 +11,8 @@ Scripts are TypeScript. Source = .ts, served = .js. Never edit a .js — it is g
 Build: `tsc -p tsconfig.json` (watch: `tsc -w`). Shared types in types/globals.d.ts.
 No imports/exports — every .ts is a classic script, classes are global. Keep it that way.
 nginx root IS this repo. Build = live. No deploy step, so .js/.js.map are committed.
-flake.nix gives Node/TS/Python/chromium. Always inside `nix develop`. No pip/dnf/global installs.
+flake.nix gives Node/TS/Python/chromium from the nixos-24.05 pin. Always inside `nix develop`. No pip/dnf/global installs.
+yt-dlp alone comes from a second `nixpkgs-unstable` input — YouTube breaks old extractors. Never move anything else there.
 npm is for Playwright only (approved 2026-08-21, project-local). Site itself ships zero runtime deps.
 Browser tests: `run-browser-tests` (flake script, uses the Nix chromium, never downloads one). Specs in tests/.
 
