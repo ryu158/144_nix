@@ -51,11 +51,20 @@ No imports/exports anywhere: each file is a classic script, classes (GridTable, 
 Shared/browser types in types/globals.d.ts (Window.trackEvent, CssSize, Grid2D, GridSource, Spec). Reuse them, do not redeclare.
 Source maps on and publicly served — decided, .ts source is web-readable. Same accepted category as CLAUDE.md/flake.nix.
 
+## Browser tests — Playwright, added 2026-08-21
+`run-browser-tests` from webUI/ (flake script; re-enter `nix develop` if the command is missing). Or `npx playwright test`.
+Uses the Nix chromium via PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH — PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1, a download would write outside webUI/.
+Tests hit the real served site (baseURL https://localhost, self-signed cert ignored). No webServer block — nginx root IS the repo.
+tests/interpolate_cal.spec.ts covers the paste -> generate-range -> output path and the no-extrapolation blanks.
+page.ts keeps its grid/chart instances private, so tests drive the UI (paste event, DOM cells), never page internals. Keep it that way.
+node_modules/ is gitignored; package.json + package-lock.json are committed. `npm ci` to restore.
+
 ## Not done
 - MS Clarity (later, GA4 first)
 - test_data.csv (orphaned, keep/delete undecided)
 - 🪄Advanced button in interpolate_cal.html links to itself (placeholder, page not built)
 - og:image / socialImage missing — social previews have no picture
+- /favicon.ico missing — 404 on every page, browser tabs blank. Found 2026-08-21 by the Playwright console check, which now ignores it.
 - Files served from repo root are public (CLAUDE.md, .claude/, flake.nix, Claude.local.md). Known, accepted. nginx.conf denies *.conf only.
 
 ## Confirmed, don't touch

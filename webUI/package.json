@@ -1,0 +1,16 @@
+{
+  "name": "webui",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static site: interactive explainers for computational math/science. npm is here for Playwright only - the site itself ships no runtime dependencies.",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -w -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}

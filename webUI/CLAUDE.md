@@ -11,7 +11,9 @@ Scripts are TypeScript. Source = .ts, served = .js. Never edit a .js — it is g
 Build: `tsc -p tsconfig.json` (watch: `tsc -w`). Shared types in types/globals.d.ts.
 No imports/exports — every .ts is a classic script, classes are global. Keep it that way.
 nginx root IS this repo. Build = live. No deploy step, so .js/.js.map are committed.
-flake.nix gives Node/TS/Python. Always inside `nix develop`. No npm/pip/dnf/global installs.
+flake.nix gives Node/TS/Python/chromium. Always inside `nix develop`. No pip/dnf/global installs.
+npm is for Playwright only (approved 2026-08-21, project-local). Site itself ships zero runtime deps.
+Browser tests: `run-browser-tests` (flake script, uses the Nix chromium, never downloads one). Specs in tests/.
 
 Map
 index.html + home.ts — home. Renders rows from topics/topics.json -> each spec.json.

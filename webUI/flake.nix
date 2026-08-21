@@ -25,10 +25,16 @@
         '';
 
         # Run Playwright tests inside the Nix environment.
+        # Deliberately runs in the caller's working directory, NOT in ''${self}:
+        # the store copy has no node_modules, so cd-ing there always looked
+        # like "Playwright is not installed".
         runBrowserTests = pkgs.writeShellScriptBin "run-browser-tests" ''
           set -euo pipefail
 
-          cd "${self}"
+          if [ ! -f playwright.config.ts ]; then
+            echo "No playwright.config.ts here. Run this from the webUI/ directory."
+            exit 1
+          fi
 
           if [ ! -d node_modules/@playwright/test ]; then
             echo "Playwright is not installed."

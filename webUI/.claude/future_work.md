@@ -28,6 +28,7 @@ Much of that blocked traffic blocked on purpose. Cookieless first-party analytic
 
 ## Other
 
+- /favicon.ico missing. 404 on every page. Needs an actual icon decision (site has no logo yet), then a static file + <link rel="icon">. Small, not urgent.
 - MS Clarity (deferred, GA4 first)
 - test_data.csv orphaned, keep/delete undecided
 
