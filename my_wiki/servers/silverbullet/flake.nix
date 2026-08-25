@@ -8,7 +8,7 @@
     let
       system = "aarch64-linux";
       pkgs = import nixpkgs { inherit system; };
-      space = "/home/opc/nix/my_wiki";
+      space = "/home/opc/nix/my_wiki/my_wiki_vault";
     in
     {
       devShells.${system}.default = pkgs.mkShell {

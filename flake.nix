@@ -34,8 +34,8 @@
 
        packages.${system}.servers_init = pkgs.writeShellScriptBin "servers_init" ''
          sudo systemctl enable --now nginx.service
-         (cd /home/opc/nix/my_wiki_servers/silverbullet && nix run .#sb_start &)
-         (cd /home/opc/nix/my_wiki_servers/syncthing    && nix run .#st_start &)
+         (cd /home/opc/nix/my_wiki/servers/silverbullet && nix run .#sb_start &)
+         (cd /home/opc/nix/my_wiki/servers/syncthing    && nix run .#st_start &)
          sleep 12
          sudo ss -tlunp | grep -E 'nginx|deno|syncthing'
       '';

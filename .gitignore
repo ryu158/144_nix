@@ -1,9 +1,9 @@
-# Wiki content: Syncthing rewrites this tree constantly, and git fighting sync
-# produces conflict files. The rules file is the one thing worth tracking.
-# Must be my_wiki/* not my_wiki/ - git never descends into an excluded directory,
+# Vault content: Syncthing rewrites this tree constantly, and git fighting sync
+# produces conflict files. The space rules file is the one thing worth tracking.
+# Must be <dir>/* not <dir>/ - git never descends into an excluded directory,
 # so the negation below would never be reached.
-my_wiki/*
-!my_wiki/CLAUDE.md
+my_wiki/my_wiki_vault/*
+!my_wiki/my_wiki_vault/CLAUDE.md
 
 # Syncthing scratch
 .stfolder/

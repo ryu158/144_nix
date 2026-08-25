@@ -115,7 +115,7 @@
 #
 # gui is loopback only:
 #   ssh -L 8384:localhost:8384 opc@ryuora144.duckdns.org  ->  http://localhost:8384
-#   set a gui password, share /home/opc/nix/my_wiki
+#   set a gui password, share /home/opc/nix/my_wiki/my_wiki_vault
 #
 # --no-default-folder was removed in syncthing 2.x
 # --no-upgrade: binary is a store path, self-upgrade cannot work
