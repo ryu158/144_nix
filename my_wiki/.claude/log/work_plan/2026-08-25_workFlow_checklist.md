@@ -12,4 +12,5 @@ Checklist vs real box. Every "done" checked this session, not remembered.
 | syncthing on windows notebook | done | device `noteryu` in config.xml |
 | sync my_wiki notebook <-> 144 | done | folder `4qu9r-ehg2a` sendreceive, both devices |
 | notion mcp - claude | done | OAuth connected, workspace `144_my_wiki's Space` |
+| notion change detection | done | `edited` prop in inbox, `synced` col in queue, A sorts new/current/changed |
 | graphify | **not done** | nothing built |

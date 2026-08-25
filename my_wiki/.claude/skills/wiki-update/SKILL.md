@@ -15,27 +15,41 @@ A is cheap and always runs. B costs tokens and runs only on what A flags.
 
 ```
 notion-query-data-sources, sql:
-SELECT url, createdTime, "Name"
+SELECT url, createdTime, "edited", "Name"
 FROM "collection://3c7d4d1c-bd1d-80e3-90ce-000b4e3572fe"
 ORDER BY createdTime DESC LIMIT 50
 ```
 
 Metadata only. **Never `notion-fetch` here.**
+Query errors on `edited` = the property is gone from Notion. Stop, tell the user to add it
+back (type **Last edited time**, named `edited`). Do not fall back to the old query.
 
 Rewrite the table in `my_wiki/my_wiki_vault/0th/queue.md`.
-NEW = not in queue as done. done = distilled, links its 1st page. CHANGED = source edited
-after ingest — user's call, nothing moves until they say so.
+
+| queue row | live `edited` | verdict |
+|---|---|---|
+| absent | — | **NEW** |
+| present | `== synced` | current, skip |
+| present | `> synced` | **CHANGED** |
+| present | `synced` empty | bootstrap — copy live `edited` into `synced`, skip |
+
+`synced` = the `edited` value that was live when that row was last distilled. Bootstrap
+assumes the existing file is current; say so when it fires, do not refetch.
 
 Queue is data only: title, table, scan line. Under ~10 lines however long the table grows.
 0th is flat — one file, no `n/`, no index. Never re-document this routine there.
 
-Report NEW. Stop if empty.
+Report NEW and CHANGED. Stop if both empty.
 
 ## B — distill
 
-`notion-fetch` each NEW page, one at a time. **One Notion page = one file** in
-`my_wiki/my_wiki_vault/1st/n/`. Splitting one page into many is the known failure —
+`notion-fetch` each NEW **and CHANGED** page, one at a time. **One Notion page = one file**
+in `my_wiki/my_wiki_vault/1st/n/`. Splitting one page into many is the known failure —
 `one page = one idea` starts at 2nd, not here.
+
+CHANGED keeps its filename — the name comes from `createdTime`, which never moves. Rewrite
+the whole file, do not patch it. Recompute compression against the new source; never carry
+the old percentage over.
 
 ```
 {created date}_{keywords}.md
@@ -69,12 +83,17 @@ Cave-man, essential only. Keep every hard number and named source — those are 
 Compress; never rewrite section by section. **Do not invent**, only what the fetch says;
 `webUI/.claude/refs/SEO_ref.md` overlaps the SEO note and is NOT a source.
 
-Then update `1st/n/index_1st.md` (row per file, with tags) and mark the queue row done.
+Then update `1st/n/index_1st.md` — new row for a NEW page, refreshed tag cell for a
+CHANGED one — and set the queue row `done` with `synced` = the `edited` value **from the
+Phase A result**, not "now". An edit landing between query and fetch is then caught next
+run instead of swallowed.
 
 ## Known broken
 
-CHANGED never fires — inbox schema is `Name` + `createdTime`, no last-edited field, so an
-edited page looks untouched. Say so. Fix is Notion-side: add a "Last edited time" property.
+`edited` bumps on **any** edit — a tag or property tweak with no body change counts. Some
+re-distills land near-identical. Expected, not a bug.
+
+Editing a child page does not bump the parent's `edited`. Sub-page edits stay invisible.
 
 Links and child toggles outside the granted inbox are not fetched. Say so, do not guess.
 

@@ -12,6 +12,8 @@ Repo-wide facts (nginx, certs, ports, passwords) stay in `/home/opc/nix/.claude/
 ## Vault
 Rules: `my_wiki_vault/CLAUDE.md` — do not restate them here.
 `0th/` flat, one file `0th/queue.md`, the ingest ledger.
+Queue columns: page | created | synced | state. `synced` = the Notion `edited` value at
+last distill — the baseline that makes CHANGED detectable.
 Four `.md` are allowed outside `n/` and no others: `CLAUDE.md`, `CONFIG.md`, `index.md`,
 `0th/queue.md`.
 Content so far: one distilled page, `1st/n/2026-08-25_SEO.md` (37% of source).
@@ -44,6 +46,9 @@ syncthing, move, edit the path in `~/.local/state/syncthing/config.xml`, restart
 `https://mcp.notion.com/mcp`, added `--scope user` (in `~/.claude.json`, NOT the repo).
 OAuth, no API key, no token file. Workspace `144_my_wiki's Space`; only object is an
 `inbox` database, `3c7d4d1c-bd1d-80fc-84a3-c6ab8867f994`. One page ingested so far (SEO).
+Inbox schema: `Name` (title), `Date`, `tag`, `edited` (Last edited time, 2026-08-25).
+`edited` is the only schema change ever made, and the **user** made it in the Notion UI.
+Claude has still never written to Notion. Keep it that way.
 
 **OAuth on a headless box works, but not the documented way.** The normal flow wants a
 browser on localhost:3118 — this box has none, and the notebook's localhost is a different
@@ -60,20 +65,24 @@ Neither blocks ingest.
 
 ## Skills
 `.claude/skills/wiki-update` — the whole Notion ingest routine. Say "update my_wiki".
-Phase A reads metadata only and rewrites the queue; Phase B fetches just what A flagged.
+Phase A reads metadata only and rewrites the queue, sorting each row new / current /
+changed; Phase B fetches new and changed alike and overwrites the 1st file whole.
 Directory-scoped, so it may list as `my_wiki:wiki-update`. Procedure lives there, not here.
 `compress` stays at repo root — general-purpose, also used on webUI-scope files.
 Skills and MCP servers load at session start. A new one is invisible until `/exit` then
 `claude --continue`.
 
 ## Project checklist
-`.claude/log/work_plan/2026-08-25_workFlow_checklist.md` — the 9-item build list, item vs
+`.claude/log/work_plan/2026-08-25_workFlow_checklist.md` — the 10-item build list, item vs
 verified evidence. Not copied here; update it there. Only `graphify` is open, and it has
 never been specified.
 
 ## Not done
-- CHANGED never fires — the inbox schema has no last-edited field. Fix is one click in
-  Notion: add a "Last edited time" property to the inbox database, then Phase A gets it free.
+- SEO's `synced` was bootstrapped from the live `edited` (02:59Z) and *assumed* current —
+  never checked against the file. An edit made between distilling and 08-25 is swallowed.
+  Force a re-distill if that matters.
+- `edited` bumps on any edit, a tag tweak included, so some re-distills land
+  near-identical. Child-page edits do not bump the parent — sub-page edits stay invisible.
 - SEO links out to `/p/29b7ef98...`, outside the grant; its child toggles came back empty.
   Not fetched, not distilled.
 - The distilled SEO page overlaps `webUI/.claude/refs/SEO_ref.md`. Reconciling is a
