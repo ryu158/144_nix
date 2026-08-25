@@ -5,6 +5,14 @@
 my_wiki/my_wiki_vault/*
 !my_wiki/my_wiki_vault/CLAUDE.md
 
+# The ingest ledger is the only vault state git cannot rebuild: 0th/queue.md holds
+# each row's `synced` baseline, and losing it means every page looks unchanged forever.
+# Same descend trap as above, one level down - 0th/ must be re-included before the
+# negation inside it can ever be read.
+!my_wiki/my_wiki_vault/0th/
+my_wiki/my_wiki_vault/0th/*
+!my_wiki/my_wiki_vault/0th/queue.md
+
 # Syncthing scratch
 .stfolder/
 .stversions/

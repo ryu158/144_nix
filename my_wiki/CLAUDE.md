@@ -5,7 +5,8 @@ LLM wiki project. Self-contained: work inside `my_wiki/`, do not manage it from 
 Layout
 `my_wiki_vault/` — the SilverBullet space. **Its own rules live in
 `my_wiki_vault/CLAUDE.md`** — read that before touching any page. Content is gitignored
-(syncthing rewrites it constantly); only that rules file is tracked.
+(syncthing rewrites it constantly); two files are carved out and tracked — that rules
+file and `0th/queue.md`, the ledger git cannot rebuild.
 `servers/silverbullet/`, `servers/syncthing/` — one flake each, pinned nixos-25.11.
 `.claude/` — HANDOVER, logs, work plans, the `wiki-update` skill.
 

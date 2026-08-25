@@ -4,7 +4,8 @@ Current status only. History in `.claude/log/`. Scope: `my_wiki/` — the wiki p
 Repo-wide facts (nginx, certs, ports, passwords) stay in `/home/opc/nix/.claude/HANDOVER.md`.
 
 ## Layout
-`my_wiki_vault/` — the SilverBullet space. Content gitignored except its `CLAUDE.md`.
+`my_wiki_vault/` — the SilverBullet space. Content gitignored except its `CLAUDE.md`
+and `0th/queue.md`. Distilled pages are NOT backed up by git — syncthing is their only copy.
 `servers/silverbullet/`, `servers/syncthing/` — one flake each, pinned nixos-25.11.
 `.claude/` — this file, logs, work plans, the `wiki-update` skill.
 `CLAUDE.md` — project rules. The vault has its own, separate and public.
