@@ -83,6 +83,50 @@ Cave-man, essential only. Keep every hard number and named source — those are 
 Compress; never rewrite section by section. **Do not invent**, only what the fetch says;
 `webUI/.claude/refs/SEO_ref.md` overlaps the SEO note and is NOT a source.
 
+## Images
+
+Distill prose first, then handle images. An image whose `##` section got cut is **dropped**
+— not downloaded, not saved. Note and image stay separate files. Never inline, never base64.
+
+Images arrive as signed S3 URLs inside the fetched markdown — harvest them from the same
+scratchpad `src.txt` the compression step already wrote:
+
+```
+grep -oE 'https://[^)" ]*(amazonaws|notion-static)[^)" ]*' src.txt
+curl -sL -o raw_01 "<url>"     # quote it, the signature lives in the query string
+```
+
+**Signed URLs die in ~1h.** Download in the same run as the fetch. Never write a Notion URL
+into a note as an image source — it will be dead when someone opens the page.
+`notion-download-attachment` cannot do this: text only, 200 KiB, own uploads only.
+
+Nothing is installed on this box — no ImageMagick, no PIL, no cwebp. Nix supplies it,
+pinned to 25.11 like the flakes. One shell around the whole batch, not per file:
+
+```
+nix shell github:NixOS/nixpkgs/nixos-25.11#imagemagick -c bash -c '
+magick raw_01 -auto-orient -strip -resize "640x640>" -quality 82   my_wiki/my_wiki_vault/1st/i/{note basename}_01.webp
+'
+```
+
+640 px long edge, WebP, q82 — smallest that stays recognisable on a phone. `640x640>` IS
+the "no shrink if already small" rule; the `>` makes it a no-op. `-strip` drops EXIF.
+Raw downloads stay in the scratchpad; only the `.webp` enters the vault.
+
+Lossless is **not** a safe default — on a 400x300 photo it measured 207 KB against 16 KB
+lossy. Only when the source is PNG and no resize happened, encode both
+(`-define webp:lossless=true`) and keep the smaller file. Never assume which wins.
+
+Name `{note basename}_{nn}.webp` — `2026-08-25_SEO_01.webp`. Owner obvious, sorts with its
+note. Link from the body, under the section it came from:
+
+```
+![{notion caption verbatim, else empty}](../i/2026-08-25_SEO_01.webp)
+```
+
+Alt text is the Notion caption **verbatim** or empty — do-not-invent covers alt text.
+Image lines do not count toward compression; they are not prose and would inflate it.
+
 Then update `1st/n/index_1st.md` — new row for a NEW page, refreshed tag cell for a
 CHANGED one — and set the queue row `done` with `synced` = the `edited` value **from the
 Phase A result**, not "now". An edit landing between query and fetch is then caught next
@@ -108,6 +152,14 @@ grep -LE '^[0-9]{4}-[0-9]{2}-[0-9]{2} \| [0-9]+% \| https://' my_wiki/my_wiki_va
 
 grep -o '\[\[1st/n/[^]]*\]\]' my_wiki/my_wiki_vault/0th/queue.md | tr -d '[]' |
   while read l; do [ -f "my_wiki/my_wiki_vault/$l.md" ] || echo "DEAD: $l"; done
+
+grep -oh '](\.\./i/[^)]*)' my_wiki/my_wiki_vault/1st/n/*.md | sed 's|](\.\./i/||;s|)||' |
+  while read f; do [ -f "my_wiki/my_wiki_vault/1st/i/$f" ] || echo "DEAD IMG: $f"; done
+
+for f in my_wiki/my_wiki_vault/1st/i/*; do   # picture saved, note never linked it
+  [ -e "$f" ] || continue
+  grep -q "$(basename "$f")" my_wiki/my_wiki_vault/1st/n/*.md || echo "ORPHAN IMG: $f"
+done
 
 for f in my_wiki/my_wiki_vault/1st/n/*.md; do          # catches the real mistake:
   b=$(basename "$f" .md)                 # page written, ledger forgotten

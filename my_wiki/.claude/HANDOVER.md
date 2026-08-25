@@ -68,6 +68,10 @@ Neither blocks ingest.
 `.claude/skills/wiki-update` — the whole Notion ingest routine. Say "update my_wiki".
 Phase A reads metadata only and rewrites the queue, sorting each row new / current /
 changed; Phase B fetches new and changed alike and overwrites the 1st file whole.
+B also pulls page images into `1st/i/` — 640 px long edge, WebP q82, smallest that
+stays readable on a phone. The box has **no image tooling at all** (no ImageMagick,
+PIL, ffmpeg, cwebp); nix supplies it per run, pinned 25.11 like the flakes.
+Notion image URLs are signed and die in ~1h — download in the same run as the fetch.
 Directory-scoped, so it may list as `my_wiki:wiki-update`. Procedure lives there, not here.
 `compress` stays at repo root — general-purpose, also used on webUI-scope files.
 Skills and MCP servers load at session start. A new one is invisible until `/exit` then
@@ -84,6 +88,10 @@ never been specified.
   Force a re-distill if that matters.
 - `edited` bumps on any edit, a tag tweak included, so some re-distills land
   near-identical. Child-page edits do not bump the parent — sub-page edits stay invisible.
+- The image rule has never run against a real Notion page — SEO has no images, so it was
+  only proved synthetically (3000x2000 -> 640, 400x300 untouched). First image page is
+  the real test. Lossless WebP is NOT a safe default: measured 207 KB vs 16 KB lossy on
+  a 400x300 photo. Encode both only for un-resized PNG, keep the smaller.
 - SEO links out to `/p/29b7ef98...`, outside the grant; its child toggles came back empty.
   Not fetched, not distilled.
 - The distilled SEO page overlaps `webUI/.claude/refs/SEO_ref.md`. Reconciling is a
