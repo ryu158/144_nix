@@ -54,21 +54,6 @@ http {
         location /test {
             try_files $uri $uri/ /topics/test/index_test.html =404;
         }
-
-        # Syncthing GUI. Loopback-bound; this is its only public face.
-        # Trailing slash on both sides strips the /syncthing prefix before proxying.
-        location = /syncthing { return 301 /syncthing/; }
-        location /syncthing/ {
-            # NOT $host: syncthing's DNS-rebinding check 403s any Host it does not
-            # recognise. It only trusts localhost while bound to loopback.
-            proxy_set_header Host localhost;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_pass http://127.0.0.1:@st_port@/;
-            proxy_read_timeout 600s;
-            proxy_send_timeout 600s;
-        }
     }
 
     server {

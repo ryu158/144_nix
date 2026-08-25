@@ -32,26 +32,12 @@
         '';
       };
 
-       packages.${system}.servers_init = pkgs.writeShellScriptBin "init all servers..." ''
-         echo "Nginx.service, Silverbullet 2.0.0, Syncthing, Kavita servers init now"
-	 # cd /home/opc/nix/nginx/
-	 # nix run .#install_nginx
-	 # systemctl status | grep nginx
-
-	 # cd /home/opc/nix/silverBullet/
-	 # nix run .#sb_start &
-	 # ps aux | grep silverbullet
-
-	 # cd /home/opc/nix/syncthing/
-	 # nix run .#syncthing_serve &
-	 # ps aux | grep syncthing
-
-	 # cd /home/opc/nix/kavita/
-	 # nix run .#kavita &
-	 # ps aux | grep kavita
-
-	 sudo ss -tlunp | grep -E 'nginx|silverbullet|syncthing|kavita'
-
+       packages.${system}.servers_init = pkgs.writeShellScriptBin "servers_init" ''
+         sudo systemctl enable --now nginx.service
+         (cd /home/opc/nix/my_wiki_servers/silverbullet && nix run .#sb_start &)
+         (cd /home/opc/nix/my_wiki_servers/syncthing    && nix run .#st_start &)
+         sleep 12
+         sudo ss -tlunp | grep -E 'nginx|deno|syncthing'
       '';
 
     };
