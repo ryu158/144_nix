@@ -1,40 +1,48 @@
-Answer short — essential only, cave-man. Write every .md here the same way.
+1. Answer short — essential only, cave-man. Write every `.md` here the same way.
+2. LLM wiki. Notion = 0th raw inbox. Claude distills. Markdown = truth.
 
-LLM wiki. Notion = 0th raw inbox. Claude distills. Markdown = truth.
+## Levels
+1. Higher number = more processed.
+2. 0th = inbox shadow. 1st = distilled. 2nd = contextualized. 3rd = synthesis.
+3. Extend forever.
 
-Levels
-Higher number = more processed. 0th = inbox shadow. 1st = distilled.
-2nd = contextualized. 3rd = synthesis. Extend forever.
+## Folders
+1. 1st and up: `n/` = .md pages, `i/` = images, `r/` = everything else.
+2. New level:
 
-Folders
-1st and up: `n/` = .md pages, `i/` = images, `r/` = everything else.
-New level = `mkdir -p 4th/{n,i,r}`.
-0th is flat — one file, `0th/queue.md`, the ingest ledger. No n/ i/ r/, no index.
+```
+mkdir -p 4th/{n,i,r}
+```
 
-Links
-Same level: ![](../i/plot.png), [data](../r/run.csv)
-Cross level: [[2nd/n/topic]] — full page path.
+3. 0th is flat — one file, `0th/queue.md`, the ingest ledger. No `n/ i/ r/`, no index.
 
-HARD RULES
-Promote N -> N+1. Never edit a lower level in place.
-Never write back to Notion. 0th is read-only.
-Do not invent. If the source does not say it, it does not go in. Trust the source
-text, not memory of it.
-Never a .md outside n/. Four exceptions: this file, CONFIG.md and index.md (space root,
-the last two SilverBullet's own), and 0th/queue.md (ledger, not a level). No others.
-1st mirrors Notion 1:1 — one Notion page, one file. Sub-topics become #tags, never
-extra files. `one page = one idea` starts at 2nd; that is where splitting is the work.
-Every promoted page names its source.
+## Links
+1. Same level: `![](../i/plot.png)`, `[data](../r/run.csv)`
+2. Cross level: `[[2nd/n/topic]]` — full page path.
 
-1st page shape. The `wiki-update` skill writes these and owns the detail:
-`{created date}_{keywords}.md` — title, #tags, then `{date} | {compression}% | {url}`,
-then a `>` contents line, then the body. Compression = body chars / source chars;
-above ~40% is a copy, not a distillation.
+## Hard rules
+1. Promote N -> N+1. Never edit a lower level in place.
+2. Never write back to Notion. 0th is read-only.
+3. Do not invent. If the source does not say it, it does not go in.
+4. Trust the source text, not memory of it.
+5. Never a `.md` outside `n/`. Exactly four exceptions: this file, `CONFIG.md`,
+   `index.md`, `0th/queue.md`. No others.
+6. `CONFIG.md` and `index.md` are SilverBullet's own, at the space root. `0th/queue.md`
+   is the ledger, not a level.
+7. One page = one idea, at 1st too.
+8. A Notion page holding several ideas splits into a hub plus one child per idea.
+9. A page holding one idea stays one file — no hub.
+10. Split only when a `##` section is useful without the rest. Default is not to split.
+11. Every promoted page names its source.
 
-Server
-SilverBullet serves this folder on 127.0.0.1:35909, nginx fronts
-https://ryuora144sb.duckdns.org. `SB_SHELL_BACKEND=off` — a page cannot run anything.
-Syncthing syncs the tree to other devices. Flakes in ../servers/.
-Content gitignored; this file is not.
-SB cannot set its attachment folder (upstream #884) — pasted files land beside the page
-and get moved by hand. Discipline, not enforcement.
+## Page shape
+1. The `wiki-update` skill writes these and owns the detail.
+2. Single file or hub — `{YYMMDD}_{keywords}.md`: title, #tags, then
+   `{date} | {compression}% | {url}`, then a `>` line, then the body.
+3. On a hub the `>` line lists the children instead of the headings.
+4. Child — `{hub basename}__{idea}.md`: title, then `< [[1st/n/{hub}]]`, then the body.
+5. A child has no tags, no url, no `%`. The hub owns those.
+6. Compression = body chars / source chars.
+7. On a hub it is every child body summed over the one source.
+8. Never an average of the children — that hides a bloated child.
+9. Above ~40% is a copy, not a distillation.

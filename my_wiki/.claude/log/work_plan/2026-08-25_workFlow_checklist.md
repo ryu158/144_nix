@@ -6,7 +6,7 @@ Checklist vs real box. Every "done" checked this session, not remembered.
 |---|---|---|
 | duckdns 144sb domain | done | `/etc/letsencrypt/live/ryuora144sb.duckdns.org` |
 | cert dns | done | both certs. sb issued 08-22, expires 11-20 |
-| silverbullet + syncthing flake | done | `my_wiki_servers/*/flake.nix`, both pinned 25.11 |
+| silverbullet + syncthing flake | done | `servers/*/flake.nix`, both pinned 25.11 |
 | ID/pw refresh | done | `sb_ps_update`, `st_ps_update` (st reworked 08-24) |
 | nginx forward -> silverbullet | done | `ss`: deno on 127.0.0.1:35909, nginx active |
 | syncthing on windows notebook | done | device `noteryu` in config.xml |
