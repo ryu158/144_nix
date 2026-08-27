@@ -14,16 +14,22 @@
 ## Vault
 1. Rules: `my_wiki_vault/CLAUDE.md`. Do not restate them here.
 2. Queue columns: page | created | synced | state.
-3. `synced` = the Notion `edited` value at last distill. That baseline makes CHANGED detectable.
-4. SilverBullet owns `CONFIG.md` and `.silverbullet.db.json` at the space root.
-5. `SB_SHELL_BACKEND=off` — keep it off, the wiki is public.
-6. SB keeps **no server-side page index**. `.silverbullet.db.json` holds only the JWT secret
+3. `synced` = the Notion `edited` value at last distill. That baseline makes CHANGED
+   detectable.
+4. Timestamps carry **seconds**. They stored minutes until 2026-08-27, so an edit inside
+   the same minute was invisible.
+5. 1st holds hubs, children and single files. A page with several ideas is a hub plus
+   one child per idea; a page with one idea is one file, no hub. Rules in the vault
+   `CLAUDE.md`, procedure in the skill.
+6. SilverBullet owns `CONFIG.md` and `.silverbullet.db.json` at the space root.
+7. `SB_SHELL_BACKEND=off` — keep it off, the wiki is public.
+8. SB keeps **no server-side page index**. `.silverbullet.db.json` holds only the JWT secret
    and auth hash.
-7. The page list is built client-side. A file written straight to disk needs a browser
+9. The page list is built client-side. A file written straight to disk needs a browser
    reload or reindex before it shows.
-8. SB cannot set its attachment folder (upstream #884). A pasted file lands beside the page
+10. SB cannot set its attachment folder (upstream #884). A pasted file lands beside the page
    and gets moved by hand. Discipline, not enforcement.
-9. The vault `CLAUDE.md` is public. Keep server facts — ports, domain, flake paths, config
+11. The vault `CLAUDE.md` is public. Keep server facts — ports, domain, flake paths, config
    flags — out of it. They live here.
 
 ## Servers
@@ -83,7 +89,10 @@ cd servers/syncthing    && nohup nix run .#st_start >~/st.log 2>&1 &
 6. `compress` was deleted 2026-08-27. `reform` replaced it. The old log still names it.
 7. Skills hot-load. A new or edited `SKILL.md` appears with no restart — proved 2026-08-27
    with `reform`.
-8. MCP servers still load at session start. A new one needs `/exit` then `claude --continue`.
+8. **But the injected skill body can be stale.** One invocation on 2026-08-27 carried a
+   body from before the last two edits while disk was correct. Read the `SKILL.md` off
+   disk before trusting an injected copy you edited this session.
+9. MCP servers still load at session start. A new one needs `/exit` then `claude --continue`.
 
 ## Project checklist
 1. `.claude/log/work_plan/2026-08-25_workFlow_checklist.md` — the 10-item build list, item
@@ -92,9 +101,9 @@ cd servers/syncthing    && nohup nix run .#st_start >~/st.log 2>&1 &
 3. Only `graphify` is open. It has never been specified.
 
 ## Not done
-1. SEO's `synced` was bootstrapped from the live `edited` (02:59Z) and *assumed* current.
-   Never checked against the file. An edit made between distilling and 08-25 is swallowed.
-   Force a re-distill if that matters.
+1. SEO's `synced` was bootstrapped from the live `edited` on 08-25 and *assumed* current.
+   Still never checked against the file. Skipped again on 08-27. Force a re-distill if
+   that matters.
 2. `edited` bumps on any edit, a tag tweak included, so some re-distills land near-identical.
 3. Child-page edits do not bump the parent. Sub-page edits stay invisible.
 4. Lossless WebP is NOT a safe default: measured 207 KB vs 16 KB lossy on a 400x300 photo.
@@ -107,6 +116,10 @@ cd servers/syncthing    && nohup nix run .#st_start >~/st.log 2>&1 &
 7. Empty `<folder id="" label="" path="">` junk entry in syncthing's config.xml. Needs a
    restart to remove.
 8. graphify: on the checklist, never specified, no design.
+9. The three 1st pages keep the old `YYYY-MM-DD` name. New and re-split pages use
+   `YYMMDD`. The check regex accepts both until none remain.
+10. `reform` has no rule for a status file. Its cut rules assume a rules file, where a
+    snapshot is a defect. In a handover a snapshot is the point.
 
 ## Confirmed, don't touch
 1. `Host localhost` in the syncthing proxy block (repo-root nginx config owns it).

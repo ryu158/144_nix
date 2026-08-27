@@ -94,8 +94,20 @@ cd my_wiki/servers/syncthing    && nohup nix run .#st_start >~/st.log 2>&1 &
 2. `/.fs/<page>` = 401 is the only proof auth is on. 200 there means the wiki is OPEN.
 3. SB `/.auth` returns **302 on failure too** (`/.auth?error=1`). Cookie plus a real content
    fetch is the only honest check.
-4. **Adding an MCP server or a skill does not hot-load it.** Both load at session start.
-   Invisible until `/exit` then `claude --continue`.
+4. Adding an **MCP server** does not hot-load it. It loads at session start. Invisible
+   until `/exit` then `claude --continue`.
+5. A **skill** does hot-load — proved 2026-08-27 with `reform`, four times, no restart.
+   The 08-25 log says otherwise. That was wrong.
+6. **But the injected skill body can be stale.** One invocation carried a body from before
+   the last two edits while disk was correct. Read the `SKILL.md` off disk before trusting
+   an injected copy you edited this session.
+
+## Skills
+1. `.claude/skills/reform/` — restructure a `.md` into house style, then audit and trim it.
+   Repo-wide.
+2. `compress` deleted 2026-08-27. `reform` replaced it and carries its measurement inline.
+3. `caveman` plugin installed at user scope, `JuliusBrussee/caveman`. Its two hooks and five
+   of its skills are `node` scripts. **There is no `node` on this box**, so those fail.
 
 ## Not done
 1. `enable-linger opc` still set. Harmless, no user services left.
