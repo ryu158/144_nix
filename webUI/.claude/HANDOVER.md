@@ -2,6 +2,16 @@
 
 Current status only. Not history — daily detail in .claude/log/.
 
+## Resume here
+1. Config reform is done and committed. Branch `docs/reform-claude-config`, commit f315b4c, 8 files.
+2. NOT merged. Merge it first:
+```
+git switch main && git merge docs/reform-claude-config
+```
+3. Then pick up ## Next at the bottom of this file.
+4. Left stale on purpose: log/2026-08-21.md:51 says the favicon gap is in future_work.md. It is in HANDOVER only now. Logs are history, not corrected.
+5. git identity is auto-detected as opc@a1-ryu...oraclevcn.com. Set user.email if the real address matters.
+
 ## Fact ownership
 1. CLAUDE.md = repo-wide rules.
 2. .claude/rules/topics.md = topic detail.
