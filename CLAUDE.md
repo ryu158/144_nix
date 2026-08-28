@@ -10,3 +10,9 @@
 - Skip preamble, hedging, and pleasantries
 - Code/commands in blocks, not inline in sentences
 - If feasible then use caveman skill
+
+## Git Rules
+- Never create a branch without my explicit permission.
+- Before creating a branch: stop, ask, wait for my yes.
+- Warning must be **bold** and start with 🔴, 
+- Same rule for: `git checkout -b`, `git switch -c`, `git branch <name>`, `git worktree add`.
