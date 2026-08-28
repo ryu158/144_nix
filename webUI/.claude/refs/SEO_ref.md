@@ -198,7 +198,7 @@ Checked 2026-08-21.
 
 **Mobile friendliness unverified.** Ranking factor, never scored. Full-height three-panel grid with `body { overflow: hidden }`.
 
-**No dwell-time signal.** future_work.md already notes pageviews cannot separate a 4-second bounce from a 6-minute read. It is a ranking input, not just analytics — and a calculator is a dwell-time machine if anyone reaches it.
+**No dwell-time signal.** `.claude/rules/topics.md` §Analytics events already notes pageviews cannot separate a 4-second bounce from a 6-minute read. It is a ranking input, not just analytics — and a calculator is a dwell-time machine if anyone reaches it.
 
 **Indexing never requested.** HANDOVER TODO, still open.
 

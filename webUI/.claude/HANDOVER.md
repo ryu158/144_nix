@@ -2,115 +2,109 @@
 
 Current status only. Not history — daily detail in .claude/log/.
 
-## Reality
-Static HTML. Scripts are TypeScript — source .ts, served .js, built by `tsc -p tsconfig.json`. Never edit a .js.
-dev_basic/ = shared components + style.css (tokens in :root). src/shell/ = seo.ts, consent.ts, analytics.ts. home.ts = home page renderer.
-nginx root IS the repo (/home/opc/nix/webUI). Build goes live on write. No deploy step, so generated .js/.js.map are committed.
-Scope: work only inside webUI/.
-
-## Claude config — cleaned 2026-08-20
-CLAUDE.md = repo-wide rules. .claude/rules/topics.md = topic detail (spec.json shape, SEO head block, validate order). .claude/skills/new-topic/SKILL.md = 6-step checklist.
-Each fact lives in ONE of those. Adding a rule? Pick the owner, do not copy it into a second file.
-No hooks, no settings.json — the old hook guarded prj/, deleted 2026-08-14. component-summary skill deleted, its dev_basic/summary/ never existed.
-Claude.local.md untracked 2026-08-20 (.gitignore had wrong case). Still in old git history.
-.claude/refs/ = outside knowledge, summarised. Not rules. SEO_ref.md is the only one so far.
-
-## Open bug
-None.
+## Fact ownership
+1. CLAUDE.md = repo-wide rules.
+2. .claude/rules/topics.md = topic detail.
+3. .claude/rules/visuals.md = chart colors and line styles.
+4. .claude/rules/tests.md = rules the Playwright suite depends on.
+5. .claude/skills/new-topic/SKILL.md = 6-step checklist.
+6. .claude/refs/ = outside knowledge, summarised. Not rules.
+7. Each fact lives in ONE file. Adding a rule? Pick the owner, never copy into a second file.
 
 ## topics/interpolation — done
-6-step workflow complete. Renamed "Linear Interpolation" -> "Interpolation" (advanced page planned, concept still forming).
-Files: interpolate_blog.html, interpolate_cal.html, interp_engine.ts, page.ts, spec.json, test_in_data.md, test_out_data.md, interpolation_style.css.
-
-## Home page — data-driven
-index.html renders rows from topics/topics.json -> each spec.json. Source in /home.ts.
-Row = name, toggle (insight), one button per level.
-spec.json gained `name` (short, card) and `pages` (public URL per level).
-New topic MUST be added to topics/topics.json or it stays invisible.
+1. 6-step workflow complete.
+2. Renamed "Linear Interpolation" -> "Interpolation". Advanced page planned, concept still forming.
 
 ## SEO — done, live
-Static <title>/meta description/og/twitter/JSON-LD in every page. Crawlers do not run JS.
-seo.ts syncs from spec.json, console.warns on drift. data-slug required.
-robots.txt + sitemap.xml at root. Internal links use public urls (/interpolate_cal), never /topics/*.html.
-Validate with curl, NOT DevTools — DevTools shows post-JS DOM and hides a missing title.
-
-Method + gap list -> .claude/refs/SEO_ref.md (4 talks, summarised).
-Biggest gap is NOT on-page: this site has zero distribution. Nothing has ever been posted where computational-math readers gather. One source puts content+links at 74% of ranking weight, technical work at the tail.
-Its two case studies both won by shipping something usable, not longer prose. This site IS a working tool — that asset is currently invisible.
-
-## nginx — fixed, reloaded, verified
-webUI/nginx.conf is the master copy; deployed to ~/nix/nginx/configs/nginx.conf.
-Fixed: soft-404 (`=404`), /interpolate_* exact match, /test path (was /prj/..., served homepage), /dev_basic missing semicolon. Also denies *.conf.
-Verified: junk urls 404, /test serves the test page, real pages 200.
+1. Method + gap list -> .claude/refs/SEO_ref.md (4 talks, summarised).
+2. Biggest gap is NOT on-page: this site has zero distribution.
+3. Nothing has ever been posted where computational-math readers gather.
+4. One source puts content+links at 74% of ranking weight, technical work at the tail.
+5. Both its case studies won by shipping something usable, not longer prose.
+6. This site IS a working tool. That asset is invisible today.
 
 ## Search Console
-Ownership verified — meta tag in index.html. DO NOT REMOVE, removing un-verifies.
-Sitemap submitted ("Couldn't fetch" right after submit is normal, clears in ~2 days).
-Indexing requested: homepage only. Daily quota hit.
-TODO next session: request indexing for /interpolate_cal and /interpolate_blog.
-Then wait 1-2 weeks before judging search results.
+1. Ownership verified by meta tag in index.html. DO NOT REMOVE — removing un-verifies.
+2. Sitemap submitted. "Couldn't fetch" right after submit is normal, clears in ~2 days.
+3. Indexing requested: homepage only. Daily quota hit.
+4. TODO next session: request indexing for /interpolate_cal and /interpolate_blog.
+5. Then wait 1-2 weeks before judging search results.
+
+## nginx
+1. webUI/nginx.conf is the master copy.
+2. Deployed to ~/nix/nginx/configs/nginx.conf.
+3. It denies *.conf only.
 
 ## TypeScript — migrated 2026-08-21
-Every site script is .ts now. `tsc -p tsconfig.json`, strict, target ES2020.
-No imports/exports anywhere: each file is a classic script, classes (GridTable, Chart, DualSeriesChart, InterpEngine) are globals. Adding an import would break the <script src> tags.
-Shared/browser types in types/globals.d.ts (Window.trackEvent, CssSize, Grid2D, GridSource, Spec). Reuse them, do not redeclare.
-Source maps on and publicly served — decided, .ts source is web-readable. Same accepted category as CLAUDE.md/flake.nix.
+1. Strict, target ES2020.
+2. Globals are GridTable, Chart, DualSeriesChart, InterpEngine. An import would break the <script src> tags.
+3. Shared types in types/globals.d.ts: Window.trackEvent, CssSize, Grid2D, GridSource, Spec. Reuse them, never redeclare.
+4. Source maps on and publicly served — decided. .ts source is web-readable, same accepted category as CLAUDE.md and flake.nix.
 
 ## Browser tests — Playwright, added 2026-08-21
-`run-browser-tests` from webUI/. Or `npx playwright test`, or `nix run .#browser-test`.
-It is in devShells packages, so a missing command means a stale shell — exit and re-enter `nix develop`.
-`run-interp-app` is NOT in the shell on purpose: it interpolates `${self}`, which would copy the repo into the store on every shell start. Use `nix run .` for the Flask app.
-Uses the Nix chromium via PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH — PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1, a download would write outside webUI/.
-Tests hit the real served site (baseURL https://localhost, self-signed cert ignored). No webServer block — nginx root IS the repo.
-node_modules/ is gitignored; package.json + package-lock.json are committed. `npm ci` to restore.
-
-34 specs, ~8s. `tests/helpers/` + `tests/interpolation/{calculator,fixture,seo,nav,analytics}.spec.ts`.
-- calculator — load, generate-range, re-interpolate on input change, no extrapolation, invalid ranges, read-only output grid, 4-column truncation alert, method list vs spec.json.
-- fixture — the CLAUDE.md hard rule, in-browser. Pastes test_in_data.md, copies the output back, compares every cell to an independent implementation. 1770 cells, max error 5.0e-7.
-- seo — raw HTML (crawler view) and rendered, both levels, asserted against spec.json. Zero `[seo]` drift warnings. Plus sitemap and robots.
-- nav — cross-links, home card from spec.json, public-URL-only rule, raw HTML canonical, 404s.
-- analytics — consent granted/denied/undecided, `interpolate_run` and `topic_detail_open`, no page-level tags.
-
-Rules the suite depends on. Break these and tests fail for the wrong reason:
-- page.ts keeps grid/chart private, so tests drive the UI (paste/copy events, DOM cells), never internals. Keep it that way.
-- Third parties are stubbed with `route.fulfill`, never `abort` — both pages call `kofiwidget2.init(...)` inline, and an aborted script leaves that throwing.
-- Assertions read spec.json. Never copy a string from the HTML into a test; that is what the drift check exists to catch.
-- The grid is virtualized — off-screen rows have no DOM node. Read bulk data with `copyFromGrid`, not cell locators.
+1. Run from webUI/:
+```
+run-browser-tests          # or: npx playwright test  /  nix run .#browser-test
+```
+2. It is in devShells packages. Missing command = stale shell, exit and re-enter nix develop.
+3. run-interp-app is NOT in the shell on purpose — it interpolates ${self}, which copies the repo into the store on every shell start.
+4. Flask app instead:
+```
+nix run .
+```
+5. Uses the Nix chromium via PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH.
+6. PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 — a download would write outside webUI/.
+7. Tests hit the real served site, baseURL https://localhost, self-signed cert ignored.
+8. No webServer block — nginx root IS the repo.
+9. node_modules/ is gitignored. package.json + package-lock.json are committed. Restore with npm ci.
+10. Fixture spec runs the CLAUDE.md hard rule in a real browser — pastes test_in_data.md, copies the output grid back, compares all 1770 cells to an independent implementation. Max error 5.0e-7.
+11. Suite rules -> .claude/rules/tests.md.
 
 ## flake.nix — two nixpkgs inputs, deliberate
-`nixpkgs` = nixos-24.05 (Node 20.18.1, TS 5.4.5, chromium 131, ffmpeg 6.1.2, Python). Everything the site builds and tests with.
-`nixpkgs-unstable` = yt-dlp ONLY. 24.05 ships yt-dlp 2024.12.06; YouTube rejects it outright. Do NOT collapse this back into one input, and do NOT move other packages across.
-YouTube broken again -> `nix flake update nixpkgs-unstable`. Not a whole-flake bump.
-ffmpeg stays on 24.05 on purpose — subtitle extraction never calls it.
+1. nixpkgs = nixos-24.05: Node 20.18.1, TS 5.4.5, chromium 131, ffmpeg 6.1.2, Python.
+2. nixpkgs-unstable = yt-dlp ONLY.
+3. 24.05 ships yt-dlp 2024.12.06. YouTube rejects it outright.
+4. Do NOT collapse back into one input. Do NOT move other packages across.
+5. YouTube broken again, bump that input only:
+```
+nix flake update nixpkgs-unstable
+```
+6. ffmpeg stays on 24.05 on purpose — subtitle extraction never calls it.
 
-## yt-dlp — works, but YouTube wants a login
-2026-08-21: bumped to yt-dlp 2026.07.04. Still `Sign in to confirm you're not a bot` on `https://youtu.be/eTBFhU0prqE`, every player client.
-Not a version problem any more. YouTube wants a signed-in session for this endpoint.
-Unblocking needs `--cookies cookies.txt` exported from a browser where the user is logged in, or `--cookies-from-browser`. This box is headless with no YouTube session. User's call — do not go rummaging in ~/.config/chromium.
-Anything downloaded goes to the scratchpad, NEVER into webUI/ — nginx serves the repo root, so a file dropped here is instantly public.
+## yt-dlp — blocked on login
+1. 2026-08-21: bumped to yt-dlp 2026.07.04.
+2. Still "Sign in to confirm you're not a bot" on https://youtu.be/eTBFhU0prqE, every player client.
+3. Not a version problem any more. YouTube wants a signed-in session for this endpoint.
+4. Unblocking needs --cookies cookies.txt from a logged-in browser, or --cookies-from-browser.
+5. This box is headless with no YouTube session. User's call — do not go rummaging in ~/.config/chromium.
+6. Downloads go to the scratchpad, NEVER into webUI/. nginx serves the repo root, so a file dropped here is instantly public.
 
 ## Not done
-- MS Clarity (later, GA4 first)
-- test_data.csv (orphaned, keep/delete undecided)
-- 🪄Advanced button in interpolate_cal.html links to itself (placeholder, page not built)
-- og:image / socialImage missing — social previews have no picture
-- /favicon.ico missing — 404 on every page, browser tabs blank. Found 2026-08-21 by the Playwright console check, which now ignores it.
-- interpolate_blog.html has TWO <h1> — "Interpolation❓" (header) + "Linear Interpolation" (article). One H1 only
-- interpolate_cal.html headings are Input / Output / Results — zero keywords
-- interpolate_cal.html body is one paragraph. Short content does not rank
-- Mobile friendliness never scored. Cal page is a full-height 3-panel grid with `body { overflow: hidden }`
-- No SERP rank monitoring at all
-- /interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical
-- Files served from repo root are public (CLAUDE.md, .claude/, flake.nix, Claude.local.md). Known, accepted. nginx.conf denies *.conf only.
+1. 🪄Advanced button in interpolate_cal.html links to itself. Placeholder, page not built.
+2. og:image / socialImage missing — social previews have no picture.
+3. /favicon.ico missing — 404 on every page, browser tabs blank. Found 2026-08-21 by the Playwright console check, which now ignores it.
+4. Fixing it needs an icon decision first — the site has no logo. Then a static file plus <link rel="icon">. Small, not urgent.
+5. interpolate_blog.html has TWO <h1>: "Interpolation❓" header + "Linear Interpolation" article. One H1 only.
+6. interpolate_cal.html headings are Input / Output / Results — zero keywords.
+7. interpolate_cal.html body is one paragraph. Short content does not rank.
+8. Mobile friendliness never scored. Cal page is a full-height 3-panel grid with body { overflow: hidden }.
+9. No SERP rank monitoring at all.
+10. /interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical.
+11. test_data.csv orphaned. Keep or delete undecided.
+12. Files served from repo root are public: CLAUDE.md, .claude/, flake.nix, Claude.local.md. Known, accepted.
 
 ## Confirmed, don't touch
-- Hardcoded nav/colors in interpolation pages - intentional, not a cleanup target
-- Ko-fi widget - keep, exempted from monetization ban
-- .teal-button-link has `margin: 25px -5px !important` - cancel it locally in compact rows, do not change the base rule
-- interpolate_cal input grid locked to 4 columns (`cols: 4, fixedColCount: true`) - intentional. Pasting more alerts and truncates; a Playwright test asserts that. The column lock gets unlocked on the ADVANCED page, not here. Note: test_in_data.md carries 10 columns, so the basic page only ever sees X + 3 series.
+1. Hardcoded nav/colors in interpolation pages — intentional, not a cleanup target.
+2. Ko-fi widget — keep, exempted from the monetization ban.
+3. .teal-button-link has margin: 25px -5px !important. Cancel it locally in compact rows, never change the base rule.
+4. interpolate_cal input grid locked to 4 columns (cols: 4, fixedColCount: true) — intentional.
+5. Pasting more alerts and truncates. A Playwright test asserts that.
+6. The column lock gets unlocked on the ADVANCED page, not here.
+7. test_in_data.md carries 10 columns, so the basic page only ever sees X + 3 series.
 
 ## Next
-Advanced interpolation page (cubic/spline). Add "advanced" to spec.json levels + pages; home row grows the button by itself.
-Also unlocks the column limit - that page takes the full 10-column fixture, the basic one stays at 4.
-Fixing the 🪄Advanced placeholder link comes with it; tests/interpolation/nav.spec.ts exempts that one href today, drop the exemption then.
-One topic at a time.
+1. Advanced interpolation page, cubic and spline.
+2. Add "advanced" to spec.json levels + pages. The home row grows the button by itself.
+3. It also unlocks the column limit — that page takes the full 10-column fixture, the basic one stays at 4.
+4. Fixing the 🪄Advanced placeholder link comes with it. tests/interpolation/nav.spec.ts exempts that href today, drop the exemption then.
+5. One topic at a time.

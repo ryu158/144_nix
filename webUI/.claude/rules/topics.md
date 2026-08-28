@@ -5,6 +5,17 @@ paths:
 
 # Topic rules
 
+## Folder shape
+
+```
+topics/<slug>/
+  spec.json
+  <slug>_blog.html
+  <slug>_cal.html   + its .ts
+  test_in_data.md / test_out_data.md
+  <slug>_style.css                     # optional
+```
+
 ## spec.json = source of truth
 
 Blog and cal both read it. Never copy a dataset, range, or default into HTML.
@@ -89,3 +100,15 @@ Worked example of the whole flow -> .claude/refs/SEO_ref.md.
 
 Register the topic's own events — slider moved, method switched, reset. Fire `window.trackEvent(name, params)`; no-ops until consent granted.
 Pageviews cannot tell a 4-second bounce from a 6-minute read. Engagement is the only feedback.
+
+## Topic CSS
+
+1. Missing component goes in `topics/<slug>/<slug>_style.css`, loaded after `style.css`, tokens only.
+2. Second topic needs it -> move to `dev_basic/style.css`, delete both copies.
+
+## Writing the blog
+
+1. Start with the reader's real question.
+2. One core insight, stated early.
+3. Plain English first, derive after.
+4. Demo supports the words, does not replace them.
