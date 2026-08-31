@@ -82,6 +82,8 @@ Hub — `{YYMMDD}_{HHMM}_{title}.md`:
 ```
 # {page title}
 
+#hub
+
 {YYMMDD}_{HHMM} | {compression}% | {notion url}
 
 > {one line, what the whole page is about}
@@ -105,18 +107,21 @@ Child — `{YYMMDD}_{HHMM}_{nn}_{idea}.md`:
 13. **The child title never repeats the hub title.** `# Rader`, not `# FFT — Rader`.
 14. The hub name carries the topic already. The backlink carries it again.
 15. Links in the hub are bare — no alias, no display text.
-16. **No tags. Anywhere.** Not on the hub, not on a child, not in `index_1st.md`.
-17. A sub-topic worth naming becomes a child. One not worth a child is cut, not tagged.
-18. The child filenames are the keywords. Page-name search finds them.
-19. Cross-page connection is 2nd's job, not 1st's.
-20. Link line takes no keys — position is the meaning. Never write the page id, the url has it.
-21. The `>` gist is one sentence about the page as a whole. It never restates a child.
-22. A child has no gist line, no url, no `%`. The hub owns those.
-23. **Compression** = every child body summed / source chars.
-24. Hub header and hub gist line do not count. They are not body.
-25. **Never an average** of the children — a 5% child and a 60% child average to 32.5% and
+16. **`#hub` is the only tag in the vault.** It marks a hub so you can filter for one.
+17. It is structural, not topical. It says what the file IS, never what it is about.
+18. **No other tag. Anywhere.** Not on a hub, not on a child, not in `index_1st.md`.
+19. A child carries no marker. Its `< [[1st/n/...]]` backlink already says it is a child.
+20. A sub-topic worth naming becomes a child. One not worth a child is cut, not tagged.
+21. The child filenames are the keywords. Page-name search finds them.
+22. Cross-page connection is 2nd's job, not 1st's.
+23. Link line takes no keys — position is the meaning. Never write the page id, the url has it.
+24. The `>` gist is one sentence about the page as a whole. It never restates a child.
+25. A child has no gist line, no url, no `%`. The hub owns those.
+26. **Compression** = every child body summed / source chars.
+27. Hub header and hub gist line do not count. They are not body.
+28. **Never an average** of the children — a 5% child and a 60% child average to 32.5% and
     pass while the page is really 35%.
-26. Measure, never estimate. Write the fetched text to the scratchpad, then:
+29. Measure, never estimate. Write the fetched text to the scratchpad, then:
 
 ```
 python3 -c "
@@ -126,11 +131,11 @@ body=sum(len(open(f).read()) for f in sys.argv[1:])
 print(round(100*body/src))" body*.md
 ```
 
-27. Above ~40% it is a copy, not a distillation. Cut again.
-28. Keep every hard number and named source. Those are the claims.
-29. Compress. Never rewrite section by section.
-30. **Do not invent.** Only what the fetch says.
-31. Only the fetched text is a source. Not memory, not another file in this repo.
+30. Above ~40% it is a copy, not a distillation. Cut again.
+31. Keep every hard number and named source. Those are the claims.
+32. Compress. Never rewrite section by section.
+33. **Do not invent.** Only what the fetch says.
+34. Only the fetched text is a source. Not memory, not another file in this repo.
 
 ## Body style
 
@@ -185,16 +190,16 @@ magick raw_01 -auto-orient -strip -resize "640x640>" -quality 82   my_wiki/my_wi
     16 KB lossy.
 17. Only when the source is PNG and no resize happened, encode both
     (`-define webp:lossless=true`) and keep the smaller file. Never assume which wins.
-18. Name `{child basename}_{nn}.webp` — `260825_0543_02_vector_01.webp`. Owner obvious,
+21. Name `{child basename}_{nn}.webp` — `260825_0543_02_vector_01.webp`. Owner obvious,
     sorts with its note.
-19. Link from the child body, under the section it came from:
+22. Link from the child body, under the section it came from:
 
 ```
 ![{notion caption verbatim, else empty}](../i/260825_0543_02_vector_01.webp)
 ```
 
-20. Alt text is the Notion caption **verbatim** or empty. Do-not-invent covers alt text.
-21. Image lines do not count toward compression. They are not prose and would inflate it.
+23. Alt text is the Notion caption **verbatim** or empty. Do-not-invent covers alt text.
+24. Image lines do not count toward compression. They are not prose and would inflate it.
 
 ## Close the run
 
@@ -247,7 +252,17 @@ for f in $V/1st/n/*.md; do            # every hub has a child and an index row
   grep -q "$b" $V/0th/queue.md        || echo "MISSING FROM QUEUE: $b"
 done
 
-grep -l '^#[a-zA-Z]' $V/1st/n/*.md            # tags. -> nothing
+grep -hoE '^#[A-Za-z][^ ]*' $V/1st/n/*.md $V/2nd/n/*.md |
+  sort -u | grep -v '^#hub$'                  # any tag but #hub. -> nothing
+
+for f in $V/1st/n/*.md; do                    # #hub sits on hubs, and only on hubs
+  b=$(basename "$f" .md); [ "$b" = index_1st ] && continue
+  if grep -qE '^[0-9]{6}_[0-9]{4} \| [0-9]+% \| https://' "$f"; then
+    grep -qx '#hub' "$f" || echo "HUB MISSING #hub: $b"
+  else
+    grep -qx '#hub' "$f" && echo "CHILD HAS #hub: $b"
+  fi
+done
 grep -l '^|' $V/1st/n/*.md $V/2nd/n/*.md | grep -v index_   # tables. -> nothing
 
 grep -oh '\.\./\(\.\./\)\?1st/i/[^)]*' $V/1st/n/*.md $V/2nd/n/*.md | sed 's|.*/i/||' |

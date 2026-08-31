@@ -50,17 +50,20 @@ mkdir -p 4th/{n,i,r}
 
 ## Page shape
 1. The `wiki-update` skill writes these and owns the detail.
-2. Hub — `{YYMMDD}_{HHMM}_{title}.md`: title, then `{YYMMDD}_{HHMM} | {compression}% | {url}`,
-   then a `>` line, then the numbered child links.
-3. The hub holds no prose. Header, gist, links, nothing else.
+2. Hub — `{YYMMDD}_{HHMM}_{title}.md`: title, then `#hub`, then
+   `{YYMMDD}_{HHMM} | {compression}% | {url}`, then a `>` line, then the numbered child links.
+3. The hub holds no prose. Marker, header, gist, links, nothing else.
 4. Child — `{YYMMDD}_{HHMM}_{nn}_{idea}.md`: title, then `< [[1st/n/{hub}]]`, then the body.
 5. `nn` is two digits and equals the child's position in the hub list.
 6. The child title never repeats the hub title. `# Rader`, not `# FFT — Rader`.
 7. A child has no url, no `%`, no gist line. The hub owns those.
-8. **No tags. Anywhere.** The child filenames are the keywords.
-9. A sub-topic worth naming becomes a child. One not worth a child is cut.
-10. Cross-page connection is 2nd's job, not 1st's.
-11. Compression = every child body summed / source chars.
-12. Hub header and hub gist do not count. They are not body.
-13. Never an average of the children — that hides a bloated child.
-14. Above ~40% is a copy, not a distillation.
+8. **`#hub` is the only tag in the vault.** It marks a hub so you can filter for one.
+9. Structural, not topical. It says what the file IS, never what it is about.
+10. **No other tag. Anywhere.** The child filenames are the keywords.
+11. A child carries no marker. Its backlink already says it is a child.
+12. A sub-topic worth naming becomes a child. One not worth a child is cut.
+13. Cross-page connection is 2nd's job, not 1st's.
+14. Compression = every child body summed / source chars.
+15. Hub header and hub gist do not count. They are not body.
+16. Never an average of the children — that hides a bloated child.
+17. Above ~40% is a copy, not a distillation.
