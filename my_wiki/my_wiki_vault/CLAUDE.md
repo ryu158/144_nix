@@ -20,6 +20,18 @@ mkdir -p 4th/{n,i,r}
 1. Same level: `![](../i/plot.png)`, `[data](../r/run.csv)`
 2. Cross level: `[[2nd/n/topic]]` — full page path.
 
+## Body style
+1. As simple as possible.
+2. Leave only essential.
+3. Numbered lists over prose paragraphs.
+4. Short sentences only — no compound or nested clauses.
+5. One list item holds one sentence.
+6. Skip preamble, hedging, and pleasantries.
+7. Code and commands in blocks, never inline in a sentence.
+8. Caveman phrasing where it fits.
+9. No tables in a content page. A table becomes a numbered list, one item per row.
+10. Three files keep tables: `0th/queue.md`, `index_1st.md`, `index_2nd.md`. Ledgers, not prose.
+
 ## Hard rules
 1. Promote N -> N+1. Never edit a lower level in place.
 2. Never write back to Notion. 0th is read-only.
@@ -30,19 +42,25 @@ mkdir -p 4th/{n,i,r}
 6. `CONFIG.md` and `index.md` are SilverBullet's own, at the space root. `0th/queue.md`
    is the ledger, not a level.
 7. One page = one idea, at 1st too.
-8. A Notion page holding several ideas splits into a hub plus one child per idea.
-9. A page holding one idea stays one file — no hub.
-10. Split only when a `##` section is useful without the rest. Default is not to split.
+8. Every Notion page becomes a hub plus children. No exceptions.
+9. A one-idea page is a hub plus exactly one child.
+10. Split only when a `##` section is useful without the rest.
 11. Every promoted page names its source.
+12. Deleting a page here is unrecoverable. Git ignores the vault. Syncthing keeps no version.
 
 ## Page shape
 1. The `wiki-update` skill writes these and owns the detail.
-2. Single file or hub — `{YYMMDD}_{keywords}.md`: title, #tags, then
-   `{date} | {compression}% | {url}`, then a `>` line, then the body.
-3. On a hub the `>` line lists the children instead of the headings.
-4. Child — `{hub basename}__{idea}.md`: title, then `< [[1st/n/{hub}]]`, then the body.
-5. A child has no tags, no url, no `%`. The hub owns those.
-6. Compression = body chars / source chars.
-7. On a hub it is every child body summed over the one source.
-8. Never an average of the children — that hides a bloated child.
-9. Above ~40% is a copy, not a distillation.
+2. Hub — `{YYMMDD}_{HHMM}_{title}.md`: title, then `{YYMMDD}_{HHMM} | {compression}% | {url}`,
+   then a `>` line, then the numbered child links.
+3. The hub holds no prose. Header, gist, links, nothing else.
+4. Child — `{YYMMDD}_{HHMM}_{nn}_{idea}.md`: title, then `< [[1st/n/{hub}]]`, then the body.
+5. `nn` is two digits and equals the child's position in the hub list.
+6. The child title never repeats the hub title. `# Rader`, not `# FFT — Rader`.
+7. A child has no url, no `%`, no gist line. The hub owns those.
+8. **No tags. Anywhere.** The child filenames are the keywords.
+9. A sub-topic worth naming becomes a child. One not worth a child is cut.
+10. Cross-page connection is 2nd's job, not 1st's.
+11. Compression = every child body summed / source chars.
+12. Hub header and hub gist do not count. They are not body.
+13. Never an average of the children — that hides a bloated child.
+14. Above ~40% is a copy, not a distillation.
