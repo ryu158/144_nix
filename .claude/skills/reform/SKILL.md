@@ -17,9 +17,10 @@ This is the target style.
 2. Leave only essential.
 3. Numbered lists over prose paragraphs.
 4. Short sentences only — no compound or nested clauses.
-5. Skip preamble, hedging, and pleasantries.
-6. Code and commands in blocks, never inline in a sentence.
-7. Caveman phrasing where it fits.
+5. One list has one sentence
+6. Skip preamble, hedging, and pleasantries.
+7. Code and commands in blocks, never inline in a sentence.
+8. Caveman phrasing where it fits.
 
 Override: if the repo defines its own style file, that wins. Read it and say which one
 you used. Never merge the two silently.
