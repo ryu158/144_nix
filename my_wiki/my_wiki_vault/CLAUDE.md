@@ -5,6 +5,8 @@
 1. Higher number = more processed.
 2. 0th = inbox shadow. 1st = distilled. 2nd = contextualized. 3rd = synthesis.
 3. Extend forever.
+4. Each level tags its pages with its own name — `#1st`, `#2nd`, `#3rd`.
+5. There are no index pages. The tag is the index.
 
 ## Folders
 1. 1st and up: `n/` = .md pages, `i/` = images, `r/` = everything else.
@@ -30,7 +32,7 @@ mkdir -p 4th/{n,i,r}
 7. Code and commands in blocks, never inline in a sentence.
 8. Caveman phrasing where it fits.
 9. No tables in a content page. A table becomes a numbered list, one item per row.
-10. Three files keep tables: `0th/queue.md`, `index_1st.md`, `index_2nd.md`. Ledgers, not prose.
+10. Two files keep tables: `0th/queue.md` and `index.md`. Ledger and gate page, not prose.
 
 ## Hard rules
 1. Promote N -> N+1. Never edit a lower level in place.
@@ -50,17 +52,17 @@ mkdir -p 4th/{n,i,r}
 
 ## Page shape
 1. The `wiki-update` skill writes these and owns the detail.
-2. Hub — `{YYMMDD}_{HHMM}_{title}.md`: title, then `#hub`, then
+2. Hub — `{YYMMDD}_{HHMM}_{title}.md`: title, then `#1st`, then
    `{YYMMDD}_{HHMM} | {compression}% | {url}`, then a `>` line, then the numbered child links.
 3. The hub holds no prose. Marker, header, gist, links, nothing else.
 4. Child — `{YYMMDD}_{HHMM}_{nn}_{idea}.md`: title, then `< [[1st/n/{hub}]]`, then the body.
 5. `nn` is two digits and equals the child's position in the hub list.
 6. The child title never repeats the hub title. `# Rader`, not `# FFT — Rader`.
 7. A child has no url, no `%`, no gist line. The hub owns those.
-8. **`#hub` is the only tag in the vault.** It marks a hub so you can filter for one.
-9. Structural, not topical. It says what the file IS, never what it is about.
-10. **No other tag. Anywhere.** The child filenames are the keywords.
-11. A child carries no marker. Its backlink already says it is a child.
+8. **Level tags are the only tags.** `#1st` on a hub, `#2nd` on 2nd, `#3rd` on 3rd.
+9. Structural, not topical. They name the level, never the topic.
+10. A child carries no tag, so at 1st the tag also means "this is a hub".
+11. **No other tag. Anywhere.** The child filenames are the keywords.
 12. A sub-topic worth naming becomes a child. One not worth a child is cut.
 13. Cross-page connection is 2nd's job, not 1st's.
 14. Compression = every child body summed / source chars.

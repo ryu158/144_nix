@@ -82,7 +82,7 @@ Hub — `{YYMMDD}_{HHMM}_{title}.md`:
 ```
 # {page title}
 
-#hub
+#1st
 
 {YYMMDD}_{HHMM} | {compression}% | {notion url}
 
@@ -107,10 +107,11 @@ Child — `{YYMMDD}_{HHMM}_{nn}_{idea}.md`:
 13. **The child title never repeats the hub title.** `# Rader`, not `# FFT — Rader`.
 14. The hub name carries the topic already. The backlink carries it again.
 15. Links in the hub are bare — no alias, no display text.
-16. **`#hub` is the only tag in the vault.** It marks a hub so you can filter for one.
-17. It is structural, not topical. It says what the file IS, never what it is about.
-18. **No other tag. Anywhere.** Not on a hub, not on a child, not in `index_1st.md`.
-19. A child carries no marker. Its `< [[1st/n/...]]` backlink already says it is a child.
+16. **Level tags are the only tags in the vault.** `#1st` on a 1st hub, `#2nd` on a 2nd
+    page, `#3rd` on a 3rd page.
+17. They are structural, not topical. They name the level, never the topic.
+18. Children carry no tag, so at 1st the tag also means "this is a hub".
+19. **No other tag. Anywhere.** There are no index pages — the tag is the index.
 20. A sub-topic worth naming becomes a child. One not worth a child is cut, not tagged.
 21. The child filenames are the keywords. Page-name search finds them.
 22. Cross-page connection is 2nd's job, not 1st's.
@@ -150,7 +151,7 @@ Every `.md` in the vault, every level, is written this way.
 7. Code and commands in blocks, never inline in a sentence.
 8. Caveman phrasing where it fits.
 9. **No tables in a content page.** A Notion table becomes a numbered list, one item per row.
-10. Three files keep tables: `0th/queue.md`, `index_1st.md`, `index_2nd.md`. Ledgers, not prose.
+10. Two files keep tables: `0th/queue.md` and `index.md`. Ledger and gate page, not prose.
 11. A list runs slightly longer than the prose it replaces. Cut harder, do not raise the 40%.
 
 ## Images
@@ -203,16 +204,14 @@ magick raw_01 -auto-orient -strip -resize "640x640>" -quality 82   my_wiki/my_wi
 
 ## Close the run
 
-1. Update `1st/n/index_1st.md` — a new row for a NEW page, a refreshed row for a CHANGED one.
-2. One index row per Notion page. The hub gets the row, its children do not.
-3. Set the queue row `done`, linking the hub. Never a child.
-4. `synced` = the `edited` value **from the Phase A result**, not "now".
-5. An edit landing between query and fetch is then caught next run instead of swallowed.
-6. A CHANGED page may split differently. Old children can be left with no hub entry.
-7. A re-split renumbers. An old `_03_` can survive with nothing pointing at it.
-8. **Report those orphans. Delete nothing without a yes.** The vault is gitignored and
+1. Set the queue row `done`, linking the hub. Never a child.
+2. `synced` = the `edited` value **from the Phase A result**, not "now".
+3. An edit landing between query and fetch is then caught next run instead of swallowed.
+4. A CHANGED page may split differently. Old children can be left with no hub entry.
+5. A re-split renumbers. An old `_03_` can survive with nothing pointing at it.
+6. **Report those orphans. Delete nothing without a yes.** The vault is gitignored and
    syncthing propagates every deletion to `noteryu`. A wrong delete is unrecoverable.
-9. A page linked from `2nd/` that got renamed leaves a dead link. Report it, repoint it.
+7. A page linked from `2nd/` that got renamed leaves a dead link. Report it, repoint it.
 
 ## Known broken
 
@@ -232,7 +231,7 @@ find $V -name '*.md' -not -path '*/n/*' -not -path '*/.stversions/*'
 # -> CLAUDE.md, CONFIG.md, index.md, 0th/queue.md. Nothing else, ever.
 
 for f in $V/1st/n/*.md; do            # every page is a hub or a child
-  b=$(basename "$f" .md); [ "$b" = index_1st ] && continue
+  b=$(basename "$f" .md)
   grep -q '^< \[\[1st/n/' "$f" && continue                                # child
   grep -qE '^[0-9]{6}_[0-9]{4} \| [0-9]+% \| https://' "$f" && continue   # hub
   echo "NEITHER HUB NOR CHILD: $f"
@@ -244,26 +243,30 @@ for f in $V/1st/n/*.md; do            # child -> real hub, hub lists it back
   grep -q "$(basename "$f" .md)" "$V/1st/n/$h.md" || echo "CHILD NOT IN HUB: $f"
 done
 
-for f in $V/1st/n/*.md; do            # every hub has a child and an index row
+for f in $V/1st/n/*.md; do            # every hub has a child and a queue row
   grep -qE '^[0-9]{6}_[0-9]{4} \| [0-9]+% \| https://' "$f" || continue
   b=$(basename "$f" .md); ts=$(echo "$b" | cut -d_ -f1,2)   # hub name, then its timestamp
   grep -q "^1\. \[\[1st/n/${ts}_01_" "$f" || echo "HUB HAS NO 01 CHILD: $b"
-  grep -q "$b" $V/1st/n/index_1st.md  || echo "MISSING FROM INDEX: $b"
-  grep -q "$b" $V/0th/queue.md        || echo "MISSING FROM QUEUE: $b"
+  grep -q "$b" $V/0th/queue.md || echo "MISSING FROM QUEUE: $b"
 done
 
-grep -hoE '^#[A-Za-z][^ ]*' $V/1st/n/*.md $V/2nd/n/*.md |
-  sort -u | grep -v '^#hub$'                  # any tag but #hub. -> nothing
+grep -hoE '^#[A-Za-z0-9][^ ]*' $V/1st/n/*.md $V/2nd/n/*.md |   # digits too: #1st
+  sort -u | grep -vE '^#(1st|2nd|3rd)$'       # any tag but a level tag. -> nothing
 
-for f in $V/1st/n/*.md; do                    # #hub sits on hubs, and only on hubs
-  b=$(basename "$f" .md); [ "$b" = index_1st ] && continue
+for f in $V/1st/n/*.md; do                    # #1st sits on hubs, and only on hubs
+  b=$(basename "$f" .md)
   if grep -qE '^[0-9]{6}_[0-9]{4} \| [0-9]+% \| https://' "$f"; then
-    grep -qx '#hub' "$f" || echo "HUB MISSING #hub: $b"
+    grep -qx '#1st' "$f" || echo "HUB MISSING #1st: $b"
   else
-    grep -qx '#hub' "$f" && echo "CHILD HAS #hub: $b"
+    grep -qx '#1st' "$f" && echo "CHILD HAS #1st: $b"
   fi
 done
-grep -l '^|' $V/1st/n/*.md $V/2nd/n/*.md | grep -v index_   # tables. -> nothing
+
+for f in $V/2nd/n/*.md; do [ -e "$f" ] || continue   # every 2nd page names its level
+  grep -qx '#2nd' "$f" || echo "2ND MISSING #2nd: $f"
+done
+
+grep -l '^|' $V/1st/n/*.md $V/2nd/n/*.md    # tables in content pages. -> nothing
 
 grep -oh '\.\./\(\.\./\)\?1st/i/[^)]*' $V/1st/n/*.md $V/2nd/n/*.md | sed 's|.*/i/||' |
   sort -u | while read i; do [ -f "$V/1st/i/$i" ] || echo "DEAD IMG: $i"; done
@@ -273,7 +276,7 @@ for f in $V/1st/i/*; do               # picture saved, no note links it
   grep -q "$(basename "$f")" $V/1st/n/*.md $V/2nd/n/*.md || echo "ORPHAN IMG: $f"
 done
 
-grep -oh '\[\[1st/n/[^]]*\]\]' $V/0th/queue.md $V/1st/n/index_1st.md $V/2nd/n/*.md |
+grep -oh '\[\[1st/n/[^]]*\]\]' $V/0th/queue.md $V/2nd/n/*.md |
   sed 's/^\[\[//; s/\]\]$//' | sort -u |      # -oh and anchored strip: a greedy sed eats the path
   while read l; do [ -f "$V/$l.md" ] || echo "DEAD LINK: $l"; done
 ```
