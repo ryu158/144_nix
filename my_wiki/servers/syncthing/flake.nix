@@ -116,8 +116,13 @@
 # gui is loopback only:
 #   ssh -L 8384:localhost:8384 opc@ryuora144.duckdns.org  ->  http://localhost:8384
 #   set a gui password, share /home/opc/nix/my_wiki/my_wiki_vault
-#
+
 # --no-default-folder was removed in syncthing 2.x
 # --no-upgrade: binary is a store path, self-upgrade cannot work
+#  pw hint: see /.config/silverbullet/env
+
 # data/config: ~/.local/state/syncthing
 # ~/.local/state/syncthing/config.xml
+# generate new password and hashed password into config.xml
+# syncthing generate --gui-user=NEWUSER --gui-password=NEWPASSWORD
+
