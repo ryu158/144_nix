@@ -8,28 +8,38 @@
 1. `my_wiki_vault/` — the SilverBullet space.
 2. Content gitignored except its `CLAUDE.md` and `0th/queue.md`.
 3. Distilled pages are NOT backed up by git. Syncthing is their only copy.
-4. `.claude/` — HANDOVER, logs, `work_plan/` checklists, the `wiki-update` skill.
-5. `CLAUDE.md` — project rules. The vault has a second one, public.
+4. **Deleting one is unrecoverable.** Proved 2026-08-31: 12 pages in `1st/n/` were deleted
+   and `.stversions` held no copy of a single one. Syncthing versioning did not catch them.
+5. Never delete a vault page without an explicit yes, and say what will be lost first.
+6. `.claude/` — HANDOVER, logs, `work_plan/` checklists, the `wiki-update` skill.
+7. `CLAUDE.md` — project rules. The vault has a second one, public.
 
 ## Vault
 1. Rules: `my_wiki_vault/CLAUDE.md`. Do not restate them here.
 2. Queue columns: page | created | synced | state.
 3. `synced` = the Notion `edited` value at last distill. That baseline makes CHANGED
    detectable.
-4. Timestamps carry **seconds**. They stored minutes until 2026-08-27, so an edit inside
-   the same minute was invisible.
-5. 1st holds hubs, children and single files. A page with several ideas is a hub plus
-   one child per idea; a page with one idea is one file, no hub. Rules in the vault
-   `CLAUDE.md`, procedure in the skill.
-6. SilverBullet owns `CONFIG.md` and `.silverbullet.db.json` at the space root.
-7. `SB_SHELL_BACKEND=off` — keep it off, the wiki is public.
-8. SB keeps **no server-side page index**. `.silverbullet.db.json` holds only the JWT secret
+4. Queue dates are `YYMMDD_HHMM`, truncated. **Seconds are dropped on purpose** since
+   2026-08-31. Cost: an edit inside the same minute as the distill reads `==` and skips.
+5. A `done` row whose hub file is gone must be **deleted**, not blanked. `== synced` skips
+   it, and a blank `synced` fires the bootstrap branch, which also skips.
+6. 1st is **always a hub plus children**, even a one-idea page (hub + 1 child). No single
+   files any more. Rules in the vault `CLAUDE.md`, procedure in the skill.
+7. Hub holds no prose — tag, header, one `>` gist, numbered bare links.
+8. Names: hub `{YYMMDD}_{HHMM}_{title}`, child `{YYMMDD}_{HHMM}_{nn}_{idea}`.
+9. `#1st` / `#2nd` / `#3rd` are the only tags. Children carry none, so at 1st the tag also
+   means "this is a hub".
+10. There are no index pages. The tag is the index. `index.md` at the space root is the
+    SilverBullet gate page and stays.
+11. SilverBullet owns `CONFIG.md` and `.silverbullet.db.json` at the space root.
+12. `SB_SHELL_BACKEND=off` — keep it off, the wiki is public.
+13. SB keeps **no server-side page index**. `.silverbullet.db.json` holds only the JWT secret
    and auth hash.
-9. The page list is built client-side. A file written straight to disk needs a browser
+14. The page list is built client-side. A file written straight to disk needs a browser
    reload or reindex before it shows.
-10. SB cannot set its attachment folder (upstream #884). A pasted file lands beside the page
+15. SB cannot set its attachment folder (upstream #884). A pasted file lands beside the page
    and gets moved by hand. Discipline, not enforcement.
-11. The vault `CLAUDE.md` is public. Keep server facts — ports, domain, flake paths, config
+16. The vault `CLAUDE.md` is public. Keep server facts — ports, domain, flake paths, config
    flags — out of it. They live here.
 
 ## Servers
@@ -45,14 +55,23 @@ cd servers/syncthing    && nohup nix run .#st_start >~/st.log 2>&1 &
 4. Folder `4qu9r-ehg2a` = `my_wiki_vault/`, paired with `noteryu` (windows notebook),
    sendreceive.
 5. Password apps `sb_ps_update` / `st_ps_update`. Detail in the repo-root HANDOVER.
-6. `servers/silverbullet/`, `servers/syncthing/` — one flake each, pinned nixos-25.11.
-7. Pinned 25.11 alone: 24.05 ships silverbullet 0.7.7 (wrong major) and syncthing 1.27.7
+6. To change the syncthing GUI user/password: hand-edit `<gui>` in
+   `~/.local/state/syncthing/config.xml`, then `cd servers/syncthing && nix run .#st_ps_update`.
+7. **`syncthing serve` does NOT hash a plaintext `<password>`.** Verified in source
+   2026-08-31: config load never calls `SetPassword`, and login is strictly
+   `CompareHashedPassword`. A plaintext field locks you out of the GUI.
+8. `st_ps_update` is the fix — it stops by port owner, blanks the field so `generate`
+   cannot skip as "unchanged", hashes via stdin, restarts, then proves the login.
+9. Syncthing is **not** a NixOS module here. The flake only packages the binary and these
+   scripts, so nothing rewrites `config.xml` on rebuild. `systemctl` does not apply.
+10. `servers/silverbullet/`, `servers/syncthing/` — one flake each, pinned nixos-25.11.
+11. Pinned 25.11 alone: 24.05 ships silverbullet 0.7.7 (wrong major) and syncthing 1.27.7
    (pre-SQLite-rewrite).
-8. Do not merge with the repo's 24.05 pin.
-9. **Moving the vault directory is dangerous.** Syncthing is paired.
-10. If it runs when the path changes, it sees every file vanish and propagates the
+12. Do not merge with the repo's 24.05 pin.
+13. **Moving the vault directory is dangerous.** Syncthing is paired.
+14. If it runs when the path changes, it sees every file vanish and propagates the
     deletions to the notebook.
-11. Stop syncthing, move, edit the path in `~/.local/state/syncthing/config.xml`, restart.
+15. Stop syncthing, move, edit the path in `~/.local/state/syncthing/config.xml`, restart.
 
 ## Notion — MCP, connected 2026-08-25
 1. `https://mcp.notion.com/mcp`, added `--scope user` (in `~/.claude.json`, NOT the repo).
@@ -101,25 +120,31 @@ cd servers/syncthing    && nohup nix run .#st_start >~/st.log 2>&1 &
 3. Only `graphify` is open. It has never been specified.
 
 ## Not done
-1. SEO's `synced` was bootstrapped from the live `edited` on 08-25 and *assumed* current.
-   Still never checked against the file. Skipped again on 08-27. Force a re-distill if
-   that matters.
-2. `edited` bumps on any edit, a tag tweak included, so some re-distills land near-identical.
-3. Child-page edits do not bump the parent. Sub-page edits stay invisible.
-4. Lossless WebP is NOT a safe default: measured 207 KB vs 16 KB lossy on a 400x300 photo.
-   Encode both only for un-resized PNG, keep the smaller. The rule has now run for real
-   (interpolation, 4 images).
-5. SEO links out to `/p/29b7ef98...`, outside the grant. Its child toggles came back empty.
+1. **Three of four pages are above the 40% compression ceiling.** SEO 51%, interpolation
+   66%, my_projects 72%. Only FFT (38%) passes.
+2. Those three sources are already dense — bullet advice, two spec tables, a checklist.
+   Cutting further deletes methods, dates and verdicts. Deliberate, not an oversight.
+3. Converting a table or bullet list one-to-one lands near 100%. First SEO attempt measured
+   96% before four rewrites.
+4. `edited` bumps on any edit, a tag tweak included, so some re-distills land near-identical.
+5. Child-page edits do not bump the parent. Sub-page edits stay invisible.
+6. Lossless WebP is NOT a safe default: measured 207 KB vs 16 KB lossy on a 400x300 photo.
+   Encode both only for un-resized PNG, keep the smaller. Re-ran 2026-08-31 on the same 4
+   interpolation images — byte-identical md5, so the pipeline is deterministic.
+7. SEO links out to `/p/29b7ef98...`, outside the grant. Its child toggles came back empty.
    Not fetched, not distilled.
-6. The distilled SEO page overlaps `webUI/.claude/refs/SEO_ref.md`. Reconciling is a
+8. The distilled SEO page overlaps `webUI/.claude/refs/SEO_ref.md`. Reconciling is a
    2nd-level job, deliberately not done at 1st.
-7. Empty `<folder id="" label="" path="">` junk entry in syncthing's config.xml. Needs a
+9. Empty `<folder id="" label="" path="">` junk entry in syncthing's config.xml. Needs a
    restart to remove.
-8. graphify: on the checklist, never specified, no design.
-9. The three 1st pages keep the old `YYYY-MM-DD` name. New and re-split pages use
-   `YYMMDD`. The check regex accepts both until none remain.
-10. `reform` has no rule for a status file. Its cut rules assume a rules file, where a
+10. graphify: on the checklist, never specified, no design.
+11. `3rd/n/` is an empty directory. Nothing has reached 3rd.
+12. `#1st` leads with a digit. Greps fine; never confirmed SilverBullet indexes a
+    digit-leading tag as clickable. Check in the UI before relying on it.
+13. `reform` has no rule for a status file. Its cut rules assume a rules file, where a
     snapshot is a defect. In a handover a snapshot is the point.
+14. Junk file at repo root, `$'\033`\033q'` — 38 KB of colour-coded `git log` output caught
+    by a shell redirect. Outside `my_wiki/`, left alone.
 
 ## Confirmed, don't touch
 1. `Host localhost` in the syncthing proxy block (repo-root nginx config owns it).
