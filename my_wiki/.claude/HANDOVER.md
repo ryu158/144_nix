@@ -27,19 +27,21 @@
    files any more. Rules in the vault `CLAUDE.md`, procedure in the skill.
 7. Hub holds no prose — tag, header, one `>` gist, numbered bare links.
 8. Names: hub `{YYMMDD}_{HHMM}_{title}`, child `{YYMMDD}_{HHMM}_{nn}_{idea}`.
-9. `#1st` / `#2nd` / `#3rd` are the only tags. Children carry none, so at 1st the tag also
-   means "this is a hub".
-10. There are no index pages. The tag is the index. `index.md` at the space root is the
+9. The level tag leads every tag line — `#1st` / `#2nd` / `#3rd`. Structural, not topical.
+10. Since 2026-09-01 a hub also inherits the Notion `tag` value, verbatim, on that same
+   line: `#1st #math #webUI`. Split on whitespace, add a missing `#`, change nothing else.
+11. Children still carry none, so at 1st the tag line also means "this is a hub".
+12. There are no index pages. The tag is the index. `index.md` at the space root is the
     SilverBullet gate page and stays.
-11. SilverBullet owns `CONFIG.md` and `.silverbullet.db.json` at the space root.
-12. `SB_SHELL_BACKEND=off` — keep it off, the wiki is public.
-13. SB keeps **no server-side page index**. `.silverbullet.db.json` holds only the JWT secret
+13. SilverBullet owns `CONFIG.md` and `.silverbullet.db.json` at the space root.
+14. `SB_SHELL_BACKEND=off` — keep it off, the wiki is public.
+15. SB keeps **no server-side page index**. `.silverbullet.db.json` holds only the JWT secret
    and auth hash.
-14. The page list is built client-side. A file written straight to disk needs a browser
+16. The page list is built client-side. A file written straight to disk needs a browser
    reload or reindex before it shows.
-15. SB cannot set its attachment folder (upstream #884). A pasted file lands beside the page
+17. SB cannot set its attachment folder (upstream #884). A pasted file lands beside the page
    and gets moved by hand. Discipline, not enforcement.
-16. The vault `CLAUDE.md` is public. Keep server facts — ports, domain, flake paths, config
+18. The vault `CLAUDE.md` is public. Keep server facts — ports, domain, flake paths, config
    flags — out of it. They live here.
 
 ## Servers
@@ -139,11 +141,9 @@ cd servers/syncthing    && nohup nix run .#st_start >~/st.log 2>&1 &
    restart to remove.
 10. graphify: on the checklist, never specified, no design.
 11. `3rd/n/` is an empty directory. Nothing has reached 3rd.
-12. `#1st` leads with a digit. Greps fine; never confirmed SilverBullet indexes a
-    digit-leading tag as clickable. Check in the UI before relying on it.
-13. `reform` has no rule for a status file. Its cut rules assume a rules file, where a
+12. `reform` has no rule for a status file. Its cut rules assume a rules file, where a
     snapshot is a defect. In a handover a snapshot is the point.
-14. Junk file at repo root, `$'\033`\033q'` — 38 KB of colour-coded `git log` output caught
+13. Junk file at repo root, `$'\033`\033q'` — 38 KB of colour-coded `git log` output caught
     by a shell redirect. Outside `my_wiki/`, left alone.
 
 ## Confirmed, don't touch

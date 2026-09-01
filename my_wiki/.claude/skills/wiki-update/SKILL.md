@@ -14,7 +14,7 @@ description: Pull new pages from the Notion inbox into my_wiki and distill them.
 
 ```
 notion-query-data-sources, sql:
-SELECT url, createdTime, "edited", "Name"
+SELECT url, createdTime, "edited", "tag", "Name"
 FROM "collection://3c7d4d1c-bd1d-80e3-90ce-000b4e3572fe"
 ORDER BY createdTime DESC LIMIT 50
 ```
@@ -62,7 +62,10 @@ Scan 260829. Inbox 4. Distilled 2, skipped 2.
     as bootstrap and skips, and the page stays lost.
 15. Queue is data only: title, table, scan line. Under ~10 lines however long the table grows.
 16. 0th holds one file, `queue.md`. No `n/`, no index, and never a copy of this routine.
-17. Report NEW and CHANGED. Stop if both empty.
+17. `tag` is free text. It may be empty, or hold several tokens. B needs it.
+18. **Never store it in the queue.** A re-reads it live every run, so there is
+    nothing to keep. The table stays four columns.
+19. Report NEW and CHANGED. Stop if both empty.
 
 ## B — distill
 
@@ -82,7 +85,7 @@ Hub — `{YYMMDD}_{HHMM}_{title}.md`:
 ```
 # {page title}
 
-#1st
+#1st {tags}
 
 {YYMMDD}_{HHMM} | {compression}% | {notion url}
 
@@ -107,22 +110,27 @@ Child — `{YYMMDD}_{HHMM}_{nn}_{idea}.md`:
 13. **The child title never repeats the hub title.** `# Rader`, not `# FFT — Rader`.
 14. The hub name carries the topic already. The backlink carries it again.
 15. Links in the hub are bare — no alias, no display text.
-16. **Level tags are the only tags in the vault.** `#1st` on a 1st hub, `#2nd` on a 2nd
-    page, `#3rd` on a 3rd page.
-17. They are structural, not topical. They name the level, never the topic.
-18. Children carry no tag, so at 1st the tag also means "this is a hub".
-19. **No other tag. Anywhere.** There are no index pages — the tag is the index.
-20. A sub-topic worth naming becomes a child. One not worth a child is cut, not tagged.
-21. The child filenames are the keywords. Page-name search finds them.
-22. Cross-page connection is 2nd's job, not 1st's.
-23. Link line takes no keys — position is the meaning. Never write the page id, the url has it.
-24. The `>` gist is one sentence about the page as a whole. It never restates a child.
-25. A child has no gist line, no url, no `%`. The hub owns those.
-26. **Compression** = every child body summed / source chars.
-27. Hub header and hub gist line do not count. They are not body.
-28. **Never an average** of the children — a 5% child and a 60% child average to 32.5% and
+16. **The level tag is always first.** `#1st` on a 1st hub, `#2nd` on a 2nd page,
+    `#3rd` on a 3rd page. Structural, never topical.
+17. The hub then carries the Notion `tag` value, same line — `#1st #math #webUI`.
+18. Split that field on whitespace. One token = one tag.
+19. A token with no leading `#` gets one. Nothing else changes — no re-case, no
+    rename, no reorder.
+20. Empty `tag` -> the level tag alone.
+21. **Never invent a tag.** The Notion field is the only source. Never read one out
+    of the body.
+22. Children carry no tag, so at 1st the tag line also means "this is a hub".
+23. A sub-topic worth naming becomes a child. One not worth a child is cut, not tagged.
+24. The child filenames are the keywords. Page-name search finds them.
+25. Cross-page connection is 2nd's job, not 1st's.
+26. Link line takes no keys — position is the meaning. Never write the page id, the url has it.
+27. The `>` gist is one sentence about the page as a whole. It never restates a child.
+28. A child has no gist line, no url, no `%`. The hub owns those.
+29. **Compression** = every child body summed / source chars.
+30. Hub header and hub gist line do not count. They are not body.
+31. **Never an average** of the children — a 5% child and a 60% child average to 32.5% and
     pass while the page is really 35%.
-29. Measure, never estimate. Write the fetched text to the scratchpad, then:
+32. Measure, never estimate. Write the fetched text to the scratchpad, then:
 
 ```
 python3 -c "
@@ -132,11 +140,11 @@ body=sum(len(open(f).read()) for f in sys.argv[1:])
 print(round(100*body/src))" body*.md
 ```
 
-30. Above ~40% it is a copy, not a distillation. Cut again.
-31. Keep every hard number and named source. Those are the claims.
-32. Compress. Never rewrite section by section.
-33. **Do not invent.** Only what the fetch says.
-34. Only the fetched text is a source. Not memory, not another file in this repo.
+33. Above ~40% it is a copy, not a distillation. Cut again.
+34. Keep every hard number and named source. Those are the claims.
+35. Compress. Never rewrite section by section.
+36. **Do not invent.** Only what the fetch says.
+37. Only the fetched text is a source. Not memory, not another file in this repo.
 
 ## Body style
 
@@ -217,9 +225,10 @@ magick raw_01 -auto-orient -strip -resize "640x640>" -quality 82   my_wiki/my_wi
 
 1. `edited` bumps on **any** edit — a tag or property tweak with no body change counts.
 2. Some re-distills land near-identical. Expected, not a bug.
-3. Editing a child page does not bump the parent's `edited`. Sub-page edits stay invisible.
-4. Links and child toggles outside the granted inbox are not fetched. Say so, do not guess.
-5. Deleting a vault file is not recoverable. Git ignores the vault. Syncthing keeps no
+3. A tag-only edit therefore forces a full re-distill for one line. Accepted.
+4. Editing a child page does not bump the parent's `edited`. Sub-page edits stay invisible.
+5. Links and child toggles outside the granted inbox are not fetched. Say so, do not guess.
+6. Deleting a vault file is not recoverable. Git ignores the vault. Syncthing keeps no
    version of a `1st/n/` page.
 
 ## Check before reporting done
@@ -250,20 +259,19 @@ for f in $V/1st/n/*.md; do            # every hub has a child and a queue row
   grep -q "$b" $V/0th/queue.md || echo "MISSING FROM QUEUE: $b"
 done
 
-grep -hoE '^#[A-Za-z0-9][^ ]*' $V/1st/n/*.md $V/2nd/n/*.md |   # digits too: #1st
-  sort -u | grep -vE '^#(1st|2nd|3rd)$'       # any tag but a level tag. -> nothing
-
-for f in $V/1st/n/*.md; do                    # #1st sits on hubs, and only on hubs
+for f in $V/1st/n/*.md; do            # tag line: #1st leads, and only on a hub
   b=$(basename "$f" .md)
+  t=$(grep -m1 -E '^#[A-Za-z0-9]' "$f")       # a header is '# x', never matches
   if grep -qE '^[0-9]{6}_[0-9]{4} \| [0-9]+% \| https://' "$f"; then
-    grep -qx '#1st' "$f" || echo "HUB MISSING #1st: $b"
+    case "$t" in '#1st'|'#1st '*) ;; *) echo "HUB TAG LINE BAD: $b -> $t";; esac
   else
-    grep -qx '#1st' "$f" && echo "CHILD HAS #1st: $b"
+    [ -z "$t" ] || echo "CHILD HAS A TAG: $b -> $t"
   fi
 done
 
 for f in $V/2nd/n/*.md; do [ -e "$f" ] || continue   # every 2nd page names its level
-  grep -qx '#2nd' "$f" || echo "2ND MISSING #2nd: $f"
+  t=$(grep -m1 -E '^#[A-Za-z0-9]' "$f")
+  case "$t" in '#2nd'|'#2nd '*) ;; *) echo "2ND TAG LINE BAD: $f -> $t";; esac
 done
 
 grep -l '^|' $V/1st/n/*.md $V/2nd/n/*.md    # tables in content pages. -> nothing
