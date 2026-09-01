@@ -210,6 +210,40 @@ magick raw_01 -auto-orient -strip -resize "640x640>" -quality 82   my_wiki/my_wi
 23. Alt text is the Notion caption **verbatim** or empty. Do-not-invent covers alt text.
 24. Image lines do not count toward compression. They are not prose and would inflate it.
 
+## C — 2nd tag index
+
+Runs after B, once per run, over every NEW and CHANGED page.
+
+1. Candidate tags for a trigger page = its own Notion tags, **plus** any tag already in
+   the vault whose name is a whole word in the trigger page's title.
+2. Group for a tag = every 1st hub where the tag sits on the hub tag line, **or** is a
+   whole word in the hub basename. Split the basename on `_`, compare case-insensitive.
+3. Group under 2 hubs -> build nothing. A one-item list is noise.
+4. Group of 2 or more -> write `my_wiki/my_wiki_vault/2nd/n/{YYMMDD}_{HHMM}_{tag}.md`.
+5. **The timestamp is the trigger page's `createdTime`.** Not the tag's, not today.
+6. One file per tag. A hub with two tags is listed in two files.
+7. List the hubs oldest first, by hub timestamp. Deterministic.
+8. The page is links only. No prose, no images, no gist beyond the one `>` line.
+9. **No compression rule here.** There is no distilled body to measure.
+10. Never invent a tag. Only a tag already on a hub.
+
+2nd tag index — `{YYMMDD}_{HHMM}_{tag}.md`:
+
+```
+# {tag, no hash}
+
+#2nd #{tag}
+
+> Hubs tagged #{tag}.
+
+1. [[1st/n/{oldest hub}]]
+2. [[1st/n/{next hub}]]
+```
+
+11. 2nd holds **two species**. A timestamp prefix means tag index. A bare name means a
+    synthesis page — prose, images, hand-written.
+12. This skill writes the index only. It never writes or edits a synthesis page.
+
 ## Close the run
 
 1. Set the queue row `done`, linking the hub. Never a child.
@@ -220,6 +254,9 @@ magick raw_01 -auto-orient -strip -resize "640x640>" -quality 82   my_wiki/my_wi
 6. **Report those orphans. Delete nothing without a yes.** The vault is gitignored and
    syncthing propagates every deletion to `noteryu`. A wrong delete is unrecoverable.
 7. A page linked from `2nd/` that got renamed leaves a dead link. Report it, repoint it.
+8. The index name carries the trigger date, so a later trigger writes a **second** file
+   for the same tag. Report the older one as superseded. Name it.
+9. **Delete nothing without a yes.** Same rule as the orphans above.
 
 ## Known broken
 
@@ -230,6 +267,7 @@ magick raw_01 -auto-orient -strip -resize "640x640>" -quality 82   my_wiki/my_wi
 5. Links and child toggles outside the granted inbox are not fetched. Say so, do not guess.
 6. Deleting a vault file is not recoverable. Git ignores the vault. Syncthing keeps no
    version of a `1st/n/` page.
+7. A tag collects one index file per trigger. They pile up until cleared by hand.
 
 ## Check before reporting done
 
@@ -273,6 +311,14 @@ for f in $V/2nd/n/*.md; do [ -e "$f" ] || continue   # every 2nd page names its 
   t=$(grep -m1 -E '^#[A-Za-z0-9]' "$f")
   case "$t" in '#2nd'|'#2nd '*) ;; *) echo "2ND TAG LINE BAD: $f -> $t";; esac
 done
+
+for f in $V/2nd/n/[0-9]*_*.md; do [ -e "$f" ] || continue   # an index is links only
+  grep -qvE '^(#|>|[0-9]+\. \[\[1st/n/|$)' "$f" && echo "2ND INDEX HAS PROSE: $f"
+done
+
+ls $V/2nd/n/[0-9]*_*.md 2>/dev/null |          # one live index per tag
+  sed -E 's|.*/[0-9]{6}_[0-9]{4}_||' | sort | uniq -d |
+  while read t; do echo "TWO INDEXES FOR ONE TAG: $t"; done
 
 grep -l '^|' $V/1st/n/*.md $V/2nd/n/*.md    # tables in content pages. -> nothing
 

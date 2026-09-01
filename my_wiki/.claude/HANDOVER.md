@@ -10,9 +10,11 @@
 3. Distilled pages are NOT backed up by git. Syncthing is their only copy.
 4. **Deleting one is unrecoverable.** Proved 2026-08-31: 12 pages in `1st/n/` were deleted
    and `.stversions` held no copy of a single one. Syncthing versioning did not catch them.
-5. Never delete a vault page without an explicit yes, and say what will be lost first.
-6. `.claude/` — HANDOVER, logs, `work_plan/` checklists, the `wiki-update` skill.
-7. `CLAUDE.md` — project rules. The vault has a second one, public.
+5. Proved again 2026-09-01 with `2nd/n/interpolation.md`. Same result, no copy. Twice is
+   the rule, not bad luck. `.stversions` is not a backup.
+6. Never delete a vault page without an explicit yes, and say what will be lost first.
+7. `.claude/` — HANDOVER, logs, `work_plan/` checklists, the `wiki-update` skill.
+8. `CLAUDE.md` — project rules. The vault has a second one, public.
 
 ## Vault
 1. Rules: `my_wiki_vault/CLAUDE.md`. Do not restate them here.
@@ -31,17 +33,21 @@
 10. Since 2026-09-01 a hub also inherits the Notion `tag` value, verbatim, on that same
    line: `#1st #math #webUI`. Split on whitespace, add a missing `#`, change nothing else.
 11. Children still carry none, so at 1st the tag line also means "this is a hub".
-12. There are no index pages. The tag is the index. `index.md` at the space root is the
-    SilverBullet gate page and stays.
-13. SilverBullet owns `CONFIG.md` and `.silverbullet.db.json` at the space root.
-14. `SB_SHELL_BACKEND=off` — keep it off, the wiki is public.
-15. SB keeps **no server-side page index**. `.silverbullet.db.json` holds only the JWT secret
+12. No hand-kept index pages. At 1st the tag is the index. `index.md` at the space root
+    is the SilverBullet gate page and stays.
+13. Since 2026-09-01 **2nd holds two species**. A `{YYMMDD}_{HHMM}_{tag}` name is a
+    generated tag index — links only. A bare name is a hand-written synthesis page.
+14. The index name carries the **trigger page's** date, so a later trigger writes a
+    second file for the same tag. Report the old one superseded. Never auto-delete.
+15. SilverBullet owns `CONFIG.md` and `.silverbullet.db.json` at the space root.
+16. `SB_SHELL_BACKEND=off` — keep it off, the wiki is public.
+17. SB keeps **no server-side page index**. `.silverbullet.db.json` holds only the JWT secret
    and auth hash.
-16. The page list is built client-side. A file written straight to disk needs a browser
+18. The page list is built client-side. A file written straight to disk needs a browser
    reload or reindex before it shows.
-17. SB cannot set its attachment folder (upstream #884). A pasted file lands beside the page
+19. SB cannot set its attachment folder (upstream #884). A pasted file lands beside the page
    and gets moved by hand. Discipline, not enforcement.
-18. The vault `CLAUDE.md` is public. Keep server facts — ports, domain, flake paths, config
+20. The vault `CLAUDE.md` is public. Keep server facts — ports, domain, flake paths, config
    flags — out of it. They live here.
 
 ## Servers
@@ -122,8 +128,8 @@ cd servers/syncthing    && nohup nix run .#st_start >~/st.log 2>&1 &
 3. Only `graphify` is open. It has never been specified.
 
 ## Not done
-1. **Three of four pages are above the 40% compression ceiling.** SEO 51%, interpolation
-   66%, my_projects 72%. Only FFT (38%) passes.
+1. **Three of five pages are above the 40% compression ceiling.** SEO 51%, interpolation
+   66%, my_projects 72%. FFT 38% and SEO_2 39% pass.
 2. Those three sources are already dense — bullet advice, two spec tables, a checklist.
    Cutting further deletes methods, dates and verdicts. Deliberate, not an oversight.
 3. Converting a table or bullet list one-to-one lands near 100%. First SEO attempt measured
@@ -141,9 +147,13 @@ cd servers/syncthing    && nohup nix run .#st_start >~/st.log 2>&1 &
    restart to remove.
 10. graphify: on the checklist, never specified, no design.
 11. `3rd/n/` is an empty directory. Nothing has reached 3rd.
-12. `reform` has no rule for a status file. Its cut rules assume a rules file, where a
+12. A tag collects one index file per trigger, because the name carries the trigger date.
+    None to clear yet. First pile-up comes with the next `#SEO` page.
+13. The 2nd **synthesis** species has zero instances since `interpolation.md` was deleted
+    2026-09-01. Only the generated index lives at 2nd. The rule stands for the next one.
+14. `reform` has no rule for a status file. Its cut rules assume a rules file, where a
     snapshot is a defect. In a handover a snapshot is the point.
-13. Junk file at repo root, `$'\033`\033q'` — 38 KB of colour-coded `git log` output caught
+15. Junk file at repo root, `$'\033`\033q'` — 38 KB of colour-coded `git log` output caught
     by a shell redirect. Outside `my_wiki/`, left alone.
 
 ## Confirmed, don't touch
