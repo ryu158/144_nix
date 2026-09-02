@@ -5,9 +5,10 @@ import { type Page } from '@playwright/test';
  * them rather than letting them out: deterministic, offline-capable, and no
  * hammering someone else's CDN on every run.
  *
- * Stub, never abort. Both pages call kofiwidget2.init(...) and
- * kofiWidgetOverlay.draw(...) from inline scripts — an aborted request leaves
- * those throwing ReferenceError, which would poison every console assertion.
+ * Stub, never abort. Both pages call kofiWidgetOverlay.draw(...) from an inline
+ * script — an aborted request leaves that throwing ReferenceError, which would
+ * poison every console assertion. kofiwidget2 stays stubbed: harmless, and it
+ * costs nothing if an inline ko-fi button ever comes back.
  */
 export async function stubThirdParty(page: Page) {
   await page.route(/storage\.ko-fi\.com/, route => route.fulfill({

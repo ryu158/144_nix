@@ -44,6 +44,19 @@ test('with consent granted, interpolating reports one event with its query count
   expect(events[0][2]).toEqual({ query_count: 3 }); // x = 0, 5, 10
 });
 
+test('with consent granted, opening the manual reports one howto_open', async ({ page }) => {
+  await preparePage(page, 'granted');
+
+  await page.goto(CAL);
+  await page.locator('details.how-to > summary').click();
+  await expect(page.locator('.how-to-body')).toBeVisible();
+
+  const events = (await gaEvents(page)).filter(e => e[0] === 'event');
+  expect(events).toHaveLength(1);
+  expect(events[0][1]).toBe('howto_open');
+  expect(events[0][2]).toEqual({ slug: 'interpolation' });
+});
+
 test('with consent denied, nothing is reported at all', async ({ page }) => {
   await preparePage(page, 'denied');
 

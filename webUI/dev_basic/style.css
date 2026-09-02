@@ -6,6 +6,7 @@
   --accent-bg: #dbe7ff;
   --active-bg: #ffffff;
   --cell-fg: #1a1a1a;
+  --label-fg: #444;          /* toolbar field labels, and anything that must read as one */
 }
 
 * { box-sizing: border-box; }
@@ -70,7 +71,7 @@ body {
 .field label {
 	display: block;
 	font-size: 13px;
-	color: #444;
+	color: var(--label-fg);
 	margin-bottom: 4px;
 }
 .field input, .field select {
@@ -392,14 +393,6 @@ body {
 	flex-basis: 100%;
 	height: 0;
 }
-.kofi-button {
-  transform: scale(0.75) !important; /* Adjust this value (e.g., 0.7 for even smaller) */
-  transform-origin: auto;          /* Keeps it scaling from the center */
-  margin: -4px -25px !important;       /* Adjust vertical allign for button*/
-}
-.kofitext {
-  font-size: 18px !important; 
-}
 .custom-link {
   display: inline-block;
   color: #00bfa5;          
@@ -438,10 +431,23 @@ body.blog-page { overflow: auto; } /* articles run taller than the viewport; cal
 /* header shares the post's max-width so both start at the same left edge */
 body.blog-page .app-header {
   max-width: 720px;
+  /* centred with .post below, so header and article share one left edge.
+     width:100% is required: auto margins on a flex item cancel the default
+     stretch, and the header would otherwise shrink to fit its buttons and
+     centre at the wrong width. */
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .post {
   max-width: 720px;
+  /* The COLUMN is centred in the viewport. Text inside stays left-aligned -
+     no text-align here, and never add one: a centred paragraph is unreadable
+     at this measure. */
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
   padding-bottom: 60px;
 }
 .post h1 { margin-bottom: 4px; }
@@ -481,10 +487,22 @@ body.blog-page .app-header {
 /* ---- Home / topic index (index.html) ---- */
 /* Shares the article max-width so home and blog line up at the same left edge. */
 body.home-page { overflow: auto; }
-body.home-page .app-header { max-width: 720px; }
+/* Home is the same centred 720px column as a blog page. width:100% is required
+   on every one of these: auto margins cancel a flex item's default stretch, and
+   the block would otherwise shrink to its content and centre at its own width,
+   off the column's left edge. */
+body.home-page .app-header {
+  max-width: 720px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
 
 .topic-list {
   max-width: 720px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
   padding-bottom: 40px;
 }
 
@@ -547,6 +565,9 @@ body.home-page .app-header { max-width: 720px; }
 /* de-emphasized dev links, below the real content */
 .dev-section {
   max-width: 720px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
   margin-top: 24px;
   padding-top: 16px;
   border-top: 1px solid var(--border);

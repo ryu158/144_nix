@@ -37,5 +37,7 @@ interface Spec {
   pages?: Record<string, string>;
   blog?: SpecMeta;
   calculator?: SpecMeta;
+  /** Demo data seeded into a topic's calculator on first load. */
+  dataset?: { x?: (string | number)[]; y?: (string | number)[] };
   [level: string]: unknown;
 }

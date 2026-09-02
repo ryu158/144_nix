@@ -61,6 +61,43 @@
 			</div>
 		</header>
 
+		<!-- Instructions live here, one line tall, closed by default. The old
+		     bottom paragraph was never read: a first-timer does not look at the
+		     foot of the viewport. The open panel floats over the grids so the
+		     layout below never moves.
+		     The <summary> carries "copy and paste / CSV / TSV" on purpose - it is
+		     the visible text backing spec.json's description, and seo.spec.ts
+		     reads it. Moving those words into the panel hides them from a closed
+		     <details> and breaks that check. -->
+		<details class="how-to">
+			<summary>📘 How to use this — copy and paste CSV, TSV, or spreadsheet data</summary>
+			<div class="how-to-body">
+				<p class="how-to-intro">
+					<strong>What this site does.</strong> You bring a table of measurements, it gives
+					you numbers back. This page fills the gaps: give it points you measured and it
+					estimates the values in between, for several series at once, then plots them.
+					It runs entirely in your browser — nothing is uploaded, nothing is stored, and
+					there is no limit on how often you use it. If you want the reasoning rather than
+					the answer, the <a href="/interpolate_blog">interpolation article</a> walks
+					through the methods and where each one goes wrong.
+				</p>
+				<ol>
+					<li><strong>Paste your data</strong> into the Input grid — straight from a
+						spreadsheet, or as CSV/TSV text. First column is x, the rest are y series.</li>
+					<li><strong>Set the output range.</strong> Output X start, finish, and interval
+						decide which x values you get back.</li>
+					<li><strong>Pick a method</strong> in the Method select, then press
+						<strong>interpolate</strong>.</li>
+					<li><strong>Read the result.</strong> Values land in the Output grid; the same
+						curves plot under Results.</li>
+				</ol>
+				<p>The Input grid holds four columns: x plus three y series. Paste more and the
+					extra columns are dropped with a warning.</p>
+				<p>Output x values outside the range of your data are left blank. This
+					interpolates between your points, it does not extrapolate past them.</p>
+			</div>
+		</details>
+
 		<div class="app-toolbar">
 			<span class="status" id="status"></span>
 			<span class="manual-range-controls">
@@ -84,12 +121,6 @@
 						</select>
 					</div>
 					<button id="genRangeBtn" class="primary-btn">interpolate</button>
-					<script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'>
-					</script>
-					<script type='text/javascript'>kofiwidget2.init('Buy me a coffee?', '#21c2b5', 'N6P8238CBS');kofiwidget2.draw();
-					</script>
-
-
 				</div>
 			</span>
 		</div>
@@ -109,14 +140,6 @@
 				<div id="chartContainer" class="panel-body"></div>
 			</section>
 		</div>
-
-		<!-- Stays INSIDE #app: body is overflow:hidden, so anything after #app would be
-		     clipped - invisible to users but present in HTML, which reads as hidden text. -->
-		<p class="page-intro">
-			<strong>Copy and paste CSV, TSV, or spreadsheet data</strong> into the input grid.
-			Interpolates multiple lines, vector and matrix data, then plots the result.
-			Nothing uploaded — runs in your browser.
-		</p>
 	</div>
 
 	<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>

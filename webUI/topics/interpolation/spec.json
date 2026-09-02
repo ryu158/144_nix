@@ -6,8 +6,8 @@
     "calculator": "/interpolate_cal"
   },
   "blog": {
-    "title": "Interpolation: The Math Behind Estimating Between Data Points",
-    "description": "How interpolation estimates a value between two known points: where the formula comes from, and why the estimate breaks down outside your data."
+    "title": "Interpolation Methods",
+    "description": "Five ways to draw a curve through the same set of points — linear, cubic spline, PCHIP, Akima, and FFT resampling — and what each one assumes about the data you didn't measure."
   },
   "calculator": {
     "title": "Online Interpolation Calculator, Multiple line, Vector, Matrix, Sheet type data, Fast calculation & Plot results (Graph)",
@@ -19,7 +19,11 @@
   "related": [],
   "levels": ["blog", "calculator"],
   "insight": "Interpolation estimates an unknown value between two known points by assuming how the quantity behaves in between — the simplest assumption being a straight line.",
-  "dataset": { "x": [], "y": [] },
+  "//dataset": "Demo data seeded into the input grid on first load. 50 points, x 0-1000.",
+  "dataset": {
+    "x": [0.0, 20.4, 40.8, 61.2, 81.6, 102.0, 122.4, 142.9, 163.3, 183.7, 204.1, 224.5, 244.9, 265.3, 285.7, 306.1, 326.5, 346.9, 367.3, 387.8, 408.2, 428.6, 449.0, 469.4, 489.8, 510.2, 530.6, 551.0, 571.4, 591.8, 612.2, 632.7, 653.1, 673.5, 693.9, 714.3, 734.7, 755.1, 775.5, 795.9, 816.3, 836.7, 857.1, 877.6, 898.0, 918.4, 938.8, 959.2, 979.6, 1000.0],
+    "y": [200.0, 244.5, 288.3, 330.9, 371.6, 410.0, 445.4, 477.5, 505.6, 529.5, 548.8, 563.5, 573.3, 578.2, 578.2, 573.4, 564.0, 550.2, 532.3, 510.7, 486.1, 458.7, 429.2, 398.1, 366.2, 333.8, 301.9, 270.8, 241.3, 213.9, 189.3, 167.7, 149.8, 136.0, 126.6, 121.8, 121.8, 126.7, 136.5, 151.2, 170.5, 194.4, 222.5, 254.6, 290.0, 328.4, 369.1, 411.7, 455.5, 500.0]
+  },
   "parameters": [
     { "name": "method", "type": "enum", "values": ["linear"], "default": "linear" },
     { "name": "outputXMin", "type": "number", "default": 0 },

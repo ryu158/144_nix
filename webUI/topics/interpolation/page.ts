@@ -4,6 +4,39 @@
  * Owns grid/chart instantiation and wiring — nothing here belongs
  * in grid.ts / chart.ts / dual-chart.ts / interp_engine.ts.
  */
+/**
+ * "How to use this" panel. Its own IIFE with its own guard: the panel and the
+ * calculator must not be able to break each other.
+ *
+ * <details> does the opening. This only adds what a floating panel needs -
+ * dismiss on outside click, dismiss on Escape - plus the open event.
+ */
+(function () {
+  const howTo = document.querySelector<HTMLDetailsElement>('details.how-to');
+  if (!howTo) return;
+
+  const summary = howTo.querySelector('summary');
+
+  howTo.addEventListener('toggle', () => {
+    // Pageviews cannot tell whether anyone actually reads the manual.
+    // trackEvent no-ops until consent is granted, so no gating needed here.
+    if (howTo.open && window.trackEvent) {
+      window.trackEvent('howto_open', { slug: 'interpolation' });
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (howTo.open && !howTo.contains(e.target as Node)) howTo.open = false;
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && howTo.open) {
+      howTo.open = false;
+      if (summary) summary.focus();
+    }
+  });
+})();
+
 (function () {
   const inputHost = document.getElementById('gridContainer');
   const outputHost = document.getElementById('gridContainer_2');
@@ -91,4 +124,44 @@
 
   grid.on('change', interpolateAndPlot);
   grid_2.on('change', plotBoth);
+
+  /* ---------------- Demo data ---------------- */
+
+  // Still holding the seeded demo, untouched by the visitor.
+  let demoPristine = false;
+  grid.on('change', () => { demoPristine = false; });
+
+  function emptyGrid(): Grid2D {
+    return Array.from({ length: 10 }, () => ['', '', '', '']);
+  }
+
+  function gridIsEmpty(): boolean {
+    return grid.getData().every(row => row.every(cell => cell === ''));
+  }
+
+  // Capture phase, on the container: this runs before grid.ts's own paste
+  // handler on the hidden input, which overwrites cell by cell and would
+  // otherwise leave the demo's remaining rows mixed into the visitor's data.
+  inputHost.addEventListener('paste', () => {
+    if (!demoPristine) return;
+    demoPristine = false;
+    grid.setData(emptyGrid());
+  }, true);
+
+  // spec.json owns the dataset - rules/topics.md: never hardcode one here.
+  fetch('/topics/interpolation/spec.json')
+    .then(r => r.json() as Promise<Spec>)
+    .then(spec => {
+      const xs = spec.dataset && spec.dataset.x;
+      const ys = spec.dataset && spec.dataset.y;
+      if (!xs || !xs.length) return;
+
+      // The fetch is async. If the visitor already typed or pasted while it was
+      // in flight, their data wins - seeding over it would be data loss.
+      if (!gridIsEmpty()) return;
+
+      grid.setData(xs.map((x, i) => [String(x), String(ys?.[i] ?? ''), '', '']));
+      demoPristine = true;
+    })
+    .catch(() => { /* no demo is fine - the calculator works from an empty grid */ });
 })();

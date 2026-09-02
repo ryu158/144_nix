@@ -15,6 +15,8 @@ export interface Spec {
   levels: string[];
   insight: string;
   parameters: Array<{ name: string; type: string; values?: string[]; default?: unknown }>;
+  /** Demo data seeded into the calculator's input grid on first load. */
+  dataset?: { x?: (string | number)[]; y?: (string | number)[] };
   [level: string]: unknown;
 }
 

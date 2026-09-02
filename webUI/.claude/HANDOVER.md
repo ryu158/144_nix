@@ -3,14 +3,10 @@
 Current status only. Not history — daily detail in .claude/log/.
 
 ## Resume here
-1. Config reform is done and committed. Branch `docs/reform-claude-config`, commit f315b4c, 8 files.
-2. NOT merged. Merge it first:
-```
-git switch main && git merge docs/reform-claude-config
-```
-3. Then pick up ## Next at the bottom of this file.
-4. Left stale on purpose: log/2026-08-21.md:51 says the favicon gap is in future_work.md. It is in HANDOVER only now. Logs are history, not corrected.
-5. git identity is auto-detected as opc@a1-ryu...oraclevcn.com. Set user.email if the real address matters.
+1. Pick up ## Next at the bottom of this file.
+2. topics/FFT/fft.zip is untracked and untouched — dropped in during the 2026-09-02 session, never opened. Deliberately left out of that commit.
+3. Left stale on purpose: log/2026-08-21.md:51 says the favicon gap is in future_work.md. It is in HANDOVER only now. Logs are history, not corrected.
+4. git identity is auto-detected as opc@a1-ryu...oraclevcn.com. Set user.email if the real address matters.
 
 ## Fact ownership
 1. CLAUDE.md = repo-wide rules.
@@ -24,6 +20,43 @@ git switch main && git merge docs/reform-claude-config
 ## topics/interpolation — done
 1. 6-step workflow complete.
 2. Renamed "Linear Interpolation" -> "Interpolation". Advanced page planned, concept still forming.
+
+## interpolate_blog — rewritten 2026-09-02
+1. The article now covers five methods: linear, cubic spline, PCHIP, Akima, FFT resampling. The old linear-only prose is gone.
+2. Content came from interpolation.zip, built outside this repo. Its own CSS, its own nav row, and its jsDelivr MathJax tag were all dropped — the page wears the site's header, buttons, and tokens.
+3. spec.json blog.title/description now read "Interpolation Methods". Head tags and JSON-LD were recopied to match.
+4. Two-h1 defect fixed. The header owns the only h1; article sections start at h2. tests/interpolation/nav.spec.ts asserts the header h1 now.
+5. figs/interp_0*.svg — 7 SciPy figures, served as files. Never hand-edit; edit gen_figs.py and re-run.
+6. gen_figs.py is archived, not runnable here — flake.nix has numpy + scipy, no matplotlib. Adding it needs permission.
+7. interpolation_blog.md is the written source of record. It is served publicly like every other file in the repo.
+8. Math renders client-side, so a crawler sees raw `$$...$$`. Accepted: the prose around each equation carries the meaning. Pre-rendering is the fix if it ever matters.
+9. interpolation_style.css gained .post img / table / .eq rules. Blog page loads that stylesheet now; it used to be calculator-only.
+
+## interpolate_cal "How to use this" — added 2026-09-02
+1. `<details class="how-to">` sits between the header and the toolbar. Closed by default, one line tall.
+2. Open, `.how-to-body` is absolutely positioned and floats over the grids. `.how-to` owns the positioning context, so `#app` and every other page are untouched.
+3. The old bottom `<p class="page-intro">` is gone, CSS with it. The manual has one home now.
+4. The `<summary>` carries "copy and paste / CSV / TSV" ON PURPOSE. seo.spec.ts reads visible body text, and `innerText` does not see inside a closed `<details>`. Move those words into the panel and that check fails.
+5. `.how-to-intro` opens the panel: what the site is for, then the steps.
+6. Native `<details>` does the opening — no JS to reveal it, so the manual is in the HTML before any script runs. page.ts adds only dismiss-on-outside-click, dismiss-on-Escape, and the `howto_open` event.
+7. That code is its own IIFE with its own guard, above the calculator IIFE. Neither can break the other.
+8. Nothing in the panel names a topic, a method, or a default range. CLAUDE.md forbids a hardcoded topic list and rules/topics.md forbids the rest — spec.json owns them. Keep the text about the kind of work.
+9. tests/interpolation/howto.spec.ts guards it. The geometry assertion is the important one: #gridContainer must not move when the panel opens, which is the whole point of floating.
+
+## interpolate_cal demo data — added 2026-09-02
+1. The input grid arrives seeded: 50 points, x from 0 to 1000, one y series. The chart plots it on load.
+2. The dataset lives in spec.json `dataset`, never in the HTML or in page.ts. rules/topics.md owns that rule.
+3. Seeding fires no analytics event. `grid.on('change')` runs interpolateAndPlot, which only plots while the output grid is empty; `interpolate_run` comes from the button alone.
+4. The spec.json fetch is async, so page.ts seeds ONLY if the grid is still empty when it lands. A visitor who pasted during the fetch keeps their data.
+5. First paste onto an untouched demo clears the grid first. Without that, grid.ts's paste overwrites cell by cell and leaves demo rows below the pasted data, silently mixed into the result.
+6. That clear is a capture-phase listener on #gridContainer — it must run before grid.ts's own handler on the hidden input. Do not move it to the bubble phase.
+7. It fires once. After any change the grid is no longer pristine, so a second paste behaves normally. tests/interpolation/demo.spec.ts asserts both halves.
+
+## vendor/mathjax
+1. topics/interpolation/vendor/mathjax/tex-mml-svg.js, MathJax 3, 2.1 MB, committed.
+2. Self-hosted on purpose — the site ships no third-party runtime scripts.
+3. tex-mml-svg, not tex-mml-chtml: SVG output needs no web-font directory, so self-hosting is one file.
+4. Second topic needing math -> move it to dev_basic/vendor/ and delete this copy.
 
 ## SEO — done, live
 1. Method + gap list -> .claude/refs/SEO_ref.md (4 talks, summarised).
@@ -41,9 +74,11 @@ git switch main && git merge docs/reform-claude-config
 5. Then wait 1-2 weeks before judging search results.
 
 ## nginx
-1. webUI/nginx.conf is the master copy.
-2. Deployed to ~/nix/nginx/configs/nginx.conf.
-3. It denies *.conf only.
+1. The master copy is ~/nix/nginx/configs/nginx.conf, NOT webUI/nginx.conf. The repo-root HANDOVER owns this fact.
+2. webUI/nginx.conf is a near-copy kept for reference. The two already differ.
+3. Deploy from ~/nix/nginx with `nix run --impure .#update_nginx_conf`. That is outside webUI scope — ask first.
+4. It denies *.conf only.
+5. Every public URL needs its own `location =` block. A new topic page is invisible without one.
 
 ## TypeScript — migrated 2026-08-21
 1. Strict, target ES2020.
@@ -94,23 +129,28 @@ nix flake update nixpkgs-unstable
 2. og:image / socialImage missing — social previews have no picture.
 3. /favicon.ico missing — 404 on every page, browser tabs blank. Found 2026-08-21 by the Playwright console check, which now ignores it.
 4. Fixing it needs an icon decision first — the site has no logo. Then a static file plus <link rel="icon">. Small, not urgent.
-5. interpolate_blog.html has TWO <h1>: "Interpolation❓" header + "Linear Interpolation" article. One H1 only.
-6. interpolate_cal.html headings are Input / Output / Results — zero keywords.
-7. interpolate_cal.html body is one paragraph. Short content does not rank.
-8. Mobile friendliness never scored. Cal page is a full-height 3-panel grid with body { overflow: hidden }.
-9. No SERP rank monitoring at all.
-10. /interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical.
-11. test_data.csv orphaned. Keep or delete undecided.
-12. Files served from repo root are public: CLAUDE.md, .claude/, flake.nix, Claude.local.md. Known, accepted.
+5. interpolate_cal.html headings are Input / Output / Results — zero keywords.
+6. interpolate_cal.html body was one paragraph. The How-to panel added a real manual on 2026-09-02; still short next to the blog.
+7. Mobile friendliness never scored. Cal page is a full-height 3-panel grid with body { overflow: hidden }. The blog article was never checked on a phone either — its figures are fixed-ratio SVG.
+8. No SERP rank monitoring at all.
+9. /interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical.
+10. test_data.csv orphaned. Keep or delete undecided.
+11. Files served from repo root are public: CLAUDE.md, .claude/, flake.nix, Claude.local.md. Known, accepted.
+12. /interpolate_blog title and description both changed on 2026-09-02. Re-request indexing in Search Console.
 
 ## Confirmed, don't touch
 1. Hardcoded nav/colors in interpolation pages — intentional, not a cleanup target.
 2. Ko-fi widget — keep, exempted from the monetization ban.
 3. .teal-button-link has margin: 25px -5px !important. Cancel it locally in compact rows, never change the base rule.
-4. interpolate_cal input grid locked to 4 columns (cols: 4, fixedColCount: true) — intentional.
-5. Pasting more alerts and truncates. A Playwright test asserts that.
-6. The column lock gets unlocked on the ADVANCED page, not here.
-7. test_in_data.md carries 10 columns, so the basic page only ever sees X + 3 series.
+4. --label-fg (#444) is the toolbar label colour, extracted from .field label on second use. The How-to summary shares it on purpose — the two must read as one control.
+5. Home and blog are both a 720px column centred with auto margins; the text inside stays left-aligned. Never add text-align to .post or .topic-list.
+6. Every centred block carries width: 100% — .post, .topic-list, .dev-section, and .app-header on both page types. Auto margins cancel a flex item's default stretch, so without it a block shrinks to its content and centres at its own width, off the column's left edge. The blog header hit exactly that: 555px instead of 720px.
+7. tests/interpolation/blog-layout.spec.ts and tests/home/layout.spec.ts guard centring, the shared left edge, and left-aligned text on both pages.
+8. The ~80px gap under the last topic row is .topic-list padding-bottom plus .dev-section margin/padding. Deliberate spacing, not a layout bug.
+9. interpolate_cal input grid locked to 4 columns (cols: 4, fixedColCount: true) — intentional.
+10. Pasting more alerts and truncates. A Playwright test asserts that.
+11. The column lock gets unlocked on the ADVANCED page, not here.
+12. test_in_data.md carries 10 columns, so the basic page only ever sees X + 3 series.
 
 ## Next
 1. Advanced interpolation page, cubic and spline.

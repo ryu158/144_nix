@@ -12,7 +12,8 @@ test('calculator links across to the blog', async ({ page }) => {
 
   await page.getByRole('link', { name: /interpolation/i }).first().click();
   await expect(page).toHaveURL(new RegExp(`${BLOG}$`));
-  await expect(page.locator('article.post h1')).toHaveText('Linear Interpolation');
+  // The article carries no <h1> - the page header owns the only one.
+  await expect(page.locator('.app-header h1')).toHaveText('Interpolation❓');
 });
 
 test('blog links across to the calculator', async ({ page }) => {

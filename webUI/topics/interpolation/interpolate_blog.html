@@ -8,34 +8,52 @@
 
 <!-- Static copies of spec.json blog.title/description. Crawlers read these without
      running JS; seo.js overwrites them at runtime and warns if they drift. -->
-<title>Interpolation: The Math Behind Estimating Between Data Points</title>
-<meta name="description" content="How interpolation estimates a value between two known points: where the formula comes from, and why the estimate breaks down outside your data.">
+<title>Interpolation Methods</title>
+<meta name="description" content="Five ways to draw a curve through the same set of points — linear, cubic spline, PCHIP, Akima, and FFT resampling — and what each one assumes about the data you didn't measure.">
 
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://ryuora144.duckdns.org/interpolate_blog">
-<meta property="og:title" content="Interpolation: The Math Behind Estimating Between Data Points">
-<meta property="og:description" content="How interpolation estimates a value between two known points: where the formula comes from, and why the estimate breaks down outside your data.">
+<meta property="og:title" content="Interpolation Methods">
+<meta property="og:description" content="Five ways to draw a curve through the same set of points — linear, cubic spline, PCHIP, Akima, and FFT resampling — and what each one assumes about the data you didn't measure.">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Interpolation: The Math Behind Estimating Between Data Points">
-<meta name="twitter:description" content="How interpolation estimates a value between two known points: where the formula comes from, and why the estimate breaks down outside your data.">
+<meta name="twitter:title" content="Interpolation Methods">
+<meta name="twitter:description" content="Five ways to draw a curve through the same set of points — linear, cubic spline, PCHIP, Akima, and FFT resampling — and what each one assumes about the data you didn't measure.">
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "Interpolation: The Math Behind Estimating Between Data Points",
-  "description": "How interpolation estimates a value between two known points: where the formula comes from, and why the estimate breaks down outside your data.",
+  "headline": "Interpolation Methods",
+  "description": "Five ways to draw a curve through the same set of points — linear, cubic spline, PCHIP, Akima, and FFT resampling — and what each one assumes about the data you didn't measure.",
   "mainEntityOfPage": "https://ryuora144.duckdns.org/interpolate_blog",
-  "author": { "@type": "Person", "name": "Shinyoung Ryu" },
+  "author": {
+    "@type": "Person",
+    "name": "Shinyoung Ryu"
+  },
   "inLanguage": "en"
 }
 </script>
 
 <link rel="stylesheet" href="/dev_basic/style.css">
+<link rel="stylesheet" href="/topics/interpolation/interpolation_style.css">
+
+<!-- MathJax, vendored. The site ships no third-party runtime scripts, so this is a
+     local copy of the tex-mml-svg build: SVG output needs no web-font directory,
+     which keeps self-hosting to one file. Move to dev_basic/vendor/ if a second
+     topic needs math. -->
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']], processEscapes: true },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+  };
+</script>
+<script id="MathJax-script" async src="/topics/interpolation/vendor/mathjax/tex-mml-svg.js"></script>
+
 <script src="/src/shell/seo.js" data-slug="interpolation" data-level="blog"></script>
 <script src="/src/shell/analytics.js"></script>
 <script src="/src/shell/consent.js"></script>
 </head>
+
 <body class="blog-page">
   <div id="app" style="height: auto;">
     <header class="app-header">
@@ -53,110 +71,190 @@
     </header>
 
     <article class="post">
-      <div class="controls-row">
-        <h1>Linear Interpolation</h1>
-        <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
-        <script
-          type='text/javascript'>kofiwidget2.init('Buy me a coffee?', '#21c2b5', 'N6P8238CBS'); kofiwidget2.draw();</script>
-      </div>
-      <p style="color: black; font-weight: bold;">The Math Behind Estimating Between Data Points
-      <p>
-      <p class="subtitle">What it means to estimate a value between two known points, where the formula comes from, and why that estimate stops being trustworthy once you step outside the data.</p>
+      <p class="subtitle">Five ways to draw a curve through the same set of points — linear, cubic spline, PCHIP, Akima, and FFT resampling — and what each one assumes about the data you didn't measure.</p>
 
-      <h2>What interpolation is</h2>
-      <p>
-        Say you know a quantity <code>y</code> at two points,
-        <code>x1</code> and <code>x2</code>, but not at some <code>x</code>
-        in between. Interpolation is the act of estimating that missing
-        value using only the neighbors you already have. It makes no claim
-        about the true underlying process — it's a best guess built from an
-        assumption about how <code>y</code> behaves between the points you
-        do know.
-      </p>
+      <h2>What is Interpolation</h2>
+      <p>Suppose you have measured data</p>
+      <div class="eq">$$(x_1,y_1),\ (x_2,y_2),\ \dots,\ (x_n,y_n)$$</div>
+      <p>but you want to estimate $y$ at an $x$ where you did not measure it.</p>
+      <p>For example:</p>
+      <pre><code>measured:
+      x = 1   2   3   4   5
+      y = 2   4   3   6   5
 
-      <h2>The straight-line assumption</h2>
-      <p>
-        The simplest assumption is that <code>y</code> changes at a constant
-        rate between <code>x1</code> and <code>x2</code> — in other words,
-        that a straight line connects <code>(x1, y1)</code> and
-        <code>(x2, y2)</code>. That's linear interpolation. Once you accept
-        that assumption, the value at any <code>x</code> between them is
-        fixed by simple geometry: it's the same fraction of the way from
-        <code>y1</code> to <code>y2</code> as <code>x</code> is from
-        <code>x1</code> to <code>x2</code>.
-      </p>
-
-      <h2>Deriving the formula</h2>
-      <p>
-        Call that fraction <code>t</code> — how far across the gap in
-        <code>x</code> our query point sits, from 0 (at <code>x1</code>) to
-        1 (at <code>x2</code>):
-      </p>
-      <pre><code>t = (x - x1) / (x2 - x1)</code></pre>
-      <p>
-        Because the line has constant slope, the same fraction <code>t</code>
-        applies to the <code>y</code> side of the gap. Starting at
-        <code>y1</code> and moving <code>t</code> of the way to
-        <code>y2</code> gives:
-      </p>
-      <pre><code>y = y1 + t * (y2 - y1)</code></pre>
-      <p>
-        This is the same line written in point-slope form — the slope
-        <code>(y2 - y1) / (x2 - x1)</code> multiplied by the distance from
-        <code>x1</code>, added to the starting height <code>y1</code>. Two
-        equivalent ways of saying the same thing.
-      </p>
-
-      <h2>A worked example</h2>
-      <p>
-        Suppose you know <code>y = 10</code> at <code>x = 0</code> and
-        <code>y = 30</code> at <code>x = 10</code>, and you want the value
-        at <code>x = 4</code>:
-      </p>
-      <pre><code>t = (4 - 0) / (10 - 0) = 0.4
-y = 10 + 0.4 * (30 - 10) = 10 + 8 = 18</code></pre>
-      <p>
-        <code>x = 4</code> sits 40% of the way from 0 to 10, so the estimate
-        sits 40% of the way from 10 to 30. That's all linear interpolation
-        ever does — it never looks at any point beyond the pair bracketing
-        the query.
-      </p>
-
-      <h2>When the straight line is wrong</h2>
-      <p>
-        Linear interpolation is only exact if the true relationship between
-        <code>x</code> and <code>y</code> really is a straight line between
-        those two samples. For anything curved — acceleration, growth,
-        decay — a straight line between two samples will systematically
-        miss the true curve in between, and the error grows with how far
-        apart the two known points are and how much the real function bends
-        between them. Methods that fit a curve instead of a straight
-        segment — a quadratic through three points, a cubic spline through
-        a whole series, matching a curve's slope as well as its value at
-        each sample — trade that error for more assumptions about how
-        smoothly the data behaves. None of them are "more correct"; they're
-        different bets about the shape of what you didn't measure.
-      </p>
-
-      <h2>Interpolation vs. extrapolation</h2>
-      <div class="note">
-        Interpolation only makes sense strictly between two known points.
-        Estimating past the last known point isn't interpolation anymore —
-        it's extrapolation, and it's a fundamentally different kind of
-        guess.
-      </div>
-      <p>
-        Inside the known range, a value is pinned down by data on both
-        sides — the line (or curve) is constrained at both ends. Outside
-        that range, nothing pins the estimate down at all: infinitely many
-        different curves pass through the same known points but diverge
-        the moment you step past them, and nothing in the data tells you
-        which one is right. Projecting the last line segment onward is just
-        one arbitrary choice among all of those — a straight-line guess
-        dressed up as a calculation. That's why interpolation is only ever
-        defined for <code>x</code> values that fall between two points you
-        actually know.
-      </p>
+      want:
+      x = 2.5
+      </code></pre>
+      <p>An interpolation method constructs a function $\hat y = f(x)$ that passes through, or is otherwise constrained by, the known data points.</p>
+      <p><img src="/topics/interpolation/figs/interp_00_concept.svg" alt="Interpolation fills the gap between measured points"></p>
+      <p><strong>The one-sentence version:</strong> you have dots, you need a curve through them, and every method below is just a different opinion about what should happen <em>between</em> the dots.</p>
+      <h2>Methods</h2>
+      <p>How do we construct the curve between the known points? We can implement this idea as a real algorithm via the SciPy library in Python.</p>
+      <p>There are 5 major categories: linear, cubic spline, monotone cubic/PCHIP, Akima, and FFT-based.</p>
+      <p><img src="/topics/interpolation/figs/interp_06_all_methods.svg" alt="The same data drawn by four different methods"></p>
+      <p>Same dots, four curves. The whole rest of this post is about why they disagree.</p>
+      <h2>Linear (1D) interpolation</h2>
+      <p><strong>In plain words.</strong> Draw a straight line from each dot to the next one. To find $y$ at some $x$, look up which two dots you are between and slide along that line.</p>
+      <p><strong>Basic idea.</strong> Take two neighboring data points and connect them with a straight line. For two points $(x_0,y_0)$ and $(x_1,y_1)$ the interpolation is</p>
+      <div class="eq">$$y(x) = y_0 + \frac{y_1-y_0}{x_1-x_0}\,(x-x_0)$$</div>
+      <p><img src="/topics/interpolation/figs/interp_01_linear.svg" alt="Linear interpolation and its piecewise-constant slope"></p>
+      <p><strong>Important characteristic.</strong> The curve itself is continuous, $C^0$, but its slope usually changes abruptly at every data point, so $f'(x)$ is generally discontinuous. That is why a linear plot looks jagged even though the curve technically has no gaps.</p>
+      <p>Look at the right panel above: the curve has no gaps, but the slope is a staircase. Every step in that staircase is a corner you can see in the left panel.</p>
+      <p>Advantages</p>
+      <ul>
+      <li>Very simple</li>
+      <li>Very stable</li>
+      <li>No overshoot</li>
+      <li>Doesn't create artificial oscillations</li>
+      <li>Good when the data itself may contain abrupt changes</li>
+      <li>Very fast</li>
+      </ul>
+      <p>Disadvantages</p>
+      <ul>
+      <li>Not smooth</li>
+      <li>Derivative jumps at every point</li>
+      <li>Poor visual representation of a naturally smooth physical process</li>
+      </ul>
+      <h2>Cubic spline interpolation</h2>
+      <p><strong>In plain words.</strong> Instead of a straight line per gap, use a gentle S-shaped curve per gap, and glue them together so the joins are invisible: same height, same slope, same bend on both sides of every dot. The price of that smoothness is that the curve is allowed to bulge past the dots.</p>
+      <p><strong>Basic idea.</strong> Fit a separate cubic polynomial on every interval, then force neighboring cubics to agree in value, first derivative, and second derivative at each shared point. On the interval between $(x_i,y_i)$ and $(x_{i+1},y_{i+1})$ the local piece is</p>
+      <div class="eq">$$S_i(x) = a_i + b_i(x-x_i) + c_i(x-x_i)^2 + d_i(x-x_i)^3$$</div>
+      <p>and the coefficients are solved as one global system so that</p>
+      <div class="eq">$$S_i(x_{i+1}) = S_{i+1}(x_{i+1}),\qquad
+      S_i'(x_{i+1}) = S_{i+1}'(x_{i+1}),\qquad
+      S_i''(x_{i+1}) = S_{i+1}''(x_{i+1})$$</div>
+      <p>holds at every interior knot. Boundary conditions (natural, clamped, or not-a-knot) close the remaining degrees of freedom.</p>
+      <p><img src="/topics/interpolation/figs/interp_02_cubic.svg" alt="Cubic spline overshoot near a step, and its continuous second derivative"></p>
+      <p><strong>Important characteristic.</strong> The curve is smooth up to the second derivative, $C^2$, so both slope and curvature are continuous across data points. That is what makes cubic splines look physically natural compared to the linear case, but the same freedom lets the curve swing past the data between points. $f''(x)$ is continuous, yet the fitted curve can overshoot or undershoot near sharp changes.</p>
+      <p>The data above only ever takes the values 0 and 1, yet the spline dips below 0 and rises above 1. If $y$ is a concentration, a probability, or a count, that curve is now telling you something physically impossible.</p>
+      <p>Advantages</p>
+      <ul>
+      <li>Very smooth ($C^2$)</li>
+      <li>Visually matches naturally smooth physical processes</li>
+      <li>Widely used default, well studied</li>
+      <li>Closed-form, fast to evaluate once solved</li>
+      </ul>
+      <p>Disadvantages</p>
+      <ul>
+      <li>Can overshoot between points, especially near sharp jumps</li>
+      <li>Not guaranteed to preserve monotonicity of the data</li>
+      <li>Global solve: one bad point can distort the whole curve</li>
+      <li>Sensitive to boundary condition choice</li>
+      </ul>
+      <h2>Monotone cubic / PCHIP interpolation</h2>
+      <p><strong>In plain words.</strong> Same S-shaped pieces as a spline, but with a rule added: if the data only goes up, the curve is not allowed to come back down. Whenever the spline would have bulged past a data point, PCHIP flattens the slope just enough to prevent it.</p>
+      <p><strong>Basic idea.</strong> Keep the piecewise-cubic structure, but instead of solving a global system for the derivatives, estimate each derivative $m_i$ locally from the slopes of neighboring segments, then clip that estimate so the interpolant never overshoots. The Fritsch–Carlson conditions choose $m_i$ so that if</p>
+      <div class="eq">$$y_{i-1} \le y_i \le y_{i+1}$$</div>
+      <p>on both adjacent segments, the interpolated curve is also non-decreasing between $x_i$ and $x_{i+1}$. SciPy's PCHIP (Piecewise Cubic Hermite Interpolating Polynomial) is the standard implementation of this idea.</p>
+      <p><img src="/topics/interpolation/figs/interp_03_pchip.svg" alt="PCHIP stays inside the data range where the spline overshoots"></p>
+      <p><strong>Important characteristic.</strong> The curve is smooth in its first derivative but not necessarily in its second: $C^1$, so slope is continuous but curvature can kink at the knots. This is a deliberate trade-off — PCHIP gives up $C^2$ smoothness in exchange for guaranteed shape preservation. Unlike the plain cubic spline, the interpolant is guaranteed monotone wherever the data is monotone.</p>
+      <p>Same data as the spline figure. The dashed red curve leaves the $[0,1]$ band; the green one never does.</p>
+      <p>Advantages</p>
+      <ul>
+      <li>No overshoot</li>
+      <li>Preserves monotonicity of the original data</li>
+      <li>Local computation: a change in one point doesn't ripple through the whole curve</li>
+      <li>Good for data that should not wiggle (cumulative distributions, sensor readings)</li>
+      </ul>
+      <p>Disadvantages</p>
+      <ul>
+      <li>Only $C^1$, less smooth than a full cubic spline</li>
+      <li>Slightly more conservative-looking curve than a spline</li>
+      <li>Derivative estimates are heuristic, not derived from a global optimality condition</li>
+      </ul>
+      <h2>Akima interpolation</h2>
+      <p><strong>In plain words.</strong> When deciding the slope at a dot, look at its neighbors and trust the side that looks calmer. If one neighbor is a wild jump and the other is flat, lean toward the flat one. A single weird data point then disturbs only its immediate surroundings instead of setting off ripples across the whole curve.</p>
+      <p><strong>Basic idea.</strong> Like PCHIP, Akima builds a piecewise cubic from locally estimated derivatives rather than a global solve, but it estimates each slope as a weighted average of the two neighboring secant slopes, weighted by how much the slopes themselves differ:</p>
+      <div class="eq">$$t_i = \frac{|m_{i+1}-m_i|\,m_{i-1} + |m_{i-1}-m_{i-2}|\,m_i}
+                 {|m_{i+1}-m_i| + |m_{i-1}-m_{i-2}|}$$</div>
+      <p>where each $m_k$ is the secant slope of segment $k$. When neighboring slopes are consistent this behaves like a smooth spline; when they diverge sharply, the weighting favors the segment whose neighborhood is more stable, which suppresses overshoot.</p>
+      <p><img src="/topics/interpolation/figs/interp_04_akima.svg" alt="One outlier: the spline rings on both sides, Akima stays local"></p>
+      <p><strong>Important characteristic.</strong> The curve is $C^1$ continuous, similar to PCHIP, but Akima's weighting makes it less prone to the wide, sweeping overshoots that cubic splines produce near outliers, without imposing PCHIP's strict monotonicity constraint. The curve tends to hug the data more tightly than a standard cubic spline even where the data changes rapidly.</p>
+      <p>The figure has one spike in otherwise flat data. The spline reacts by oscillating for several points on either side. Akima treats the spike as a local event and returns to flat immediately.</p>
+      <p>Advantages</p>
+      <ul>
+      <li>Less overshoot than cubic spline</li>
+      <li>Less sensitive to outliers and rapid local changes than cubic spline</li>
+      <li>Locally computed, like PCHIP</li>
+      <li>Good middle ground between spline smoothness and PCHIP's rigidity</li>
+      </ul>
+      <p>Disadvantages</p>
+      <ul>
+      <li>Only $C^1$, not as smooth as a full cubic spline</li>
+      <li>Does not guarantee monotonicity (unlike PCHIP)</li>
+      <li>Slightly more complex to reason about than linear or PCHIP</li>
+      <li>The original formulation divides by zero when neighboring slopes are exactly equal, though SciPy handles this edge case</li>
+      </ul>
+      <h2>FFT (spectral) interpolation</h2>
+      <p><strong>In plain words.</strong> Forget curves between neighbors. Assume the samples are one full loop of a repeating wave, break that wave into pure sine waves, then redraw those same sine waves on a finer grid. If the signal really is a smooth repeating wave, this is nearly exact. If it has a sharp edge, sine waves cannot make a sharp edge, and you get ripples.</p>
+      <p><strong>Basic idea.</strong> Assume the sampled sequence is one period of a periodic, band-limited signal. For $N$ uniformly spaced samples the forward transform is</p>
+      <div class="eq">$$X_k = \sum_{n=0}^{N-1} x_n\, e^{-2\pi i kn/N}$$</div>
+      <p>The spectrum is zero-padded from $N$ to $M > N$ coefficients (zeros inserted at the high frequencies, the Nyquist term split), and the inverse transform gives the resampled sequence</p>
+      <div class="eq">$$y_m = \frac{M}{N}\cdot\frac{1}{M}\sum_{k=0}^{M-1}\tilde X_k\, e^{2\pi i km/M}$$</div>
+      <p>This is exactly Whittaker–Shannon sinc interpolation, wrapped periodically. SciPy exposes it as <code>scipy.signal.resample</code>.</p>
+      <p><img src="/topics/interpolation/figs/interp_05_fft_interp.svg" alt="FFT resampling: near-perfect on a smooth periodic signal, ringing on a step"></p>
+      <p><strong>Important characteristic.</strong> The interpolant is a trigonometric polynomial, so it is infinitely differentiable, $C^\infty$ — every derivative is continuous everywhere, stronger than anything the piecewise methods offer. But the method is fully global: each output sample depends on all $N$ inputs, and the reconstruction assumes $x(t+T) = x(t)$. If the data does not actually wrap around, that mismatch reads as a discontinuity and produces Gibbs ringing near both ends. Perfect smoothness, but the error is spread everywhere rather than confined to one interval.</p>
+      <p>Left panel: 16 samples of a two-tone signal reconstructed almost perfectly. Right panel: the same method on a step, where the ripples never fully die out no matter how many samples you add.</p>
+      <p>Advantages</p>
+      <ul>
+      <li>Infinitely smooth ($C^\infty$)</li>
+      <li>Exact reconstruction for band-limited periodic signals</li>
+      <li>Spectrally accurate: error decays faster than any polynomial rate for smooth periodic data</li>
+      <li>$O(N\log N)$, efficient for large uniform datasets</li>
+      <li>Natural choice when the analysis is already happening in the frequency domain</li>
+      </ul>
+      <p>Disadvantages</p>
+      <ul>
+      <li>Requires uniformly spaced samples (no irregular $x$ grids)</li>
+      <li>Assumes periodicity; non-periodic data causes edge artifacts</li>
+      <li>Gibbs ringing near jumps or sharp features</li>
+      <li>Fully global: one bad sample contaminates the entire output</li>
+      <li>Resamples onto a whole new grid rather than evaluating at a single arbitrary $x$</li>
+      </ul>
+      <h2>Which one should you pick</h2>
+      <table>
+      <thead>
+      <tr>
+      <th>If your data is...</th>
+      <th>use</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+      <td>noisy, or you need a guaranteed safe answer</td>
+      <td>linear</td>
+      </tr>
+      <tr>
+      <td>a smooth physical measurement, no hard bounds</td>
+      <td>cubic spline</td>
+      </tr>
+      <tr>
+      <td>monotone, bounded, or physically constrained</td>
+      <td>PCHIP</td>
+      </tr>
+      <tr>
+      <td>mostly smooth but with occasional outliers</td>
+      <td>Akima</td>
+      </tr>
+      <tr>
+      <td>uniformly sampled, periodic, band-limited</td>
+      <td>FFT resample</td>
+      </tr>
+      </tbody>
+      </table>
+      <p>None of these is more correct than the others. They are bets about what happens where you have no data, and the failure modes are more useful than the feature lists. Linear fails by looking jagged. Splines fail by inventing values that don't exist. PCHIP fails by being slightly stiff. Akima fails by being harder to explain. FFT fails by ringing everywhere at once. Pick the failure you can live with.</p>
+      <h2>REFs</h2>
+      <p><a href="https://docs.scipy.org/doc/scipy/tutorial/interpolate.html">Scipy Interpolation</a>
+      <a href="https://docs.scipy.org/doc/scipy/tutorial/interpolate/1D.html">Scipy Linear Interpolation</a>
+      <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.CubicSpline.html">Scipy CubicSpline</a>
+      <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.PchipInterpolator.html">Scipy PchipInterpolator</a>
+      <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Akima1DInterpolator.html">Scipy Akima1DInterpolator</a>
+      <a href="https://epubs.siam.org/doi/10.1137/0717021">Fritsch &amp; Carlson (1980), "Monotone Piecewise Cubic Interpolation"</a>
+      <a href="https://dl.acm.org/doi/10.1145/321607.321609">Akima (1970), "A New Method of Interpolation and Smooth Curve Fitting Based on Local Procedures"</a>
+      <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.resample.html">Scipy signal.resample (FFT-based resampling)</a>
+      <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.resample_poly.html">Scipy signal.resample_poly (polyphase alternative)</a>
+      <a href="https://docs.scipy.org/doc/scipy/tutorial/fft.html">Scipy FFT module</a>
+      <a href="https://ieeexplore.ieee.org/document/1697831">Shannon (1949), "Communication in the Presence of Noise" (sampling theorem)</a></p>
     </article>
   </div>
 
