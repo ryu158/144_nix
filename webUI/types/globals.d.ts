@@ -22,11 +22,21 @@ interface GridSource {
 }
 
 // topics/<slug>/spec.json. Source of truth for SEO and the home page.
+/** Demo data seeded into a calculator's input grid on first load. */
+interface SpecDataset {
+  x?: (string | number)[];
+  y?: (string | number)[];
+}
+
 interface SpecMeta {
   title?: string;
   description?: string;
   /** Method select options, for a level that offers more than one. */
   methods?: string[];
+  /** Demo data for this level, when it differs from the topic's. */
+  dataset?: SpecDataset;
+  /** Output X defaults for this level. */
+  range?: { min?: number; max?: number; interval?: number };
 }
 
 interface Spec {
@@ -40,6 +50,6 @@ interface Spec {
   blog?: SpecMeta;
   calculator?: SpecMeta;
   /** Demo data seeded into a topic's calculator on first load. */
-  dataset?: { x?: (string | number)[]; y?: (string | number)[] };
+  dataset?: SpecDataset;
   [level: string]: unknown;
 }

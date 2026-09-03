@@ -6,7 +6,14 @@ import path from 'node:path';
  * Tests assert against it, never against strings copied out of the HTML — that
  * is the whole point of the drift check.
  */
-export interface SpecMeta { title: string; description: string; methods?: string[]; }
+export interface SpecMeta {
+  title: string;
+  description: string;
+  methods?: string[];
+  /** Present when a level seeds different demo data from the topic's own. */
+  dataset?: { x?: (string | number)[]; y?: (string | number)[] };
+  range?: { min?: number; max?: number; interval?: number };
+}
 
 export interface Spec {
   slug: string;

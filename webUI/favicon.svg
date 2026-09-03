@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Interpolation">
+  <!-- The site's one idea, drawn: known points, and a curve estimating what
+       sits between them. Teal is #21c2b5, the .teal-button-link ground. -->
+  <rect width="32" height="32" rx="7" fill="#21c2b5"/>
+  <path d="M6 23 C 11 23, 11 9, 16 9 S 21 23, 26 23"
+        fill="none" stroke="#ffffff" stroke-width="2.6"
+        stroke-linecap="round"/>
+  <circle cx="6" cy="23" r="3.4" fill="#ffffff"/>
+  <circle cx="16" cy="9" r="3.4" fill="#ffffff"/>
+  <circle cx="26" cy="23" r="3.4" fill="#ffffff"/>
+</svg>

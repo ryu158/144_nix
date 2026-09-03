@@ -18,7 +18,14 @@
     "title": "Advanced Interpolation Calculator - Cubic Spline, PCHIP, Akima",
     "description": "Interpolate many series with cubic spline, PCHIP, or Akima. Paste CSV or TSV, set a range, plot the result. Your data is sent to the server to compute.",
     "//methods": "Static copy sits in the Method select. No FFT: it needs a uniform x grid.",
-    "methods": ["linear", "cubic spline", "PCHIP", "Akima"]
+    "methods": ["linear", "cubic spline", "PCHIP", "Akima"],
+    "//dataset": "Two flat runs with sharp edges. Chosen because the four methods disagree by ~20% of the data range at x=3.5: cubic overshoots to 119.6 and dips to -13.6, Akima half that, PCHIP stays inside the data, linear ramps. The basic page's smooth demo hides all of that.",
+    "dataset": {
+      "x": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "y": [0, 0, 0, 100, 100, 0, 0, 40, 40, 40, 0]
+    },
+    "//range": "Static copy sits in the three Output X inputs. 0-1000 is the basic page's; meaningless for 11 points spanning 0..10.",
+    "range": { "min": 0, "max": 10, "interval": 0.05 }
   },
   "category": "numerical-methods",
   "difficulty": "intro",

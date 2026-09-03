@@ -5,37 +5,6 @@
  * Owns grid/chart instantiation and wiring — nothing here belongs
  * in grid.ts / chart.ts / dual-chart.ts / interp_engine.ts.
  */
-/**
- * "How to use this" panel. Its own IIFE with its own guard: the panel and the
- * calculator must not be able to break each other.
- *
- * <details> does the opening. This only adds what a floating panel needs -
- * dismiss on outside click, dismiss on Escape - plus the open event.
- */
-(function () {
-    const howTo = document.querySelector('details.how-to');
-    if (!howTo)
-        return;
-    const summary = howTo.querySelector('summary');
-    howTo.addEventListener('toggle', () => {
-        // Pageviews cannot tell whether anyone actually reads the manual.
-        // trackEvent no-ops until consent is granted, so no gating needed here.
-        if (howTo.open && window.trackEvent) {
-            window.trackEvent('howto_open', { slug: 'interpolation' });
-        }
-    });
-    document.addEventListener('click', (e) => {
-        if (howTo.open && !howTo.contains(e.target))
-            howTo.open = false;
-    });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && howTo.open) {
-            howTo.open = false;
-            if (summary)
-                summary.focus();
-        }
-    });
-})();
 (function () {
     const inputHost = document.getElementById('gridContainer');
     const outputHost = document.getElementById('gridContainer_2');

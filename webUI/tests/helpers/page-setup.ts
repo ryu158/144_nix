@@ -37,13 +37,11 @@ export async function setConsent(page: Page, choice: 'granted' | 'denied') {
  * Collect console errors/warnings and page errors.
  *
  * seo.ts console.warns on spec.json drift, so an empty list is also an SEO check.
- * /favicon.ico is a known missing file — tracked in future_work.md, ignored here.
  */
 export function collectConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on('console', m => {
     if (m.type() !== 'error' && m.type() !== 'warning') return;
-    if (m.location().url.endsWith('/favicon.ico')) return;
     errors.push(m.text());
   });
   page.on('pageerror', e => errors.push(String(e)));

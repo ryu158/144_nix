@@ -54,7 +54,27 @@ test('with consent granted, opening the manual reports one howto_open', async ({
   const events = (await gaEvents(page)).filter(e => e[0] === 'event');
   expect(events).toHaveLength(1);
   expect(events[0][1]).toBe('howto_open');
-  expect(events[0][2]).toEqual({ slug: 'interpolation' });
+  // The panel is shared by both calculators, so it reports which one it is on.
+  expect(events[0][2]).toEqual({ slug: spec.slug, level: 'calculator' });
+});
+
+test('hovering the manual open and shut still reports exactly one howto_open', async ({ page }) => {
+  await preparePage(page, 'granted');
+
+  await page.goto(CAL);
+
+  // Hover fires on every pass of the pointer. One event per page load is the
+  // honest signal - it says the manual was opened, not how twitchy the mouse is.
+  for (let i = 0; i < 3; i++) {
+    await page.locator('details.how-to > summary').hover();
+    await expect(page.locator('.how-to-body')).toBeVisible();
+    await page.mouse.move(5, 5);
+    await expect(page.locator('.how-to-body')).toBeHidden();
+  }
+
+  const events = (await gaEvents(page)).filter(e => e[0] === 'event');
+  expect(events).toHaveLength(1);
+  expect(events[0][1]).toBe('howto_open');
 });
 
 test('with consent denied, nothing is reported at all', async ({ page }) => {

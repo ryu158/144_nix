@@ -4,10 +4,11 @@ Current status only. Not history — daily detail in .claude/log/.
 
 ## Resume here
 1. Pick up ## Next at the bottom of this file.
-2. /interpolate_adv ships markup + display only. The interpolate button is disabled on purpose — see ## interpolate_adv and ## Python backend below.
-3. topics/FFT/fft.zip is untracked and untouched — dropped in during the 2026-09-02 session, never opened. Deliberately left out of that commit.
-4. Left stale on purpose: log/2026-08-21.md:51 says the favicon gap is in future_work.md. It is in HANDOVER only now. Logs are history, not corrected.
-5. git identity is auto-detected as opc@a1-ryu...oraclevcn.com. Set user.email if the real address matters.
+2. /interpolate_adv is LIVE and computes. It needs webUI/app.py running: `cd ~/nix/webUI && nix run .`. Nothing starts it on boot, so after a reboot /api/ returns 502 until you do.
+3. The suite is 85 tests. Some skip themselves when /api/health is unreachable — that is the service being down, not a broken test.
+4. topics/FFT/fft.zip is untracked and untouched — dropped in during the 2026-09-02 session, never opened. Deliberately left out of that commit.
+5. Left stale on purpose: log/2026-08-21.md:51 says the favicon gap is in future_work.md, and log/2026-09-02.md ends with "Not committed". Both were true when written. Logs are history, not corrected.
+6. git identity is auto-detected as opc@a1-ryu...oraclevcn.com. Set user.email if the real address matters.
 
 ## Fact ownership
 1. CLAUDE.md = repo-wide rules.
@@ -55,32 +56,72 @@ Current status only. Not history — daily detail in .claude/log/.
 6. That clear is a capture-phase listener on #gridContainer — it must run before grid.ts's own handler on the hidden input. Do not move it to the bubble phase.
 7. It fires once. After any change the grid is no longer pristine, so a second paste behaves normally. tests/interpolation/demo.spec.ts asserts both halves.
 
-## interpolate_adv — markup + display, 2026-09-03
+## interpolate_adv — live, 2026-09-03
 1. Public URL /interpolate_adv. A real page now, not the copy of the calculator it was on 2026-09-02.
 2. Methods offered: linear, cubic spline, PCHIP, Akima. NO FFT — it needs a uniform x grid and does not fit arbitrary pasted data. spec.json advanced.methods is the source; the select is a static copy of it.
 3. The input grid is built WITHOUT fixedColCount. That is the one real data difference from the basic page — a wide paste grows the grid instead of alerting.
-4. page_adv.ts does NOT load interp_engine.js, on purpose. The advanced methods are scipy's; falling back to the basic page's linear math while the select says "cubic spline" would be a lie told by the page.
-5. So the interpolate button ships `disabled` and #status says why. Both are asserted.
-6. This page sends data to a server. The basic page's "nothing is uploaded" wording must NEVER be copied here — advanced.spec.ts fails the build if it is.
-7. The manual states the upload plainly and links back to the basic page for anyone who does not want it.
-8. Demo seeding, the async-empty guard, and the capture-phase paste clear are carried over from page.ts. The trap is identical here.
-9. The 🪄Advanced placeholder is gone: interpolate_cal.html links to /interpolate_adv, and nav.spec.ts's exemption was deleted. That rule now has no exceptions.
-10. The grid VIRTUALISES its columns. An off-screen column has no DOM node, so assert grid width by copying the data out, never by locating a cell.
+4. page_adv.ts computes NOTHING. It posts to /api/interpolation/<method> and renders the reply. It does not load interp_engine.js on purpose: falling back to the basic page's linear math while the select says "cubic spline" would be a lie told by the page.
+5. The button is ENABLED and works end to end. The user said they may disable it again; it is enabled today.
+6. During a request the button disables and #status reads "computing…", then "<n> rows, <method>" or an error. A second click cannot race the first.
+7. Editing the input grid re-plots but does NOT re-run. Every run is a network round trip; one per keystroke would hammer a shared service.
+8. This page sends data to a server. The basic page's "nothing is uploaded" wording must NEVER be copied here — advanced.spec.ts fails the build if it is.
+9. The manual states the upload plainly and links back to the basic page for anyone who does not want it.
+10. This page seeds its OWN demo, from spec.json advanced.dataset — NOT the topic's top-level one. Two flat runs with sharp edges: x 0..10, y 0/100/0/40/0.
+11. That dataset IS the point of the page. The basic page's smooth 50-point demo makes all four methods agree to ~1e-2, so the comparison had nothing to show. Measured live: cubic runs -13.56..119.63 and akima -7.14..112.50, while linear and pchip stay inside the data's 0..100.
+12. advanced.range (0, 10, 0.05) drives the three Output X inputs. The HTML carries a static copy for crawlers; spec.json wins at runtime. 0-1000 is the basic page's range and is meaningless for 11 points.
+13. advanced.spec.ts asserts the separation itself: cubic must exceed the data max and dip below its min, pchip must do neither. Swap in smooth data and that test fails, rather than quietly shipping a comparison page with nothing to compare.
+14. Demo seeding, the async-empty guard, and the capture-phase paste clear are carried over from page.ts. The trap is identical here.
+15. The 🪄Advanced placeholder is gone: interpolate_cal.html links to /interpolate_adv, and nav.spec.ts's exemption was deleted. That rule now has no exceptions.
+16. The grid VIRTUALISES its columns. An off-screen column has no DOM node, so assert grid width by copying the data out, never by locating a cell.
 
-## Python backend — decided 2026-09-03, not written
-1. The advanced methods come from scipy.interpolate: CubicSpline, PchipInterpolator, Akima1DInterpolator. gen_figs.py drew the blog figures with the same calls, so page and article agree by construction.
-2. flake.nix pythonEnv already carries flask, numpy, scipy. No new dependency, so no permission needed.
-3. /interpolate_cal stays fully client-side. interp_engine.ts survives and its "No upload" claim stays true. Decided, not an accident.
-4. Three costs, accepted knowingly: the no-upload claim dies on the advanced page, a deploy step appears where there was none, and run-browser-tests gains a running-service prerequisite.
-5. The endpoint binds loopback and sits behind nginx, same as syncthing. It needs a body-size cap — it is public and takes an arbitrary array.
-6. Login gating the Advanced button is deferred, not dropped. Recorded as 12-1 in the advanced blueprint.
-7. Requirements live in topics/interpolation/interpolation_adv_blueprint.md. Read it before writing app.py.
+## Python backend — built 2026-09-03
+1. webUI/app.py is the site's ONE backend, for every topic. Routes are /api/<topic>/<method>.
+2. It owns all HTTP: JSON parse, validation, caps (8 MB body, 20000 rows, 64 cols, 50000 query points), error shape. Bad input is a 4xx with {"error": ...}; a stack trace never reaches the client.
+3. Routes are built from each topic module's own METHODS table. A new method is one line in the topic file and none in app.py.
+4. topics/interpolation/api_interp.py holds the math and imports no Flask. It stays callable without a server.
+5. Binds 127.0.0.1 only. Port from INTERP_API_PORT, default 35910. nginx is its whole public face.
+6. `nix run .` works now — it never had before, because app.py did not exist. Note flakes copy only GIT-TRACKED files: an untracked app.py is absent from the store and the command fails with "can't open file".
+7. Verified against interp_engine.ts on the demo dataset, range 0/1000/1: 1001 rows both sides, max absolute difference 0.000e+00. The two pages cannot disagree.
+8. Every method blanks outside a series' own domain. np.interp CLAMPS there, so linear masks it back explicitly; the scipy interpolators use extrapolate=False and their NaN becomes a blank cell.
+9. A series too thin for its method (cubic wants 4 points, Akima 5) blanks that column instead of failing the request.
+10. It is Flask's DEVELOPMENT server, single-threaded. Fine on loopback; a production WSGI server is not in the flake and adding one needs permission.
+11. scipy math lives beside its topic and app.py imports it, so topics/ and topics/interpolation/ carry an __init__.py.
+
+## nginx /api/ — deployed 2026-09-03
+1. `location /api/` added to ~/nix/nginx/configs/nginx.conf, plus api_port = "35910" in nginx-secrets.nix and api_port in the flake's substituteAll list. Miss that last one and @api_port@ ships unreplaced.
+2. 35910 was already in openPortsStr. The service still binds loopback, so the open port reaches nothing directly.
+3. client_max_body_size 8m in that block on purpose — the server-wide value is 2G, which would let an oversize body reach Flask instead of being refused at the edge.
+4. No trailing slash on proxy_pass: Flask's own routes start with /api/.
+5. Deployed by the user with `nix run --impure .#update_nginx_conf` from ~/nix/nginx. /api/health answers on the public domain.
+6. A 502 there means nginx found the route and nobody answered: the block is live but app.py is not running. It is NOT an nginx fault.
+7. webUI/nginx.conf, the reference near-copy, does NOT have this block. It already differed; left alone.
+
+## how-to panel — shared component, 2026-09-03
+1. dev_basic/how-to.ts. Extracted from page.ts when the advanced page became the second user; both pages load /dev_basic/how-to.js and neither controller owns panel code any more.
+2. `<details>` still does the opening, so the manual is in the HTML before any script runs and Tab + Enter work with no JS.
+3. Hover was ADDED, never substituted for click: hover in opens, hover out closes, a click PINS it open, Escape or an outside click closes and unpins.
+4. Hover is gated behind `(hover: hover) and (pointer: fine)`. A touch device reports neither — without that gate the manual would be unreachable on a phone.
+5. A click on an already-hover-opened panel is intercepted. Native <details> would toggle it SHUT, which is the opposite of what that gesture means.
+6. Escape does NOT reopen on the hover that is already there. The pointer has not moved, so no mouseenter fires. Deliberate, and asserted.
+7. OPEN_DELAY 120 ms and CLOSE_DELAY 220 ms: brushing past must not throw a panel over the grids, and a brief exit must not snatch it away mid-read.
+8. howto_open fires ONCE per page load. Hover would otherwise report every pass of the mouse. It now carries `level` as well as `slug`, so the two calculators are distinguishable.
+9. The component cannot know its topic, so the element declares it: `<details class="how-to" data-slug=… data-level=…>`.
 
 ## vendor/mathjax
 1. topics/interpolation/vendor/mathjax/tex-mml-svg.js, MathJax 3, 2.1 MB, committed.
 2. Self-hosted on purpose — the site ships no third-party runtime scripts.
 3. tex-mml-svg, not tex-mml-chtml: SVG output needs no web-font directory, so self-hosting is one file.
 4. Second topic needing math -> move it to dev_basic/vendor/ and delete this copy.
+
+## favicon — added 2026-09-03
+1. favicon.svg is the source of record. Edit that, never the .ico.
+2. favicon.ico is GENERATED from it: render_favicon.js drew 16/32/48 px through Playwright + the Nix chromium, and a short Python block packed them into one .ico. The script was scratch and is not kept — the recipe is this line.
+3. The .ico holds PNG payloads, not BMP. Every browser since IE11 reads that, and it keeps the file at 2.9 KB instead of ~10 KB.
+4. Both are linked from all four pages, SVG first: a browser that understands SVG never requests the .ico.
+5. The mark is the site's one idea drawn — known points, and a curve estimating between them. Ground is #21c2b5, the .teal-button-link colour.
+6. collectConsoleErrors used to ignore /favicon.ico by name. That ignore is GONE. Every "console is quiet" assertion now depends on the file really being there.
+7. tests/home/favicon.spec.ts parses the .ico header and asserts 3 images at 16/32/48.
+
 
 ## SEO — done, live
 1. Method + gap list -> .claude/refs/SEO_ref.md (4 talks, summarised).
@@ -147,17 +188,17 @@ nix flake update nixpkgs-unstable
 
 ## Not done
 1. og:image / socialImage missing — social previews have no picture.
-2. /favicon.ico missing — 404 on every page, browser tabs blank. Found 2026-08-21 by the Playwright console check, which now ignores it.
-3. Fixing it needs an icon decision first — the site has no logo. Then a static file plus <link rel="icon">. Small, not urgent.
-4. interpolate_cal.html headings are Input / Output / Results — zero keywords.
-5. interpolate_cal.html body was one paragraph. The How-to panel added a real manual on 2026-09-02; still short next to the blog.
-6. Mobile friendliness never scored. Cal page is a full-height 3-panel grid with body { overflow: hidden }. The blog article was never checked on a phone either — its figures are fixed-ratio SVG.
-7. No SERP rank monitoring at all.
-8. /interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical.
-9. test_data.csv orphaned. Keep or delete undecided.
-10. Files served from repo root are public: CLAUDE.md, .claude/, flake.nix, Claude.local.md. Known, accepted.
-11. /interpolate_blog title and description both changed on 2026-09-02. Re-request indexing in Search Console.
-12. /interpolate_adv is new as of 2026-09-03 and is in the sitemap. Request indexing once it actually computes — an indexed page with a disabled button is worse than an unindexed one.
+2. interpolate_cal.html headings are Input / Output / Results — zero keywords.
+3. interpolate_cal.html body was one paragraph. The How-to panel added a real manual on 2026-09-02; still short next to the blog.
+4. Mobile friendliness never scored. Cal page is a full-height 3-panel grid with body { overflow: hidden }. The blog article was never checked on a phone either — its figures are fixed-ratio SVG.
+5. No SERP rank monitoring at all.
+6. /interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical.
+7. test_data.csv orphaned. Keep or delete undecided.
+8. Files served from repo root are public: CLAUDE.md, .claude/, flake.nix, Claude.local.md. Known, accepted.
+9. /interpolate_blog title and description both changed on 2026-09-02. Re-request indexing in Search Console.
+10. /interpolate_adv is new as of 2026-09-03 and is in the sitemap. It computes now, so requesting indexing is unblocked.
+11. NOTHING STARTS app.py ON BOOT. After a reboot /api/ returns 502 until someone runs `nix run .` by hand. A systemd unit is the fix and lives outside webUI — ask first.
+12. app.py runs Flask's DEVELOPMENT server, single-threaded, and says so on startup. Fine behind loopback; a production WSGI server is a new flake dependency and needs permission.
 
 ## Confirmed, don't touch
 1. Hardcoded nav/colors in interpolation pages — intentional, not a cleanup target.
@@ -174,10 +215,9 @@ nix flake update nixpkgs-unstable
 12. test_in_data.md carries 10 columns, so the basic page only ever sees X + 3 series.
 
 ## Next
-1. Write webUI/app.py. It is what makes `nix run .` work and what the advanced page is waiting for.
-2. Contract and limits are in topics/interpolation/interpolation_adv_blueprint.md, section `- api`. Do not invent a second one.
-3. Match interp_engine.ts where the two overlap: skip non-numeric points, sort by x, per-series domains, and blank outside the domain — not 0, not an error.
-4. Then page_adv.ts posts to it, the interpolate button loses `disabled`, and #status carries running / failed / backend down.
-5. nginx needs a `location /api/` proxy block in ~/nix/nginx/configs/nginx.conf. That file is outside webUI — ask first.
-6. Only then request indexing for /interpolate_adv.
-7. One topic at a time.
+1. Decide how app.py stays up: a systemd unit, or start it by hand each time. Until then a reboot means 502.
+2. Request indexing for /interpolate_adv, /interpolate_cal and /interpolate_blog in Search Console.
+3. og:image is still missing on every page — social previews have no picture. The favicon mark added 2026-09-03 is something to build one from.
+4. Mobile is still unscored on all three pages.
+5. topics/FFT/fft.zip has never been opened. FFT is the obvious next topic, and the backend takes a second one with a single import line.
+6. One topic at a time.

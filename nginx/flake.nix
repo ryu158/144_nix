@@ -19,7 +19,7 @@
       # 1. Template out configurations using substituteAll
       nginxConfDrv = pkgs.substituteAll {
         src = ./configs/nginx.conf;
-        inherit (config) domain web_root sb_domain sb_port st_port;
+        inherit (config) domain web_root sb_domain sb_port st_port api_port;
       };
 
       nginxServiceDrv = pkgs.substituteAll {
