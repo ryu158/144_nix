@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://ryuora144.duckdns.org/interpolate_adv">
+
+<!-- Static copies of spec.json advanced.title/description. Crawlers read these without
+     running JS; seo.js overwrites them at runtime and warns if they drift. -->
+<title>Advanced Interpolation Calculator - Cubic Spline, PCHIP, Akima</title>
+<meta name="description" content="Interpolate many series with cubic spline, PCHIP, or Akima. Paste CSV or TSV, set a range, plot the result. Your data is sent to the server to compute.">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ryuora144.duckdns.org/interpolate_adv">
+<meta property="og:title" content="Advanced Interpolation Calculator - Cubic Spline, PCHIP, Akima">
+<meta property="og:description" content="Interpolate many series with cubic spline, PCHIP, or Akima. Paste CSV or TSV, set a range, plot the result. Your data is sent to the server to compute.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Advanced Interpolation Calculator - Cubic Spline, PCHIP, Akima">
+<meta name="twitter:description" content="Interpolate many series with cubic spline, PCHIP, or Akima. Paste CSV or TSV, set a range, plot the result. Your data is sent to the server to compute.">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Advanced Interpolation Calculator",
+  "description": "Interpolate many series with cubic spline, PCHIP, or Akima. Paste CSV or TSV, set a range, plot the result. Your data is sent to the server to compute.",
+  "url": "https://ryuora144.duckdns.org/interpolate_adv",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any (browser-based)",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "inLanguage": "en"
+}
+</script>
+
+<link rel="stylesheet" href="/dev_basic/style.css">
+<link rel="stylesheet" href="/topics/interpolation/interpolation_style.css">
+<script src="/src/shell/seo.js" data-slug="interpolation" data-level="advanced"></script>
+<script src="/src/shell/analytics.js"></script>
+<script src="/src/shell/consent.js"></script>
+</head>
+<body>
+	<div id="app">
+		<header class="app-header">
+			<div class="controls-row">
+				<div class="field">
+					<h1>Interpolate Calculator — Advanced</h1>
+				</div>
+				<a href="/interpolate_blog" class="teal-button-link">
+					<strong>❓interpolation</strong>
+				</a>
+				<a href="/" class="teal-button-link">
+					<strong>🏠Home</strong>
+				</a>
+				<a href="/interpolate_cal" class="teal-button-link">
+					<strong>🧮Basic</strong>
+				</a>
+			</div>
+		</header>
+
+		<!-- Same panel as the basic page, with one difference that is not cosmetic:
+		     this page sends the table to a server to compute. The basic page's
+		     "nothing is uploaded" wording must never be copied here. -->
+		<details class="how-to">
+			<summary>📘 How to use this — copy and paste CSV, TSV, or spreadsheet data</summary>
+			<div class="how-to-body">
+				<p class="how-to-intro">
+					<strong>What this page adds.</strong> The
+					<a href="/interpolate_cal">basic calculator</a> draws straight lines between
+					your points and never leaves your browser. This page fits curves instead —
+					cubic spline, PCHIP, and Akima — and takes any number of series at once.
+					To do that it <strong>sends your table to the server</strong>, computes there,
+					and sends the numbers back. Nothing is stored, but the data does leave your
+					machine. If that matters for your data, use the basic page.
+					The <a href="/interpolate_blog">interpolation article</a> explains what each
+					method assumes and where each one goes wrong.
+				</p>
+				<ol>
+					<li><strong>Paste your data</strong> into the Input grid — straight from a
+						spreadsheet, or as CSV/TSV text. First column is x, every other column is
+						a y series. There is no column limit on this page.</li>
+					<li><strong>Set the output range.</strong> Output X start, finish, and interval
+						decide which x values you get back.</li>
+					<li><strong>Pick a method</strong> in the Method select, then press
+						<strong>interpolate</strong>.</li>
+					<li><strong>Read the result.</strong> Values land in the Output grid; the same
+						curves plot under Results.</li>
+				</ol>
+				<p>Output x values outside the range of your data are left blank. This
+					interpolates between your points, it does not extrapolate past them.</p>
+			</div>
+		</details>
+
+		<div class="app-toolbar">
+			<span class="status" id="status">Calculation service is not wired up yet — this page is markup only.</span>
+			<span class="manual-range-controls">
+				<div class="controls-row">
+					<div class="field">
+						<label for="outputXMin">Output X start</label>
+						<input id="outputXMin" type="text" value="0" style="width: 90px;">
+					</div>
+					<div class="field">
+						<label for="outputXMax">Output X finish</label>
+						<input id="outputXMax" type="text" value="1000" style="width: 90px;">
+					</div>
+					<div class="field">
+						<label for="outputXInterval">Output X interval</label>
+						<input id="outputXInterval" type="text" value="1" style="width: 90px;">
+					</div>
+					<div class="field">
+						<label for="methodSelect">Method</label>
+						<!-- Static copy of spec.json advanced.methods, same arrangement as the
+						     head tags. FFT is deliberately absent: it needs a uniform x grid. -->
+						<select id="methodSelect">
+							<option value="linear">linear</option>
+							<option value="cubic">cubic spline</option>
+							<option value="pchip">PCHIP</option>
+							<option value="akima">Akima</option>
+						</select>
+					</div>
+					<button id="genRangeBtn" class="primary-btn" disabled>interpolate</button>
+				</div>
+			</span>
+		</div>
+
+
+		<div class="app-main">
+			<section class="panel panel-grid" style="flex: 1;">
+				<h2>Input</h2>
+				<div id="gridContainer" class="panel-body"></div>
+			</section>
+			<section class="panel panel-grid" style="flex: 1;">
+				<h2>Output</h2>
+				<div id="gridContainer_2" class="panel-body"></div>
+			</section>
+			<section class="panel panel-chart">
+				<h2>Results</h2>
+				<div id="chartContainer" class="panel-body"></div>
+			</section>
+		</div>
+	</div>
+
+	<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+	<script>
+		kofiWidgetOverlay.draw('shinyoungryu', {
+		'type': 'floating-chat',
+		'floating-chat.donateButton.text': 'Tip Me',
+		'floating-chat.donateButton.background-color': '#00bfa5',
+		'floating-chat.donateButton.text-color': '#fff'
+		});
+	</script>
+
+	<!-- No interp_engine.js here on purpose: the advanced methods are scipy's,
+	     and this page must not fall back to the basic page's linear math. -->
+	<script src="/dev_basic/grid.js"></script>
+	<script src="/dev_basic/chart.js"></script>
+	<script src="/dev_basic/dual-chart.js"></script>
+	<script src="/topics/interpolation/page_adv.js"></script>
+
+</body>
+</html>

@@ -25,6 +25,8 @@ interface GridSource {
 interface SpecMeta {
   title?: string;
   description?: string;
+  /** Method select options, for a level that offers more than one. */
+  methods?: string[];
 }
 
 interface Spec {

@@ -66,11 +66,7 @@ for (const [level, url] of Object.entries(spec.pages)) {
     const internal = hrefs.filter(h => h.startsWith('/'));
     expect(internal.length).toBeGreaterThan(0);
 
-    // Exception: the 🪄Advanced button is a placeholder pointing at this page's
-    // own raw path until the advanced level exists. Known, listed under
-    // "Not done" in .claude/HANDOVER.md. Every other link must obey the rule.
-    const ADVANCED_PLACEHOLDER = '/topics/interpolation/interpolate_cal.html';
-    const offenders = internal.filter(h => h.includes('/topics/') && h !== ADVANCED_PLACEHOLDER);
+    const offenders = internal.filter(h => h.includes('/topics/'));
     expect(offenders, 'internal links must use the public URLs from spec.json').toEqual([]);
   });
 }

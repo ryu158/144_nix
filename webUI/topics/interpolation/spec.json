@@ -3,7 +3,8 @@
   "name": "Interpolation",
   "pages": {
     "blog": "/interpolate_blog",
-    "calculator": "/interpolate_cal"
+    "calculator": "/interpolate_cal",
+    "advanced": "/interpolate_adv"
   },
   "blog": {
     "title": "Interpolation Methods",
@@ -13,11 +14,17 @@
     "title": "Online Interpolation Calculator, Multiple line, Vector, Matrix, Sheet type data, Fast calculation & Plot results (Graph)",
     "description": "Free interpolation calculator. Copy and paste CSV, TSV, or spreadsheet data, compute multiple lines and matrix data at once, and plot results. No upload."
   },
+  "advanced": {
+    "title": "Advanced Interpolation Calculator - Cubic Spline, PCHIP, Akima",
+    "description": "Interpolate many series with cubic spline, PCHIP, or Akima. Paste CSV or TSV, set a range, plot the result. Your data is sent to the server to compute.",
+    "//methods": "Static copy sits in the Method select. No FFT: it needs a uniform x grid.",
+    "methods": ["linear", "cubic spline", "PCHIP", "Akima"]
+  },
   "category": "numerical-methods",
   "difficulty": "intro",
   "prerequisites": [],
   "related": [],
-  "levels": ["blog", "calculator"],
+  "levels": ["blog", "calculator", "advanced"],
   "insight": "Interpolation estimates an unknown value between two known points by assuming how the quantity behaves in between — the simplest assumption being a straight line.",
   "//dataset": "Demo data seeded into the input grid on first load. 50 points, x 0-1000.",
   "dataset": {

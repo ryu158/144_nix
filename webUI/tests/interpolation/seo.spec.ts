@@ -15,7 +15,9 @@ import { loadSpec, meta, CANONICAL_ORIGIN } from '../helpers/spec';
 
 const spec = loadSpec('interpolation');
 
-const LD_TYPE: Record<string, string> = { blog: 'Article', calculator: 'WebApplication' };
+const LD_TYPE: Record<string, string> = {
+  blog: 'Article', calculator: 'WebApplication', advanced: 'WebApplication'
+};
 
 function decode(s: string): string {
   return s

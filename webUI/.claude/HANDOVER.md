@@ -4,9 +4,10 @@ Current status only. Not history — daily detail in .claude/log/.
 
 ## Resume here
 1. Pick up ## Next at the bottom of this file.
-2. topics/FFT/fft.zip is untracked and untouched — dropped in during the 2026-09-02 session, never opened. Deliberately left out of that commit.
-3. Left stale on purpose: log/2026-08-21.md:51 says the favicon gap is in future_work.md. It is in HANDOVER only now. Logs are history, not corrected.
-4. git identity is auto-detected as opc@a1-ryu...oraclevcn.com. Set user.email if the real address matters.
+2. /interpolate_adv ships markup + display only. The interpolate button is disabled on purpose — see ## interpolate_adv and ## Python backend below.
+3. topics/FFT/fft.zip is untracked and untouched — dropped in during the 2026-09-02 session, never opened. Deliberately left out of that commit.
+4. Left stale on purpose: log/2026-08-21.md:51 says the favicon gap is in future_work.md. It is in HANDOVER only now. Logs are history, not corrected.
+5. git identity is auto-detected as opc@a1-ryu...oraclevcn.com. Set user.email if the real address matters.
 
 ## Fact ownership
 1. CLAUDE.md = repo-wide rules.
@@ -15,7 +16,9 @@ Current status only. Not history — daily detail in .claude/log/.
 4. .claude/rules/tests.md = rules the Playwright suite depends on.
 5. .claude/skills/new-topic/SKILL.md = 6-step checklist.
 6. .claude/refs/ = outside knowledge, summarised. Not rules.
-7. Each fact lives in ONE file. Adding a rule? Pick the owner, never copy into a second file.
+7. topics/<slug>/*_blueprint.md = what to build, written before the work. One line per requirement, no answers in it.
+8. A blueprint is written BEFORE the work. Never fold as-built detail into one — function signatures, rounding, algorithm choice. That is what stops it being a blueprint. As-built facts belong in this file or in a test.
+9. Each fact lives in ONE file. Adding a rule? Pick the owner, never copy into a second file.
 
 ## topics/interpolation — done
 1. 6-step workflow complete.
@@ -51,6 +54,27 @@ Current status only. Not history — daily detail in .claude/log/.
 5. First paste onto an untouched demo clears the grid first. Without that, grid.ts's paste overwrites cell by cell and leaves demo rows below the pasted data, silently mixed into the result.
 6. That clear is a capture-phase listener on #gridContainer — it must run before grid.ts's own handler on the hidden input. Do not move it to the bubble phase.
 7. It fires once. After any change the grid is no longer pristine, so a second paste behaves normally. tests/interpolation/demo.spec.ts asserts both halves.
+
+## interpolate_adv — markup + display, 2026-09-03
+1. Public URL /interpolate_adv. A real page now, not the copy of the calculator it was on 2026-09-02.
+2. Methods offered: linear, cubic spline, PCHIP, Akima. NO FFT — it needs a uniform x grid and does not fit arbitrary pasted data. spec.json advanced.methods is the source; the select is a static copy of it.
+3. The input grid is built WITHOUT fixedColCount. That is the one real data difference from the basic page — a wide paste grows the grid instead of alerting.
+4. page_adv.ts does NOT load interp_engine.js, on purpose. The advanced methods are scipy's; falling back to the basic page's linear math while the select says "cubic spline" would be a lie told by the page.
+5. So the interpolate button ships `disabled` and #status says why. Both are asserted.
+6. This page sends data to a server. The basic page's "nothing is uploaded" wording must NEVER be copied here — advanced.spec.ts fails the build if it is.
+7. The manual states the upload plainly and links back to the basic page for anyone who does not want it.
+8. Demo seeding, the async-empty guard, and the capture-phase paste clear are carried over from page.ts. The trap is identical here.
+9. The 🪄Advanced placeholder is gone: interpolate_cal.html links to /interpolate_adv, and nav.spec.ts's exemption was deleted. That rule now has no exceptions.
+10. The grid VIRTUALISES its columns. An off-screen column has no DOM node, so assert grid width by copying the data out, never by locating a cell.
+
+## Python backend — decided 2026-09-03, not written
+1. The advanced methods come from scipy.interpolate: CubicSpline, PchipInterpolator, Akima1DInterpolator. gen_figs.py drew the blog figures with the same calls, so page and article agree by construction.
+2. flake.nix pythonEnv already carries flask, numpy, scipy. No new dependency, so no permission needed.
+3. /interpolate_cal stays fully client-side. interp_engine.ts survives and its "No upload" claim stays true. Decided, not an accident.
+4. Three costs, accepted knowingly: the no-upload claim dies on the advanced page, a deploy step appears where there was none, and run-browser-tests gains a running-service prerequisite.
+5. The endpoint binds loopback and sits behind nginx, same as syncthing. It needs a body-size cap — it is public and takes an arbitrary array.
+6. Login gating the Advanced button is deferred, not dropped. Recorded as 12-1 in the advanced blueprint.
+7. Requirements live in topics/interpolation/interpolation_adv_blueprint.md. Read it before writing app.py.
 
 ## vendor/mathjax
 1. topics/interpolation/vendor/mathjax/tex-mml-svg.js, MathJax 3, 2.1 MB, committed.
@@ -93,10 +117,7 @@ run-browser-tests          # or: npx playwright test  /  nix run .#browser-test
 ```
 2. It is in devShells packages. Missing command = stale shell, exit and re-enter nix develop.
 3. run-interp-app is NOT in the shell on purpose — it interpolates ${self}, which copies the repo into the store on every shell start.
-4. Flask app instead:
-```
-nix run .
-```
+4. `nix run .` is BROKEN. runApp does `cd ${self}; python app.py`, and webUI/app.py does not exist and never has in git history. Found 2026-09-03. Writing that file is what fixes it.
 5. Uses the Nix chromium via PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH.
 6. PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 — a download would write outside webUI/.
 7. Tests hit the real served site, baseURL https://localhost, self-signed cert ignored.
@@ -125,18 +146,18 @@ nix flake update nixpkgs-unstable
 6. Downloads go to the scratchpad, NEVER into webUI/. nginx serves the repo root, so a file dropped here is instantly public.
 
 ## Not done
-1. 🪄Advanced button in interpolate_cal.html links to itself. Placeholder, page not built.
-2. og:image / socialImage missing — social previews have no picture.
-3. /favicon.ico missing — 404 on every page, browser tabs blank. Found 2026-08-21 by the Playwright console check, which now ignores it.
-4. Fixing it needs an icon decision first — the site has no logo. Then a static file plus <link rel="icon">. Small, not urgent.
-5. interpolate_cal.html headings are Input / Output / Results — zero keywords.
-6. interpolate_cal.html body was one paragraph. The How-to panel added a real manual on 2026-09-02; still short next to the blog.
-7. Mobile friendliness never scored. Cal page is a full-height 3-panel grid with body { overflow: hidden }. The blog article was never checked on a phone either — its figures are fixed-ratio SVG.
-8. No SERP rank monitoring at all.
-9. /interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical.
-10. test_data.csv orphaned. Keep or delete undecided.
-11. Files served from repo root are public: CLAUDE.md, .claude/, flake.nix, Claude.local.md. Known, accepted.
-12. /interpolate_blog title and description both changed on 2026-09-02. Re-request indexing in Search Console.
+1. og:image / socialImage missing — social previews have no picture.
+2. /favicon.ico missing — 404 on every page, browser tabs blank. Found 2026-08-21 by the Playwright console check, which now ignores it.
+3. Fixing it needs an icon decision first — the site has no logo. Then a static file plus <link rel="icon">. Small, not urgent.
+4. interpolate_cal.html headings are Input / Output / Results — zero keywords.
+5. interpolate_cal.html body was one paragraph. The How-to panel added a real manual on 2026-09-02; still short next to the blog.
+6. Mobile friendliness never scored. Cal page is a full-height 3-panel grid with body { overflow: hidden }. The blog article was never checked on a phone either — its figures are fixed-ratio SVG.
+7. No SERP rank monitoring at all.
+8. /interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical.
+9. test_data.csv orphaned. Keep or delete undecided.
+10. Files served from repo root are public: CLAUDE.md, .claude/, flake.nix, Claude.local.md. Known, accepted.
+11. /interpolate_blog title and description both changed on 2026-09-02. Re-request indexing in Search Console.
+12. /interpolate_adv is new as of 2026-09-03 and is in the sitemap. Request indexing once it actually computes — an indexed page with a disabled button is worse than an unindexed one.
 
 ## Confirmed, don't touch
 1. Hardcoded nav/colors in interpolation pages — intentional, not a cleanup target.
@@ -153,8 +174,10 @@ nix flake update nixpkgs-unstable
 12. test_in_data.md carries 10 columns, so the basic page only ever sees X + 3 series.
 
 ## Next
-1. Advanced interpolation page, cubic and spline.
-2. Add "advanced" to spec.json levels + pages. The home row grows the button by itself.
-3. It also unlocks the column limit — that page takes the full 10-column fixture, the basic one stays at 4.
-4. Fixing the 🪄Advanced placeholder link comes with it. tests/interpolation/nav.spec.ts exempts that href today, drop the exemption then.
-5. One topic at a time.
+1. Write webUI/app.py. It is what makes `nix run .` work and what the advanced page is waiting for.
+2. Contract and limits are in topics/interpolation/interpolation_adv_blueprint.md, section `- api`. Do not invent a second one.
+3. Match interp_engine.ts where the two overlap: skip non-numeric points, sort by x, per-series domains, and blank outside the domain — not 0, not an error.
+4. Then page_adv.ts posts to it, the interpolate button loses `disabled`, and #status carries running / failed / backend down.
+5. nginx needs a `location /api/` proxy block in ~/nix/nginx/configs/nginx.conf. That file is outside webUI — ask first.
+6. Only then request indexing for /interpolate_adv.
+7. One topic at a time.
