@@ -7,6 +7,21 @@ interface Window {
   gtag: (...args: unknown[]) => void;
   trackEvent: (name: string, params?: Record<string, unknown>) => void;
   adsbygoogle: unknown[];
+  /** File System Access API. Chromium only — always feature-detect before use. */
+  showSaveFilePicker?: (options?: SaveFilePickerOptions) => Promise<SaveFileHandle>;
+}
+
+// Minimal File System Access surface: only what the export path calls. TS 5.4's
+// DOM lib does not ship these, and the full spec types are far more than we use.
+interface SaveFilePickerOptions {
+  suggestedName?: string;
+  types?: { description?: string; accept: Record<string, string[]> }[];
+}
+
+interface SaveFileHandle {
+  /** The name the user actually chose. Its extension is what picks the delimiter. */
+  name: string;
+  createWritable(): Promise<{ write(data: string): Promise<void>; close(): Promise<void> }>;
 }
 
 // A CSS length: a number means px, a string is passed through verbatim.

@@ -107,6 +107,164 @@
         }
     }
     runBtn.addEventListener('click', run);
+    /* ---------------- Import / export ---------------- */
+    // Paste already accepts CSV and TSV text. These two do the same job for a
+    // file on disk, and give the results a way back out.
+    const importBtn = document.querySelector('#importBtn');
+    const importFile = document.querySelector('#importFile');
+    const exportBtn = document.querySelector('#exportBtn');
+    const exportFormat = document.querySelector('#exportFormat');
+    const TAB = '\t', COMMA = ',';
+    // Delimiter sniffing is lifted from grid.ts _onPaste on purpose: the same
+    // bytes must give the same grid whether they arrive by file or by clipboard.
+    // Quoted fields are not handled there either - fixing it here alone would
+    // make the two disagree.
+    function parseDelimited(text) {
+        const rawRows = text.replace(/\r/g, '').split('\n').filter((row, idx, arr) => !(idx === arr.length - 1 && row === ''));
+        const delim = rawRows[0] && rawRows[0].includes(TAB) ? TAB : COMMA;
+        return rawRows.map(row => row.split(delim));
+    }
+    function toDelimited(rows, delim) {
+        return rows.map(row => row.join(delim)).join('\n');
+    }
+    function stamp() {
+        const d = new Date(), pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`
+            + `-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    }
+    async function importFrom(file) {
+        let rows;
+        try {
+            rows = parseDelimited(await file.text());
+        }
+        catch {
+            setStatus('could not read that file');
+            return;
+        }
+        if (!rows.length || rows.every(row => row.every(cell => cell.trim() === ''))) {
+            setStatus('that file has no data');
+            return;
+        }
+        // setData emits 'change', so plotBoth runs and demoPristine clears on its
+        // own. Do NOT touch demoPristine here.
+        grid.setData(rows);
+        setStatus(`${rows.length} rows imported`);
+        if (window.trackEvent) {
+            window.trackEvent('csv_import', {
+                level: 'advanced',
+                format: file.name.toLowerCase().endsWith('.tsv') ? 'tsv' : 'csv',
+                rows: rows.length
+            });
+        }
+    }
+    const MIME = {
+        csv: 'text/csv',
+        tsv: 'text/tab-separated-values'
+    };
+    function exportBody(rows, format) {
+        return toDelimited(rows, format === 'tsv' ? TAB : COMMA);
+    }
+    function suggestedName(format) {
+        return `interpolation_${method.value}_${stamp()}.${format}`;
+    }
+    function formatOf(fileName) {
+        return fileName.toLowerCase().endsWith('.tsv') ? 'tsv' : 'csv';
+    }
+    function exported(rows, format) {
+        setStatus(`${rows.length} rows exported as ${format.toUpperCase()}`);
+        if (window.trackEvent) {
+            window.trackEvent('csv_export', {
+                level: 'advanced', format, method: method.value, rows: rows.length
+            });
+        }
+    }
+    /**
+     * Chromium: a real save dialog with a "Save as type" dropdown.
+     *
+     * The FORMAT COMES BACK FROM THE HANDLE, not from the page - whichever type
+     * the user picked in the dialog decides the delimiter. That is the whole
+     * reason this path exists.
+     */
+    async function saveWithPicker(picker, rows) {
+        let handle;
+        try {
+            handle = await picker({
+                suggestedName: suggestedName('csv'),
+                types: [
+                    { description: 'CSV (comma separated)', accept: { 'text/csv': ['.csv'] } },
+                    { description: 'TSV (tab separated)', accept: { 'text/tab-separated-values': ['.tsv'] } }
+                ]
+            });
+        }
+        catch {
+            // AbortError: the user pressed Cancel. Not a failure - say nothing, and
+            // report no analytics event for a save that never happened.
+            return;
+        }
+        const format = formatOf(handle.name);
+        try {
+            const writable = await handle.createWritable();
+            await writable.write(exportBody(rows, format));
+            await writable.close();
+        }
+        catch {
+            setStatus('could not write that file');
+            return;
+        }
+        exported(rows, format);
+    }
+    /**
+     * Firefox and Safari: no save dialog API exists, so the browser drops the file
+     * straight into Downloads and #exportFormat carries the choice instead.
+     */
+    function saveWithAnchor(rows, format) {
+        const blob = new Blob([exportBody(rows, format)], { type: `${MIME[format]};charset=utf-8` });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = suggestedName(format);
+        a.click();
+        // Revoking immediately can cancel the download in some browsers; one tick
+        // is enough for the click to have taken the URL.
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+        exported(rows, format);
+    }
+    function exportGrid() {
+        const rows = grid_2.getData();
+        if (!rows.length || rows.every(row => row.every(cell => cell === ''))) {
+            setStatus('nothing to export — run interpolate first');
+            return;
+        }
+        // Read straight off window: a test can add or remove the API per page, and
+        // a cached reference taken at load would miss that.
+        const picker = window.showSaveFilePicker;
+        // No await above this line, deliberately. Chromium needs an unconsumed user
+        // gesture to open the dialog, and one awaited tick spends it.
+        if (picker) {
+            void saveWithPicker(picker.bind(window), rows);
+            return;
+        }
+        saveWithAnchor(rows, exportFormat?.value || 'csv');
+    }
+    if (!importBtn || !importFile || !exportBtn || !exportFormat) {
+        console.warn('[interpolate-adv] import/export markup missing — buttons not wired');
+    }
+    else {
+        importBtn.addEventListener('click', () => importFile.click());
+        importFile.addEventListener('change', () => {
+            const file = importFile.files && importFile.files[0];
+            // Cleared before the await: picking the SAME file twice fires no change
+            // event otherwise, and the second import would silently do nothing.
+            importFile.value = '';
+            if (file)
+                void importFrom(file);
+        });
+        exportBtn.addEventListener('click', exportGrid);
+        // The select is markup-hidden and revealed only where the save dialog
+        // cannot offer a type dropdown. On Chromium it never appears.
+        if (!window.showSaveFilePicker)
+            exportFormat.hidden = false;
+    }
     // Editing the input only re-plots. It does NOT re-run: every run is a network
     // round trip, and firing one per keystroke would hammer a shared service.
     grid.on('change', plotBoth);

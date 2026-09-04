@@ -79,14 +79,16 @@
 				</p>
 				<ol>
 					<li><strong>Paste your data</strong> into the Input grid — straight from a
-						spreadsheet, or as CSV/TSV text. First column is x, every other column is
+						spreadsheet, or as CSV/TSV text — or press <strong>import CSV / TSV</strong>
+						to load a file. First column is x, every other column is
 						a y series. There is no column limit on this page.</li>
 					<li><strong>Set the output range.</strong> Output X start, finish, and interval
 						decide which x values you get back.</li>
 					<li><strong>Pick a method</strong> in the Method select, then press
 						<strong>interpolate</strong>.</li>
 					<li><strong>Read the result.</strong> Values land in the Output grid; the same
-						curves plot under Results.</li>
+						curves plot under Results. <strong>export CSV / TSV</strong> saves them
+						as a file — pick the format in the save dialog.</li>
 				</ol>
 				<p>Output x values outside the range of your data are left blank. This
 					interpolates between your points, it does not extrapolate past them.</p>
@@ -128,11 +130,30 @@
 
 		<div class="app-main">
 			<section class="panel panel-grid" style="flex: 1;">
-				<h2>Input</h2>
+				<h2>Input
+					<span class="panel-actions">
+						<button id="importBtn" class="ghost-btn" type="button">import CSV / TSV</button>
+						<!-- Hidden: the styled button proxies the click. accept is a hint only,
+						     never a guarantee - parseDelimited handles whatever arrives. -->
+						<input id="importFile" type="file"
+						       accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values" hidden>
+					</span>
+				</h2>
 				<div id="gridContainer" class="panel-body"></div>
 			</section>
 			<section class="panel panel-grid" style="flex: 1;">
-				<h2>Output</h2>
+				<h2>Output
+					<span class="panel-actions">
+						<button id="exportBtn" class="ghost-btn" type="button">export CSV / TSV</button>
+						<!-- Shown only when showSaveFilePicker is missing (Firefox, Safari):
+						     those browsers cannot offer a type dropdown in the save dialog, so
+						     the choice has to live on the page. page_adv.ts unhides it. -->
+						<select id="exportFormat" class="ghost-select" hidden>
+							<option value="csv">CSV</option>
+							<option value="tsv">TSV</option>
+						</select>
+					</span>
+				</h2>
 				<div id="gridContainer_2" class="panel-body"></div>
 			</section>
 			<section class="panel panel-chart">

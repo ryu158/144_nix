@@ -5,10 +5,11 @@ Current status only. Not history — daily detail in .claude/log/.
 ## Resume here
 1. Pick up ## Next at the bottom of this file.
 2. /interpolate_adv is LIVE and computes. It needs webUI/app.py running: `cd ~/nix/webUI && nix run .`. Nothing starts it on boot, so after a reboot /api/ returns 502 until you do.
-3. The suite is 85 tests. Some skip themselves when /api/health is unreachable — that is the service being down, not a broken test.
+3. The suite is 98 tests. Some skip themselves when /api/health is unreachable — that is the service being down, not a broken test.
 4. topics/FFT/fft.zip is untracked and untouched — dropped in during the 2026-09-02 session, never opened. Deliberately left out of that commit.
-5. Left stale on purpose: log/2026-08-21.md:51 says the favicon gap is in future_work.md, and log/2026-09-02.md ends with "Not committed". Both were true when written. Logs are history, not corrected.
-6. git identity is auto-detected as opc@a1-ryu...oraclevcn.com. Set user.email if the real address matters.
+5. webUI/app_py.md is the user's own notes on the backend, written 2026-09-04. Not a rules file, not loaded by anything.
+6. Left stale on purpose: log/2026-08-21.md:51 says the favicon gap is in future_work.md, and log/2026-09-02.md ends with "Not committed". Both were true when written. Logs are history, not corrected.
+7. git identity is auto-detected as opc@a1-ryu...oraclevcn.com. Set user.email if the real address matters.
 
 ## Fact ownership
 1. CLAUDE.md = repo-wide rules.
@@ -107,6 +108,27 @@ Current status only. Not history — daily detail in .claude/log/.
 8. howto_open fires ONCE per page load. Hover would otherwise report every pass of the mouse. It now carries `level` as well as `slug`, so the two calculators are distinguishable.
 9. The component cannot know its topic, so the element declares it: `<details class="how-to" data-slug=… data-level=…>`.
 
+## CSV / TSV import and export — added 2026-09-04
+
+1. Advanced page only. The basic page is untouched, so its "nothing is uploaded" claim is unaffected either way — these are local file operations and never reach the server.
+2. Import: a hidden `<input type=file>` behind an `import CSV / TSV` button on the Input panel. `accept` filters the explorer; it is a hint, never a guarantee, so the parser takes whatever arrives.
+3. `parseDelimited` in page_adv.ts is lifted from grid.ts `_onPaste` — tab if the first line has one, else comma. Deliberate duplication of behaviour, not of code ownership: a file and a paste of the same bytes must give the same grid.
+4. Quoted fields containing a comma still split wrongly. That bug is grid.ts's too. Fixing it here alone would make file and clipboard disagree, which is worse than the bug.
+5. `importFile.value = ''` is cleared BEFORE the await. Without it, picking the same file twice fires no change event and the second import silently does nothing.
+6. Import calls grid.setData, which emits `change` — so plotBoth runs and demoPristine clears through the handlers that already exist. Never touch demoPristine in the import path.
+7. setData also hard-resets rows and columns, so an import replaces the demo wholesale. The capture-phase paste clear is a paste-only trap and needs no import equivalent.
+8. Export is ONE button. The format comes from the save dialog, not from the page.
+9. That needs `window.showSaveFilePicker` — Chromium only. The handle it returns carries the name the user chose, and its extension picks the delimiter.
+10. Firefox and Safari have no equivalent and no polyfill. There, `#exportFormat` unhides beside the button and the old Blob + `<a download>` path runs. Nobody loses TSV.
+11. The picker must be called with no `await` above it in the click handler. Chromium requires an unconsumed user gesture and one awaited tick spends it — the dialog then silently never opens.
+12. `window.showSaveFilePicker` is read fresh on every click, not cached at load. A test adds or removes it per page.
+13. Cancel is a decision, not a failure: AbortError is swallowed, no status is set, and no `csv_export` event fires.
+14. Export writes NO header row. test_in_data.md is headerless, so an export re-imports and round-trips through app.py unchanged.
+15. types/globals.d.ts carries a minimal File System Access declaration. TS 5.4's DOM lib has none, and the full spec types are far more than the four members used.
+16. `.ghost-btn` and `.ghost-select` live in interpolation_style.css — one user so far. Second page to want them moves both to dev_basic/style.css.
+17. tests/interpolation/csv.spec.ts, 13 tests. Playwright cannot drive a native save dialog, so the picker is stubbed per test: a fake handle named out.tsv/out.csv for the dialog path, `delete window.showSaveFilePicker` for the fallback path.
+18. Events: `csv_import` {level, format, rows} and `csv_export` {level, format, method, rows}. Both consent-gated.
+
 ## vendor/mathjax
 1. topics/interpolation/vendor/mathjax/tex-mml-svg.js, MathJax 3, 2.1 MB, committed.
 2. Self-hosted on purpose — the site ships no third-party runtime scripts.
@@ -199,6 +221,8 @@ nix flake update nixpkgs-unstable
 10. /interpolate_adv is new as of 2026-09-03 and is in the sitemap. It computes now, so requesting indexing is unblocked.
 11. NOTHING STARTS app.py ON BOOT. After a reboot /api/ returns 502 until someone runs `nix run .` by hand. A systemd unit is the fix and lives outside webUI — ask first.
 12. app.py runs Flask's DEVELOPMENT server, single-threaded, and says so on startup. Fine behind loopback; a production WSGI server is a new flake dependency and needs permission.
+13. CSV import cannot read a quoted field containing a comma. Same limit as clipboard paste, and they must be fixed together or not at all.
+14. /interpolate_cal has no import or export. Adding it makes the CSV code a second-use extraction to dev_basic/, per CLAUDE.md rule 4.
 
 ## Confirmed, don't touch
 1. Hardcoded nav/colors in interpolation pages — intentional, not a cleanup target.
@@ -220,4 +244,5 @@ nix flake update nixpkgs-unstable
 3. og:image is still missing on every page — social previews have no picture. The favicon mark added 2026-09-03 is something to build one from.
 4. Mobile is still unscored on all three pages.
 5. topics/FFT/fft.zip has never been opened. FFT is the obvious next topic, and the backend takes a second one with a single import line.
-6. One topic at a time.
+6. Decide whether /interpolate_cal gets import/export too. If yes, that is the second use and the code moves to dev_basic/.
+7. One topic at a time.
