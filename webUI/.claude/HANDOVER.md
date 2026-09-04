@@ -5,11 +5,12 @@ Current status only. Not history — daily detail in .claude/log/.
 ## Resume here
 1. Pick up ## Next at the bottom of this file.
 2. /interpolate_adv is LIVE and computes. It needs webUI/app.py running: `cd ~/nix/webUI && nix run .`. Nothing starts it on boot, so after a reboot /api/ returns 502 until you do.
-3. The suite is 98 tests. Some skip themselves when /api/health is unreachable — that is the service being down, not a broken test.
+3. The suite is 99 tests. Some skip themselves when /api/health is unreachable — that is the service being down, not a broken test.
 4. topics/FFT/fft.zip is untracked and untouched — dropped in during the 2026-09-02 session, never opened. Deliberately left out of that commit.
 5. webUI/app_py.md is the user's own notes on the backend, written 2026-09-04. Not a rules file, not loaded by anything.
-6. Left stale on purpose: log/2026-08-21.md:51 says the favicon gap is in future_work.md, and log/2026-09-02.md ends with "Not committed". Both were true when written. Logs are history, not corrected.
-7. git identity is auto-detected as opc@a1-ryu...oraclevcn.com. Set user.email if the real address matters.
+6. topics/interpolation/interpolation_blueprint copy.md is the user's own rewrite. Untracked, KEEP IT — the blueprint was rebuilt from it, and it is theirs.
+7. Left stale on purpose: log/2026-08-21.md:51 says the favicon gap is in future_work.md, and log/2026-09-02.md ends with "Not committed". Both were true when written. Logs are history, not corrected.
+8. git identity is auto-detected as opc@a1-ryu...oraclevcn.com. Set user.email if the real address matters.
 
 ## Fact ownership
 1. CLAUDE.md = repo-wide rules.
@@ -18,7 +19,7 @@ Current status only. Not history — daily detail in .claude/log/.
 4. .claude/rules/tests.md = rules the Playwright suite depends on.
 5. .claude/skills/new-topic/SKILL.md = 6-step checklist.
 6. .claude/refs/ = outside knowledge, summarised. Not rules.
-7. topics/<slug>/*_blueprint.md = what to build, written before the work. One line per requirement, no answers in it.
+7. topics/<slug>/<slug>_blueprint.md = what to build, written before the work. One line per requirement, no answers in it. ONE per topic, every level in it — merged from the two split files on 2026-09-04.
 8. A blueprint is written BEFORE the work. Never fold as-built detail into one — function signatures, rounding, algorithm choice. That is what stops it being a blueprint. As-built facts belong in this file or in a test.
 9. Each fact lives in ONE file. Adding a rule? Pick the owner, never copy into a second file.
 
@@ -108,9 +109,16 @@ Current status only. Not history — daily detail in .claude/log/.
 8. howto_open fires ONCE per page load. Hover would otherwise report every pass of the mouse. It now carries `level` as well as `slug`, so the two calculators are distinguishable.
 9. The component cannot know its topic, so the element declares it: `<details class="how-to" data-slug=… data-level=…>`.
 
-## CSV / TSV import and export — added 2026-09-04
+## CSV / TSV import and export — added 2026-09-04, shared same day
 
 1. Advanced page only. The basic page is untouched, so its "nothing is uploaded" claim is unaffected either way — these are local file operations and never reach the server.
+1a. The code lives in dev_basic/csv.ts, one entry point: initCsvIo({slug, level, input, output}). It finds its own buttons by id and knows nothing about interpolation.
+1b. It has ONE caller. That is a deliberate exception to the extract-on-second-use rule, taken by the user because the next user is a new topic rather than a second page of this one.
+1c. The buttons read "import" and "export". The formats are named in the how-to panel instead, and a test asserts the labels so a relabel is a decision, not drift.
+1d. seo.spec.ts's required terms — csv, tsv, copy and paste — come from the <summary>, never from the button labels. Checked before the relabel.
+1e. Events carry slug AS WELL AS level. A shared component firing an event that named only the level could not say which topic produced it.
+1f. .panel-actions, .ghost-btn and .ghost-select moved to dev_basic/style.css with the code.
+1g. applyColumnLock exists but is UNPROVEN: setData hard-resets numCols and walks past fixedColCount, so a locked grid would silently widen on import while a paste alerts and truncates. The advanced grid is unlocked, so no test reaches that branch. First locked-grid caller must test it.
 2. Import: a hidden `<input type=file>` behind an `import CSV / TSV` button on the Input panel. `accept` filters the explorer; it is a hint, never a guarantee, so the parser takes whatever arrives.
 3. `parseDelimited` in page_adv.ts is lifted from grid.ts `_onPaste` — tab if the first line has one, else comma. Deliberate duplication of behaviour, not of code ownership: a file and a paste of the same bytes must give the same grid.
 4. Quoted fields containing a comma still split wrongly. That bug is grid.ts's too. Fixing it here alone would make file and clipboard disagree, which is worse than the bug.
@@ -128,6 +136,27 @@ Current status only. Not history — daily detail in .claude/log/.
 16. `.ghost-btn` and `.ghost-select` live in interpolation_style.css — one user so far. Second page to want them moves both to dev_basic/style.css.
 17. tests/interpolation/csv.spec.ts, 13 tests. Playwright cannot drive a native save dialog, so the picker is stubbed per test: a fake handle named out.tsv/out.csv for the dialog path, `delete window.showSaveFilePicker` for the fallback path.
 18. Events: `csv_import` {level, format, rows} and `csv_export` {level, format, method, rows}. Both consent-gated.
+
+## Blueprints — one per topic, 2026-09-04
+
+1. topics/<slug>/<slug>_blueprint.md. ONE file per topic, every level in it. interpolation_cal_blueprint.md and interpolation_adv_blueprint.md were merged into it and deleted.
+2. Shape, and it is the user's: numbered requests, level-parallel numbering so cal 2-x lines up against adv 3-x item for item, "(later)" on anything deferred.
+3. Section 1-2-*-N is a per-method template — In plain words / Basic idea / Important characteristics / Advantages / Disadvantages. Every method section in every topic blog follows it.
+4. The first merged version was mine and had drifted into map territory, citing test names and work already done. The user rewrote it shorter; that rewrite is what the file now holds.
+5. Six constraints their rewrite dropped were folded back as sub-items: static SEO tags, public urls + sitemap, spec.json owns displayed values, input cleaning, no-extrapolation-to-blank, and the whole api part.
+6. One line of theirs was a change rather than a wording choice: "linear uses the client-side logic" on the advanced page. Resolved the other way — every method goes to the API, one path, which is what the 0.000e+00 agreement check depends on.
+7. A blueprint is written BEFORE the work. As-built detail — function names, rounding digits, delay values — belongs in this file or in a test, never in one.
+
+## topics/FFT — blueprint only, 2026-09-04
+
+1. topics/FFT/FFT_blueprint.md exists. Nothing else does: no spec.json, no topics.json entry, no pages, no api module.
+2. Written from ./260829_my_webUI_FFT.md and the contents of fft.zip. The zip was listed and piped, never extracted — nginx serves the repo root, so anything unpacked there is instantly public.
+3. fft.zip carries a finished blog: fft_blog.md, fft_blog.html, 8 SVG figures, gen_figs.py, build_html.py. Same shape interpolation.zip arrived in, so the same treatment applies — drop its css, its nav row and any CDN tag.
+4. The two markdown sources are the same text at different drafts. Keep the newer, delete the other.
+5. FFT is NOT interpolation with different math. Output is a spectrum, not a resampled signal: col 0 is frequency, the output chart shares no axis with the input.
+6. Uniform sampling is the transform's precondition. Non-uniform t is refused with a reason, never silently resampled — the same fact that kept FFT off the interpolation advanced page.
+7. The blog's five algorithms are how scipy dispatches, not a user choice. Only fft-versus-naive-DFT is observable, and naive DFT needs its own lower row cap because it is O(N^2).
+8. Section 6 of that file lists four unresolved decisions. Building before they are answered means guessing at the output contract.
 
 ## vendor/mathjax
 1. topics/interpolation/vendor/mathjax/tex-mml-svg.js, MathJax 3, 2.1 MB, committed.
@@ -222,7 +251,8 @@ nix flake update nixpkgs-unstable
 11. NOTHING STARTS app.py ON BOOT. After a reboot /api/ returns 502 until someone runs `nix run .` by hand. A systemd unit is the fix and lives outside webUI — ask first.
 12. app.py runs Flask's DEVELOPMENT server, single-threaded, and says so on startup. Fine behind loopback; a production WSGI server is a new flake dependency and needs permission.
 13. CSV import cannot read a quoted field containing a comma. Same limit as clipboard paste, and they must be fixed together or not at all.
-14. /interpolate_cal has no import or export. Adding it makes the CSV code a second-use extraction to dev_basic/, per CLAUDE.md rule 4.
+14. /interpolate_cal has no import or export. The user decided against adding it; the component is shared already, so wiring it there is now a one-line call whenever they want it.
+15. FFT_blueprint.md section 6 lists four decisions that must be made before any FFT page is built.
 
 ## Confirmed, don't touch
 1. Hardcoded nav/colors in interpolation pages — intentional, not a cleanup target.
@@ -244,5 +274,5 @@ nix flake update nixpkgs-unstable
 3. og:image is still missing on every page — social previews have no picture. The favicon mark added 2026-09-03 is something to build one from.
 4. Mobile is still unscored on all three pages.
 5. topics/FFT/fft.zip has never been opened. FFT is the obvious next topic, and the backend takes a second one with a single import line.
-6. Decide whether /interpolate_cal gets import/export too. If yes, that is the second use and the code moves to dev_basic/.
+6. Answer the four open decisions in topics/FFT/FFT_blueprint.md section 6. Nothing FFT can be built before they are settled.
 7. One topic at a time.

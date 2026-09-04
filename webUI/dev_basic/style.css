@@ -586,3 +586,44 @@ body.home-page .app-header {
   opacity: 0.75;
   margin: 0 !important; /* same negative-margin cancel as .topic-row */
 }
+
+/* Panel action buttons — the import / export controls in a panel heading.
+   Moved here from interpolation_style.css on 2026-09-04, alongside the code
+   that draws them (dev_basic/csv.ts). */
+.panel-actions {
+  display: inline-flex;
+  gap: 6px;
+  margin-left: 12px;
+  vertical-align: middle;
+}
+
+/* .primary-btn's outline sibling: same shape, no fill, so "interpolate" stays
+   the one filled button on the page and these read as secondary. */
+.ghost-btn {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ghost-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+/* Format fallback beside the export button, revealed only where the save dialog
+   cannot offer a type dropdown. Same border, radius and size as .ghost-btn so
+   the pair reads as one control. */
+.ghost-select {
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}

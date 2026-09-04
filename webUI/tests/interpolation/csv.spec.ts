@@ -277,7 +277,20 @@ test('with consent granted, import and export each report one event', async ({ p
 
   const events = (await gaEvents(page)).filter(e => e[0] === 'event');
   expect(events.map(e => e[1])).toEqual(['csv_import', 'interpolate_run', 'csv_export']);
-  expect(events[0][2]).toEqual({ level: 'advanced', format: 'tsv', rows: 3 });
+  // slug and level both travel: the component is shared, so an event that named
+  // only the level could not say which topic produced it.
+  expect(events[0][2]).toEqual({ slug: spec.slug, level: 'advanced', format: 'tsv', rows: 3 });
   // The dialog chose tsv, so the event must say tsv.
-  expect(events[2][2]).toMatchObject({ level: 'advanced', format: 'tsv', rows: 3 });
+  expect(events[2][2]).toMatchObject({ slug: spec.slug, level: 'advanced', format: 'tsv', rows: 3 });
+});
+
+test('the buttons say import and export, not the formats', async ({ page }) => {
+  await preparePage(page);
+  await page.goto(ADV);
+
+  // The formats are explained in the manual instead. seo.spec.ts's required
+  // terms come from the <summary>, never from these labels — putting them back
+  // here should be a decision, not drift.
+  await expect(page.locator('#importBtn')).toHaveText('import');
+  await expect(page.locator('#exportBtn')).toHaveText('export');
 });

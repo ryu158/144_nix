@@ -79,16 +79,23 @@
 				</p>
 				<ol>
 					<li><strong>Paste your data</strong> into the Input grid — straight from a
-						spreadsheet, or as CSV/TSV text — or press <strong>import CSV / TSV</strong>
-						to load a file. First column is x, every other column is
+						spreadsheet, or as CSV/TSV text. First column is x, every other column is
 						a y series. There is no column limit on this page.</li>
+					<li><strong>Or press import</strong> to load a file instead. CSV and TSV both
+						work — the separator is detected from the file, so a comma file and a tab
+						file of the same numbers give the same grid. The file is read in your
+						browser and is not sent anywhere.</li>
 					<li><strong>Set the output range.</strong> Output X start, finish, and interval
 						decide which x values you get back.</li>
 					<li><strong>Pick a method</strong> in the Method select, then press
 						<strong>interpolate</strong>.</li>
 					<li><strong>Read the result.</strong> Values land in the Output grid; the same
-						curves plot under Results. <strong>export CSV / TSV</strong> saves them
-						as a file — pick the format in the save dialog.</li>
+						curves plot under Results.</li>
+					<li><strong>Press export</strong> to save the Output grid as a file. The save
+						dialog offers CSV or TSV and whichever you choose decides the separator.
+						On Firefox and Safari the browser cannot offer that choice, so a small
+						CSV/TSV menu appears next to the button instead. Saving happens in your
+						browser; only <strong>interpolate</strong> talks to the server.</li>
 				</ol>
 				<p>Output x values outside the range of your data are left blank. This
 					interpolates between your points, it does not extrapolate past them.</p>
@@ -132,7 +139,7 @@
 			<section class="panel panel-grid" style="flex: 1;">
 				<h2>Input
 					<span class="panel-actions">
-						<button id="importBtn" class="ghost-btn" type="button">import CSV / TSV</button>
+						<button id="importBtn" class="ghost-btn" type="button">import</button>
 						<!-- Hidden: the styled button proxies the click. accept is a hint only,
 						     never a guarantee - parseDelimited handles whatever arrives. -->
 						<input id="importFile" type="file"
@@ -144,7 +151,7 @@
 			<section class="panel panel-grid" style="flex: 1;">
 				<h2>Output
 					<span class="panel-actions">
-						<button id="exportBtn" class="ghost-btn" type="button">export CSV / TSV</button>
+						<button id="exportBtn" class="ghost-btn" type="button">export</button>
 						<!-- Shown only when showSaveFilePicker is missing (Firefox, Safari):
 						     those browsers cannot offer a type dropdown in the save dialog, so
 						     the choice has to live on the page. page_adv.ts unhides it. -->
@@ -177,6 +184,7 @@
 	     and this page must not fall back to the basic page's linear math. -->
 	<script src="/dev_basic/how-to.js"></script>
 	<script src="/dev_basic/grid.js"></script>
+	<script src="/dev_basic/csv.js"></script>
 	<script src="/dev_basic/chart.js"></script>
 	<script src="/dev_basic/dual-chart.js"></script>
 	<script src="/topics/interpolation/page_adv.js"></script>

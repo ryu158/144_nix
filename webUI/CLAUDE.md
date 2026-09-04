@@ -59,4 +59,5 @@ run-browser-tests
 
 ## Deferred
 1. No monetization. Ko-fi is the only exception, no approval needed.
-2. Consent banner required, not deferred — GA4/Clarity set cookies, must gate behind opt-in.
+2. Under consideration, not approved: a paid tier gating advanced levels. Blueprint-level only — build nothing for it.
+3. Consent banner required, not deferred — GA4/Clarity set cookies, must gate behind opt-in.
