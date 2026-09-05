@@ -45,6 +45,7 @@ run-browser-tests
 5. scientific_cal/topics/topics.json — slug list. Not listed = invisible on the section home.
 6. New topic or new level -> skill `new-topic`.
 7. Topic detail — folder shape, spec.json, SEO, validation, CSS, writing -> .claude/rules/topics.md.
+7a. user_todo.md — actions the USER owns. Never put a code fact there; never put a user action in HANDOVER.md.
 8. Chart colors and line styles -> .claude/rules/visuals.md.
 9. app.py, tests/, types/, robots.txt, sitemap.xml, og/ and the favicons stay at the repo root — they are the site's, not a section's.
 10. tools/ — build scripts that are not served. gen-og.js rebuilds og/ from spec.json; run it with `gen-og-images`.

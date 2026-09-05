@@ -4,7 +4,7 @@ Current status only. Not history — daily detail in .claude/log/.
 
 ## Resume here
 0. THE SITE MOVED to /scientific_cal on 2026-09-05. Until the user deploys the new nginx config, every public page 404s. The config is written and proven; deploying it is theirs: `cd ~/nix/nginx && nix run --impure .#update_nginx_conf`.
-1. Pick up the queue at the bottom of this file.
+1. Pick up the queue at the bottom of this file. Anything waiting on the USER is in webUI/user_todo.md instead.
 2. The advanced page is LIVE and computes. It needs webUI/app.py running: `cd ~/nix/webUI && nix run .`. Nothing starts it on boot, so after a reboot /api/ returns 502 until you do.
 3. The suite is 105 tests. Some skip themselves when /api/health is unreachable — that is the service being down, not a broken test.
 4. fft.zip is NO LONGER IN THE REPO. It now sits at ~/transfer/ryunote/fft.zip, moved out on 2026-09-05 before the /scientific_cal work started. It was never tracked by git, so nothing in this repo's history holds a copy. Still never opened.
@@ -22,7 +22,8 @@ Current status only. Not history — daily detail in .claude/log/.
 6. .claude/refs/ = outside knowledge, summarised. Not rules.
 7. scientific_cal/topics/<slug>/<slug>_blueprint.md = what to build, written before the work. One line per requirement, no answers in it. ONE per topic, every level in it — merged from the two split files on 2026-09-04.
 8. A blueprint is written BEFORE the work. Never fold as-built detail into one — function signatures, rounding, algorithm choice. That is what stops it being a blueprint. As-built facts belong in this file or in a test.
-9. Each fact lives in ONE file. Adding a rule? Pick the owner, never copy into a second file.
+9. webUI/user_todo.md = actions the USER owns. Not a rules file, not a second handover. A code FACT stays here; an ACTION with the user as owner goes there.
+10. Each fact lives in ONE file. Adding a rule? Pick the owner, never copy into a second file.
 
 ## topics/interpolation — done
 1. 6-step workflow complete.
@@ -190,6 +191,8 @@ Current status only. Not history — daily detail in .claude/log/.
 9. seo.spec.ts covers all five pages, umbrella and section home included. The assertion that earns its place is the 200: a declared og:image that 404s looks exactly like a working one until somebody shares the link. Proven by moving a PNG aside and watching it fail.
 10. The size check reads the PNG's own IHDR bytes, so a card regenerated at the wrong size cannot ship with the tag still claiming 1200x630.
 11. og:image is NOT a ranking factor. It buys click-through and credibility when a link is shared, nothing else.
+12. CONFIRMED WORKING 2026-09-05 by pasting a page link into Notion: full card, image included. That is worth naming, because no local test can prove it — every test here asks the origin directly, while a real consumer brings its own fetcher, its own cache and its own TLS check. One paste covers all three.
+13. Scrapers cache hard. A card that looks stale is the consumer's cache, not the site — re-pasting the same URL will not refresh it.
 
 ## Mobile — added 2026-09-05
 
@@ -313,19 +316,16 @@ nix flake update nixpkgs-unstable
 6. Downloads go to the scratchpad, NEVER into webUI/. nginx serves the repo root, so a file dropped here is instantly public.
 
 ## Not done
-2. interpolate_cal.html headings are Input / Output / Results — zero keywords.
-3. interpolate_cal.html body was one paragraph. The How-to panel added a real manual on 2026-09-02; still short next to the blog.
-4. Mobile is DONE below 900px and covered by tests/mobile.spec.ts. Never scored by an external tool (PageSpeed/Lighthouse) — that is still open.
-5. No SERP rank monitoring at all.
-6. /scientific_cal/interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical.
-7. test_data.csv orphaned. Keep or delete undecided.
-8. Files served from repo root are public: CLAUDE.md, .claude/, flake.nix, Claude.local.md. Known, accepted.
-9. EVERY public URL changed on 2026-09-05. All of them need re-requesting in Search Console, once the nginx config is deployed.
-10. The sitemap now lists the umbrella, the section home, and the three moved pages. All five need indexing requested.
-11. NOTHING STARTS app.py ON BOOT. After a reboot /api/ returns 502 until someone runs `nix run .` by hand. DECIDED 2026-09-05: manual, by the user. No systemd unit.
-12. app.py runs Flask's DEVELOPMENT server, single-threaded, and says so on startup. Fine behind loopback; a production WSGI server is a new flake dependency and needs permission.
-13. CSV import cannot read a quoted field containing a comma. Same limit as clipboard paste, and they must be fixed together or not at all.
-15. FFT_blueprint.md section 6 lists four decisions that must be made before any FFT page is built.
+
+Code facts and known gaps. Anything waiting on the USER is in webUI/user_todo.md, not here.
+
+1. interpolate_cal.html headings are Input / Output / Results — zero keywords.
+2. interpolate_cal.html body was one paragraph. The How-to panel added a real manual on 2026-09-02; still short next to the blog.
+3. Files served from repo root are public: CLAUDE.md, .claude/, flake.nix, Claude.local.md, user_todo.md. Known, accepted.
+4. app.py runs Flask's DEVELOPMENT server, single-threaded, and says so on startup. Fine behind loopback; a production WSGI server is a new flake dependency and needs permission.
+5. CSV import cannot read a quoted field containing a comma. Same limit as clipboard paste, and they must be fixed together or not at all.
+6. Mobile works below 900px and tests/mobile.spec.ts covers it. No EXTERNAL score exists — PageSpeed and Lighthouse have never been run.
+7. TLS cert expires 2026-09-25. Nothing in this repo renews it; renewal is in ~/nix/nginx. An expired cert breaks every page, the API and the social cards at once.
 
 ## Confirmed, don't touch
 1. Hardcoded nav/colors in interpolation pages — intentional, not a cleanup target.
@@ -342,9 +342,7 @@ nix flake update nixpkgs-unstable
 12. test_in_data.md carries 10 columns, so the basic page only ever sees X + 3 series.
 
 ## Next
-1. Search Console, and it is the last step of this whole round. Request indexing for /, /scientific_cal/, and the three /scientific_cal/interpolate_* pages. Resubmit sitemap.xml. Confirm the three 301s in the URL inspector. Daily quota is limited, so this spans a few days; wait 1-2 weeks before judging.
-2. Paste a page link into Slack or KakaoTalk once. A scraper's cache is the one thing no local test covers.
-3. Score mobile with an external tool. The layout works and is tested, but PageSpeed/Lighthouse has never been run against any page.
-4. app.py stays MANUAL by the user's decision — `cd ~/nix/webUI && nix run .`. A reboot means 502 until they run it.
-5. FFT is next after that. Its four open decisions in scientific_cal/topics/FFT/FFT_blueprint.md section 6 are still unanswered, and its source zip now lives at ~/transfer/ryunote/fft.zip, outside this repo.
-6. One topic at a time.
+1. Nothing is blocked on Claude. Everything outstanding needs the user — see webUI/user_todo.md.
+2. The two urgent ones there: the TLS cert expires 2026-09-25, and no public URL has been re-requested in Search Console since they all changed on 2026-09-05.
+3. FFT is the next build, and it is blocked on the four decisions in scientific_cal/topics/FFT/FFT_blueprint.md section 6.
+4. One topic at a time.
