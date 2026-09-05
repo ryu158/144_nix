@@ -3,13 +3,6 @@
 Current status only. Not history — daily detail in .claude/log/.
 
 ## Resume here
-0a. FIRST: was the @reboot line proven? The user rebooted 2026-09-05 to test it, and it had NEVER fired before — this box had ~71 days uptime. Check, then record the answer here and delete this item:
-```
-curl -sk https://ryuora144.duckdns.org/scientific_cal/api/health
-cat ~/.local/state/api-boot.log
-tmux ls
-```
-   Answering = proven, remove this. Silent = cron did not fire or tmux did not start; the log says which, and `~/nix/webUI/tools/start-api.sh` recovers it.
 0. THE SITE MOVED to /scientific_cal on 2026-09-05. Config deployed by the user the same day, site verified live: all five public URLs 200, the three old URLs 301. Nothing pending here.
 1. Pick up the queue at the bottom of this file. Anything waiting on the USER is in webUI/user_todo.md instead.
 2. The advanced page is LIVE and computes. app.py runs in a detached tmux session and restarts at boot from cron — see the interp-api section. A 502 now means the session died, not that nobody started it: check `tmux ls`.
@@ -225,7 +218,7 @@ tmux ls
 
 1. app.py runs in a DETACHED TMUX SESSION named `api`. Survives closing VS Code and logging out. A @reboot crontab line restarts it at boot.
 2. NOT systemd. A systemd user service was built first and REMOVED at the user's request the same day. Do not propose it again without asking.
-2a. THE @reboot LINE IS UNPROVEN as of the 2026-09-05 commit. Everything it depends on was checked present — nginx and crond both enabled, script and out-link executable, tmux installed — but the line itself had never run. The user rebooted to test it. See Resume here 0a.
+2a. THE @reboot LINE IS PROVEN. The user rebooted 2026-09-05 and everything came back with no manual step: nginx, crond, the `api` session, and /api/health answering. app.py came up as a boot-PID parented by `tmux: server`, cwd the working tree, and ~/.local/state/api-boot.log carried the script's own output — which is what says cron fired rather than something else starting it.
 3. Commands:
 ```
 ~/nix/webUI/tools/start-api.sh     # start, or restart if already running
@@ -240,7 +233,7 @@ tmux kill-session -t api           # stop
 ```
 cd ~/nix/webUI && nix build .#interp-api --out-link ~/.local/state/nix/interp-api
 ```
-7. NO CRASH RESTART. tmux does not supervise. A 502 on /api/ now means the session died — check `tmux ls` before suspecting nginx.
+7. NO CRASH RESTART. tmux does not supervise, and that is the ONE thing giving up systemd cost. Boot is covered; a crash at 3am is not. A 502 on /api/ means the session died — check `tmux ls` before suspecting nginx.
 8. The crontab line logs to ~/.local/state/api-boot.log, OUTSIDE webUI on purpose. nginx serves this directory, so a log file here would be fetchable at /<name>.
 9. The crontab and the out-link are NOT in this repo. `crontab -l` shows the line; rebuilding this box means recreating both.
 10. tmux is /usr/bin/tmux, the system one. It is not in flake.nix and was not added as a dependency.
