@@ -38,9 +38,14 @@ echo | openssl s_client -servername ryuora144.duckdns.org \
 cd ~/nix/nginx && nix run --impure .#update_nginx_conf
 ```
 3. After any flake.nix change, rebuild the API out-link.
-4. Skip it and the service keeps running the old closure.
+4. Skip it and the tmux session keeps starting the old closure.
 ```
 cd ~/nix/webUI && nix build .#interp-api --out-link ~/.local/state/nix/interp-api
+```
+5. If /api/ returns 502, check the session before suspecting nginx.
+```
+tmux ls
+~/nix/webUI/tools/start-api.sh
 ```
 
 ## Decisions blocking work

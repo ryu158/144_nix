@@ -5,7 +5,7 @@ Current status only. Not history — daily detail in .claude/log/.
 ## Resume here
 0. THE SITE MOVED to /scientific_cal on 2026-09-05. Until the user deploys the new nginx config, every public page 404s. The config is written and proven; deploying it is theirs: `cd ~/nix/nginx && nix run --impure .#update_nginx_conf`.
 1. Pick up the queue at the bottom of this file. Anything waiting on the USER is in webUI/user_todo.md instead.
-2. The advanced page is LIVE and computes. app.py runs as a systemd USER service and starts itself at boot — see the interp-api section. A 502 now means the service is failing, not that nobody started it: `systemctl --user status interp-api`.
+2. The advanced page is LIVE and computes. app.py runs in a detached tmux session and restarts at boot from cron — see the interp-api section. A 502 now means the session died, not that nobody started it: check `tmux ls`.
 3. The suite is 105 tests. Some skip themselves when /api/health is unreachable — that is the service being down, not a broken test.
 4. fft.zip is NO LONGER IN THE REPO. It now sits at ~/transfer/ryunote/fft.zip, moved out on 2026-09-05 before the /scientific_cal work started. It was never tracked by git, so nothing in this repo's history holds a copy. Still never opened.
 5. webUI/app_py.md is the user's own notes on the backend, written 2026-09-04. Not a rules file, not loaded by anything.
@@ -214,27 +214,30 @@ Current status only. Not history — daily detail in .claude/log/.
 5. Measured both ways to prove it: desktop 302 : 302 : 604, one row, no scroll — identical before and after. Phone 396 / 396 / 270, stacked.
 6. Found by SCREENSHOTTING the phone layout, not by a test. The tests passed because they only asserted a lower bound on panel height. A 1428px grid satisfied `> 150` perfectly well.
 
-## interp-api systemd service — added 2026-09-05
+## interp-api tmux session — added 2026-09-05
 
-1. app.py runs as a systemd USER service, `interp-api.service`. It survives closing VS Code, logging out, and reboot. This REVERSES the "manual, no systemd unit" decision taken earlier the same day — the user asked for persistence once they saw the editor was holding it.
-2. Unit at ~/.config/systemd/user/interp-api.service. Outside webUI/, so it is not in this repo and not in git. The flake half IS in the repo.
-3. `loginctl show-user opc --property=Linger` was ALREADY yes before this work. Without lingering a user service dies at logout, whatever else is configured.
-4. Commands:
+1. app.py runs in a DETACHED TMUX SESSION named `api`. Survives closing VS Code and logging out. A @reboot crontab line restarts it at boot.
+2. NOT systemd. A systemd user service was built first and REMOVED at the user's request the same day. Do not propose it again without asking.
+3. Commands:
 ```
-systemctl --user status interp-api
-systemctl --user restart interp-api
-journalctl --user -u interp-api -f
+~/nix/webUI/tools/start-api.sh     # start, or restart if already running
+tmux attach -t api                 # watch it live; detach with ctrl-b then d
+tmux kill-session -t api           # stop
 ```
-5. ExecStart points at an OUT-LINK, ~/.local/state/nix/interp-api, never a bare /nix/store path. That symlink is a GC ROOT. Checked before building: the python closure's only roots were /proc/<pid>/maps entries — running processes. A nix-collect-garbage while the service was stopped would have deleted the interpreter and left a unit that cannot start.
-6. Rebuild the out-link after ANY flake change, or the service keeps running the old closure:
+4. tools/start-api.sh is IDEMPOTENT — it kills an existing `api` session before creating one. That is what makes it safe as both the restart command and the @reboot line.
+5. It runs the flake's launcher through an out-link, NOT `nix run .`. Two reasons, and both are load-bearing:
+5a. `nix run .` does `cd "${self}"` — a store snapshot of git-TRACKED files. nginx serves this repo directly, so that would put an uncommitted api_interp.py edit live on the page and invisible to the API at the same time. The launcher cd's to the working tree. Verified: /proc/<pid>/cwd is /home/opc/nix/webUI.
+5b. ~/.local/state/nix/interp-api is a GC ROOT. Checked before building: the python closure's only roots were /proc/<pid>/maps entries — running processes. A nix-collect-garbage with the server stopped would have deleted the interpreter.
+6. Rebuild the out-link after ANY flake.nix change, or the session keeps starting the old closure:
 ```
 cd ~/nix/webUI && nix build .#interp-api --out-link ~/.local/state/nix/interp-api
 ```
-7. The flake's `packages.interp-api` cd's to the WORKING TREE, /home/opc/nix/webUI, NOT to ${self}. Deliberate: nginx serves this repo directly, so the API must run the same files. ${self} is a store snapshot of git-TRACKED files, which would put an uncommitted api_interp.py edit live on the page and invisible to the API at the same time. Verified: /proc/<pid>/cwd is the working tree.
-8. `nix run .` still does the old thing — cd to ${self}, committed files only. It is unchanged and remains the by-hand path. The two are NOT equivalent; prefer the service.
-9. Restart=always, RestartSec=5s. Flask's dev server is single-threaded with no clean-exit path, so any exit is a fault. Verified by kill -9: NRestarts went to 1 and /api/health answered again.
-10. PYTHONUNBUFFERED=1, or journalctl shows nothing until the buffer flushes.
-11. The port is still INTERP_API_PORT, default 35910 in app.py, and must match api_port in ~/nix/nginx/nginx-secrets.nix. The unit does NOT set it — one source, not three.
+7. NO CRASH RESTART. tmux does not supervise. A 502 on /api/ now means the session died — check `tmux ls` before suspecting nginx.
+8. The crontab line logs to ~/.local/state/api-boot.log, OUTSIDE webUI on purpose. nginx serves this directory, so a log file here would be fetchable at /<name>.
+9. The crontab and the out-link are NOT in this repo. `crontab -l` shows the line; rebuilding this box means recreating both.
+10. tmux is /usr/bin/tmux, the system one. It is not in flake.nix and was not added as a dependency.
+11. Sessions 0, 1 and 2 in `tmux ls` are the user's, from July. Not ours, do not touch.
+12. The port is INTERP_API_PORT, default 35910 in app.py, and must match api_port in ~/nix/nginx/nginx-secrets.nix.
 
 ## Blueprints — one per topic, 2026-09-04
 
