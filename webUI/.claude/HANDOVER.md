@@ -186,6 +186,7 @@ Current status only. Not history — daily detail in .claude/log/.
 6. Re-run gen-og-images after ANY `card` change. The text is baked into the PNG, so a stale card is a wrong social preview that nothing else will catch.
 7. `twitter:card` must stay `summary_large_image` on every page. With `summary` a 1200x630 image is cropped to a small square, which throws the card away.
 8. The mark is copied from favicon.svg into gen-og.js. Two copies of one path — if the favicon is ever redrawn, both change.
+8a. ALL FIVE share one layout, by the user's call 2026-09-05: kicker top, title, then domain bottom-left and mark bottom-right. The two site-level cards sit inside no section, so their kicker is EMPTY — but `.kicker { min-height: 36px }` keeps the line's height, or an absent kicker would slide the title up and break the shared geometry. The domain is on every card, never doubled into the kicker.
 9. seo.spec.ts covers all five pages, umbrella and section home included. The assertion that earns its place is the 200: a declared og:image that 404s looks exactly like a working one until somebody shares the link. Proven by moving a PNG aside and watching it fail.
 10. The size check reads the PNG's own IHDR bytes, so a card regenerated at the wrong size cannot ship with the tag still claiming 1200x630.
 11. og:image is NOT a ranking factor. It buys click-through and credibility when a link is shared, nothing else.

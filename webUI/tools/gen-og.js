@@ -62,9 +62,13 @@ function cards() {
   const spec = loadSpec('interpolation');
   const SECTION = 'Scientific Calculators';
 
+  // Every card has the same three slots: a kicker naming what this page sits
+  // inside, the title, and the domain. The two site-level pages sit inside
+  // nothing, so their kicker is empty - but the line still takes its height, so
+  // all five share one geometry and the domain never moves.
   const out = [
-    { file: 'site.png', kicker: DOMAIN, title: 'Interactive Tools for Computational Work' },
-    { file: 'scientific_cal.png', kicker: DOMAIN, title: SECTION }
+    { file: 'site.png', kicker: '', title: 'Interactive Tools for Computational Work' },
+    { file: 'scientific_cal.png', kicker: '', title: SECTION }
   ];
 
   for (const level of spec.levels) {
@@ -100,6 +104,9 @@ function html(card) {
   .kicker {
     font-size: 30px; font-weight: 600; letter-spacing: 0.04em;
     opacity: 0.82;
+    /* Reserved even when empty: an absent kicker must not slide the title up
+       and break the shared geometry. */
+    min-height: 36px;
   }
   h1 {
     font-size: 84px; font-weight: 700; line-height: 1.1;
@@ -114,7 +121,7 @@ function html(card) {
 <div class="kicker">${card.kicker}</div>
 <h1>${card.title}</h1>
 <div class="foot">
-  <span class="domain">${card.kicker === DOMAIN ? '' : DOMAIN}</span>
+  <span class="domain">${DOMAIN}</span>
   ${MARK}
 </div>`;
 }
