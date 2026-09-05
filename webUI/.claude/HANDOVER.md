@@ -22,7 +22,7 @@ Current status only. Not history — daily detail in .claude/log/.
 6. .claude/refs/ = outside knowledge, summarised. Not rules.
 7. scientific_cal/topics/<slug>/<slug>_blueprint.md = what to build, written before the work. One line per requirement, no answers in it. ONE per topic, every level in it — merged from the two split files on 2026-09-04.
 8. A blueprint is written BEFORE the work. Never fold as-built detail into one — function signatures, rounding, algorithm choice. That is what stops it being a blueprint. As-built facts belong in this file or in a test.
-9. webUI/user_todo.md = actions the USER owns. Not a rules file, not a second handover. A code FACT stays here; an ACTION with the user as owner goes there.
+9. webUI/user_todo.md = actions the USER owns. Not a rules file, not a second handover. A code FACT stays here; an ACTION with the user as owner goes there. Four sections, the user's shape 2026-09-05: Confirm (believed true, check and delete), Recurring (procedures, never leave), Future work (decisions), Specify for Claude (requested but not buildable as stated).
 10. Each fact lives in ONE file. Adding a rule? Pick the owner, never copy into a second file.
 
 ## topics/interpolation — done
