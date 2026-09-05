@@ -3,7 +3,14 @@
 Current status only. Not history — daily detail in .claude/log/.
 
 ## Resume here
-0. THE SITE MOVED to /scientific_cal on 2026-09-05. Until the user deploys the new nginx config, every public page 404s. The config is written and proven; deploying it is theirs: `cd ~/nix/nginx && nix run --impure .#update_nginx_conf`.
+0a. FIRST: was the @reboot line proven? The user rebooted 2026-09-05 to test it, and it had NEVER fired before — this box had ~71 days uptime. Check, then record the answer here and delete this item:
+```
+curl -sk https://ryuora144.duckdns.org/scientific_cal/api/health
+cat ~/.local/state/api-boot.log
+tmux ls
+```
+   Answering = proven, remove this. Silent = cron did not fire or tmux did not start; the log says which, and `~/nix/webUI/tools/start-api.sh` recovers it.
+0. THE SITE MOVED to /scientific_cal on 2026-09-05. Config deployed by the user the same day, site verified live: all five public URLs 200, the three old URLs 301. Nothing pending here.
 1. Pick up the queue at the bottom of this file. Anything waiting on the USER is in webUI/user_todo.md instead.
 2. The advanced page is LIVE and computes. app.py runs in a detached tmux session and restarts at boot from cron — see the interp-api section. A 502 now means the session died, not that nobody started it: check `tmux ls`.
 3. The suite is 105 tests. Some skip themselves when /api/health is unreachable — that is the service being down, not a broken test.
@@ -218,6 +225,7 @@ Current status only. Not history — daily detail in .claude/log/.
 
 1. app.py runs in a DETACHED TMUX SESSION named `api`. Survives closing VS Code and logging out. A @reboot crontab line restarts it at boot.
 2. NOT systemd. A systemd user service was built first and REMOVED at the user's request the same day. Do not propose it again without asking.
+2a. THE @reboot LINE IS UNPROVEN as of the 2026-09-05 commit. Everything it depends on was checked present — nginx and crond both enabled, script and out-link executable, tmux installed — but the line itself had never run. The user rebooted to test it. See Resume here 0a.
 3. Commands:
 ```
 ~/nix/webUI/tools/start-api.sh     # start, or restart if already running
