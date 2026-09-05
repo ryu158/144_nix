@@ -1,10 +1,10 @@
 ---
-canonical: https://ryuora144.duckdns.org/interpolate_methods_blog
+canonical: https://ryuora144.duckdns.org/scientific_cal/interpolate_methods_blog
 meta-description: Five ways to draw a curve through the same set of points — linear, cubic spline, PCHIP, Akima, and FFT resampling — and what each one assumes about the data you didn't measure.
 meta-og:description: Five ways to draw a curve through the same set of points — linear, cubic spline, PCHIP, Akima, and FFT resampling — and what each one assumes about the data you didn't measure.
 meta-og:title: Interpolation Methods
 meta-og:type: article
-meta-og:url: https://ryuora144.duckdns.org/interpolate_methods_blog
+meta-og:url: https://ryuora144.duckdns.org/scientific_cal/interpolate_methods_blog
 meta-robots: index, follow
 meta-twitter:card: summary
 meta-twitter:description: Five ways to draw a curve through the same set of points — linear, cubic spline, PCHIP, Akima, and FFT resampling — and what each one assumes about the data you didn't measure.
@@ -15,7 +15,7 @@ title: Interpolation Methods
 
 # Interpolation❓
 
-[**🧮 Try the calculator**](https://ryuora144.duckdns.org/interpolate_cal) [**📐 Linear interpolation**](https://ryuora144.duckdns.org/interpolate_blog) [**🏠 Home**](https://ryuora144.duckdns.org/)
+[**🧮 Try the calculator**](https://ryuora144.duckdns.org/scientific_cal/interpolate_cal) [**📐 Linear interpolation**](https://ryuora144.duckdns.org/scientific_cal/interpolate_blog) [**🏠 Home**](https://ryuora144.duckdns.org/scientific_cal/)
 
 ## What is Interpolation
 

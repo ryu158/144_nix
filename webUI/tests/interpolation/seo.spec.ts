@@ -80,7 +80,7 @@ for (const level of spec.levels) {
 }
 
 test('spec.json is fetchable — seo.ts and the home page both depend on it', async ({ request }) => {
-  const res = await request.get(`/topics/${spec.slug}/spec.json`);
+  const res = await request.get(`/scientific_cal/topics/${spec.slug}/spec.json`);
   expect(res.status()).toBe(200);
   expect(await res.json()).toMatchObject({ slug: spec.slug });
 });
@@ -94,15 +94,15 @@ test('sitemap.xml lists every public URL the spec declares', async ({ request })
   // Only <loc> values count; the file's own comments mention topics/ folders.
   const locs = [...xml.matchAll(/<loc>([^<]*)<\/loc>/g)].map(m => m[1]);
   expect(locs.length).toBeGreaterThan(0);
-  expect(locs.filter(l => l.includes('/topics/'))).toEqual([]);
+  expect(locs.filter(l => l.includes('/scientific_cal/topics/'))).toEqual([]);
 });
 
 test('robots.txt blocks the duplicate raw HTML but not the render assets', async ({ request }) => {
   const txt = await (await request.get('/robots.txt')).text();
-  expect(txt).toContain('Disallow: /topics/*/*.html');
+  expect(txt).toContain('Disallow: /scientific_cal/topics/*/*.html');
   // Google renders before indexing: blocking these would break the render.
-  expect(txt).not.toMatch(/^Disallow:\s*\/dev_basic/m);
-  expect(txt).not.toMatch(/^Disallow:\s*\/src/m);
+  expect(txt).not.toMatch(/^Disallow:\s*\/scientific_cal\/dev_basic/m);
+  expect(txt).not.toMatch(/^Disallow:\s*\/scientific_cal\/src/m);
   expect(txt).toContain(`Sitemap: ${CANONICAL_ORIGIN}/sitemap.xml`);
 });
 

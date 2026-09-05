@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { preparePage } from '../helpers/page-setup';
-import { loadSpec, CANONICAL_ORIGIN } from '../helpers/spec';
+import { loadSpec, CANONICAL_ORIGIN, SECTION_ROOT } from '../helpers/spec';
 
 const spec = loadSpec('interpolation');
 const BLOG = spec.pages.blog;
@@ -38,7 +38,7 @@ for (const [level, url] of Object.entries(spec.pages)) {
 
 test('the home row is built from spec.json, not hardcoded', async ({ page }) => {
   await preparePage(page);
-  await page.goto('/');
+  await page.goto(SECTION_ROOT);
 
   const card = page.locator('.topic-item', { hasText: spec.name });
   await expect(card.locator('.topic-name')).toHaveText(spec.name);
@@ -72,7 +72,7 @@ for (const [level, url] of Object.entries(spec.pages)) {
 }
 
 test('the raw topic HTML still serves, and points back at its public URL', async ({ request }) => {
-  const res = await request.get('/topics/interpolation/interpolate_cal.html');
+  const res = await request.get('/scientific_cal/topics/interpolation/interpolate_cal.html');
   expect(res.status()).toBe(200);
   // robots.txt keeps it out of the index; the canonical tag makes sure any
   // crawler that gets here anyway is sent to the pretty URL.
@@ -81,5 +81,5 @@ test('the raw topic HTML still serves, and points back at its public URL', async
 
 test('a junk URL under the topic 404s instead of serving a page', async ({ request }) => {
   expect((await request.get('/interpolate_nope')).status()).toBe(404);
-  expect((await request.get('/topics/interpolation/nope.html')).status()).toBe(404);
+  expect((await request.get('/scientific_cal/topics/interpolation/nope.html')).status()).toBe(404);
 });

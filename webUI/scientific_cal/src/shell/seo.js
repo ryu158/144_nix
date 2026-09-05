@@ -21,7 +21,7 @@
                 `  Update the static tag in the page to match spec.json.`);
         }
     }
-    fetch(`/topics/${slug}/spec.json`)
+    fetch(`/scientific_cal/topics/${slug}/spec.json`)
         .then(r => r.json())
         .then(spec => {
         const meta = spec[level];

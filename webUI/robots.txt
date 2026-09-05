@@ -2,11 +2,11 @@ User-agent: *
 Allow: /
 
 # The raw topic HTML duplicates the pretty URLs
-# (/topics/interpolation/interpolate_cal.html == /interpolate_cal).
+# (/scientific_cal/topics/interpolation/interpolate_cal.html == /scientific_cal/interpolate_cal).
 # Canonical tags point at the pretty URLs; this stops the duplicates being crawled.
-Disallow: /topics/*/*.html
+Disallow: /scientific_cal/topics/*/*.html
 
-# Do NOT block /dev_basic/, /src/, /home.js or the topic JSON.
+# Do NOT block /scientific_cal/dev_basic/, /scientific_cal/src/, /scientific_cal/home.js or the topic JSON.
 # Google renders pages before indexing them: blocking CSS/JS breaks that render,
 # and blocking topics.json/spec.json would leave the homepage topic list empty
 # to the crawler, cutting the internal links to every topic page.

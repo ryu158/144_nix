@@ -10,10 +10,10 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "home.ts",
-    "dev_basic/**/*.ts",
-    "src/**/*.ts",
-    "topics/**/*.ts",
+    "scientific_cal/home.ts",
+    "scientific_cal/dev_basic/**/*.ts",
+    "scientific_cal/src/**/*.ts",
+    "scientific_cal/topics/**/*.ts",
     "types/**/*.d.ts"
   ]
 }

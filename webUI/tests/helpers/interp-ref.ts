@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const TOPIC_DIR = path.resolve(__dirname, '../../topics/interpolation');
+const TOPIC_DIR = path.resolve(__dirname, '../../scientific_cal/topics/interpolation');
 
 /** Read a tab-separated fixture (test_in_data.md / test_out_data.md) straight from the topic folder. */
 export function loadFixture(name: string): string[][] {

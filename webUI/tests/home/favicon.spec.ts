@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { preparePage } from '../helpers/page-setup';
-import { loadSpec } from '../helpers/spec';
+import { loadSpec, SECTION_ROOT } from '../helpers/spec';
 
 /**
  * Browsers request /favicon.ico on their own, whether or not a page links one.
@@ -9,7 +9,7 @@ import { loadSpec } from '../helpers/spec';
  */
 
 const spec = loadSpec('interpolation');
-const PAGES = ['/', ...Object.values(spec.pages)];
+const PAGES = [SECTION_ROOT, ...Object.values(spec.pages)];
 
 test('/favicon.ico serves, and is a real multi-size icon', async ({ request }) => {
   const res = await request.get('/favicon.ico');

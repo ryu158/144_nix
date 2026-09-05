@@ -3,12 +3,13 @@
 Current status only. Not history — daily detail in .claude/log/.
 
 ## Resume here
-1. Pick up ## Next at the bottom of this file.
-2. /interpolate_adv is LIVE and computes. It needs webUI/app.py running: `cd ~/nix/webUI && nix run .`. Nothing starts it on boot, so after a reboot /api/ returns 502 until you do.
-3. The suite is 99 tests. Some skip themselves when /api/health is unreachable — that is the service being down, not a broken test.
-4. topics/FFT/fft.zip is untracked and untouched — dropped in during the 2026-09-02 session, never opened. Deliberately left out of that commit.
+0. THE SITE MOVED to /scientific_cal on 2026-09-05. Until the user deploys the new nginx config, every public page 404s. The config is written and proven; deploying it is theirs: `cd ~/nix/nginx && nix run --impure .#update_nginx_conf`.
+1. Pick up the queue at the bottom of this file.
+2. The advanced page is LIVE and computes. It needs webUI/app.py running: `cd ~/nix/webUI && nix run .`. Nothing starts it on boot, so after a reboot /api/ returns 502 until you do.
+3. The suite is 105 tests. Some skip themselves when /api/health is unreachable — that is the service being down, not a broken test.
+4. fft.zip is NO LONGER IN THE REPO. It now sits at ~/transfer/ryunote/fft.zip, moved out on 2026-09-05 before the /scientific_cal work started. It was never tracked by git, so nothing in this repo's history holds a copy. Still never opened.
 5. webUI/app_py.md is the user's own notes on the backend, written 2026-09-04. Not a rules file, not loaded by anything.
-6. topics/interpolation/interpolation_blueprint copy.md is the user's own rewrite. Untracked, KEEP IT — the blueprint was rebuilt from it, and it is theirs.
+6. scientific_cal/topics/interpolation/interpolation_blueprint copy.md is the user's own rewrite. Untracked, KEEP IT — the blueprint was rebuilt from it, and it is theirs.
 7. Left stale on purpose: log/2026-08-21.md:51 says the favicon gap is in future_work.md, and log/2026-09-02.md ends with "Not committed". Both were true when written. Logs are history, not corrected.
 8. git identity is auto-detected as opc@a1-ryu...oraclevcn.com. Set user.email if the real address matters.
 
@@ -19,7 +20,7 @@ Current status only. Not history — daily detail in .claude/log/.
 4. .claude/rules/tests.md = rules the Playwright suite depends on.
 5. .claude/skills/new-topic/SKILL.md = 6-step checklist.
 6. .claude/refs/ = outside knowledge, summarised. Not rules.
-7. topics/<slug>/<slug>_blueprint.md = what to build, written before the work. One line per requirement, no answers in it. ONE per topic, every level in it — merged from the two split files on 2026-09-04.
+7. scientific_cal/topics/<slug>/<slug>_blueprint.md = what to build, written before the work. One line per requirement, no answers in it. ONE per topic, every level in it — merged from the two split files on 2026-09-04.
 8. A blueprint is written BEFORE the work. Never fold as-built detail into one — function signatures, rounding, algorithm choice. That is what stops it being a blueprint. As-built facts belong in this file or in a test.
 9. Each fact lives in ONE file. Adding a rule? Pick the owner, never copy into a second file.
 
@@ -59,10 +60,10 @@ Current status only. Not history — daily detail in .claude/log/.
 7. It fires once. After any change the grid is no longer pristine, so a second paste behaves normally. tests/interpolation/demo.spec.ts asserts both halves.
 
 ## interpolate_adv — live, 2026-09-03
-1. Public URL /interpolate_adv. A real page now, not the copy of the calculator it was on 2026-09-02.
+1. Public URL /scientific_cal/interpolate_adv. A real page now, not the copy of the calculator it was on 2026-09-02.
 2. Methods offered: linear, cubic spline, PCHIP, Akima. NO FFT — it needs a uniform x grid and does not fit arbitrary pasted data. spec.json advanced.methods is the source; the select is a static copy of it.
 3. The input grid is built WITHOUT fixedColCount. That is the one real data difference from the basic page — a wide paste grows the grid instead of alerting.
-4. page_adv.ts computes NOTHING. It posts to /api/interpolation/<method> and renders the reply. It does not load interp_engine.js on purpose: falling back to the basic page's linear math while the select says "cubic spline" would be a lie told by the page.
+4. page_adv.ts computes NOTHING. It posts to /api/interpolation/<method> and renders the reply. It does not load interp_engine.js on purpose: falling back to the basic page's linear math while the select says "cubic spline" would be a lie told by the page. Since 2026-09-05 everything except that round trip lives in scientific_cal/dev_basic/calc-page.ts.
 5. The button is ENABLED and works end to end. The user said they may disable it again; it is enabled today.
 6. During a request the button disables and #status reads "computing…", then "<n> rows, <method>" or an error. A second click cannot race the first.
 7. Editing the input grid re-plots but does NOT re-run. Every run is a network round trip; one per keystroke would hammer a shared service.
@@ -73,33 +74,32 @@ Current status only. Not history — daily detail in .claude/log/.
 12. advanced.range (0, 10, 0.05) drives the three Output X inputs. The HTML carries a static copy for crawlers; spec.json wins at runtime. 0-1000 is the basic page's range and is meaningless for 11 points.
 13. advanced.spec.ts asserts the separation itself: cubic must exceed the data max and dip below its min, pchip must do neither. Swap in smooth data and that test fails, rather than quietly shipping a comparison page with nothing to compare.
 14. Demo seeding, the async-empty guard, and the capture-phase paste clear are carried over from page.ts. The trap is identical here.
-15. The 🪄Advanced placeholder is gone: interpolate_cal.html links to /interpolate_adv, and nav.spec.ts's exemption was deleted. That rule now has no exceptions.
+15. The 🪄Advanced placeholder is gone: interpolate_cal.html links to /scientific_cal/interpolate_adv, and nav.spec.ts's exemption was deleted. That rule now has no exceptions.
 16. The grid VIRTUALISES its columns. An off-screen column has no DOM node, so assert grid width by copying the data out, never by locating a cell.
 
 ## Python backend — built 2026-09-03
 1. webUI/app.py is the site's ONE backend, for every topic. Routes are /api/<topic>/<method>.
 2. It owns all HTTP: JSON parse, validation, caps (8 MB body, 20000 rows, 64 cols, 50000 query points), error shape. Bad input is a 4xx with {"error": ...}; a stack trace never reaches the client.
 3. Routes are built from each topic module's own METHODS table. A new method is one line in the topic file and none in app.py.
-4. topics/interpolation/api_interp.py holds the math and imports no Flask. It stays callable without a server.
+4. scientific_cal/topics/interpolation/api_interp.py holds the math and imports no Flask. It stays callable without a server.
 5. Binds 127.0.0.1 only. Port from INTERP_API_PORT, default 35910. nginx is its whole public face.
 6. `nix run .` works now — it never had before, because app.py did not exist. Note flakes copy only GIT-TRACKED files: an untracked app.py is absent from the store and the command fails with "can't open file".
 7. Verified against interp_engine.ts on the demo dataset, range 0/1000/1: 1001 rows both sides, max absolute difference 0.000e+00. The two pages cannot disagree.
 8. Every method blanks outside a series' own domain. np.interp CLAMPS there, so linear masks it back explicitly; the scipy interpolators use extrapolate=False and their NaN becomes a blank cell.
 9. A series too thin for its method (cubic wants 4 points, Akima 5) blanks that column instead of failing the request.
 10. It is Flask's DEVELOPMENT server, single-threaded. Fine on loopback; a production WSGI server is not in the flake and adding one needs permission.
-11. scipy math lives beside its topic and app.py imports it, so topics/ and topics/interpolation/ carry an __init__.py.
+11. scipy math lives beside its topic and app.py imports it, so scientific_cal/topics/ and scientific_cal/topics/interpolation/ carry an __init__.py.
 
 ## nginx /api/ — deployed 2026-09-03
-1. `location /api/` added to ~/nix/nginx/configs/nginx.conf, plus api_port = "35910" in nginx-secrets.nix and api_port in the flake's substituteAll list. Miss that last one and @api_port@ ships unreplaced.
+1. `location /api/` added to ~/nix/nginx/configs/nginx.conf (joined by `location /scientific_cal/api/` on 2026-09-05), plus api_port = "35910" in nginx-secrets.nix and api_port in the flake's substituteAll list. Miss that last one and @api_port@ ships unreplaced.
 2. 35910 was already in openPortsStr. The service still binds loopback, so the open port reaches nothing directly.
 3. client_max_body_size 8m in that block on purpose — the server-wide value is 2G, which would let an oversize body reach Flask instead of being refused at the edge.
 4. No trailing slash on proxy_pass: Flask's own routes start with /api/.
 5. Deployed by the user with `nix run --impure .#update_nginx_conf` from ~/nix/nginx. /api/health answers on the public domain.
 6. A 502 there means nginx found the route and nobody answered: the block is live but app.py is not running. It is NOT an nginx fault.
-7. webUI/nginx.conf, the reference near-copy, does NOT have this block. It already differed; left alone.
 
 ## how-to panel — shared component, 2026-09-03
-1. dev_basic/how-to.ts. Extracted from page.ts when the advanced page became the second user; both pages load /dev_basic/how-to.js and neither controller owns panel code any more.
+1. scientific_cal/dev_basic/how-to.ts. Extracted from page.ts when the advanced page became the second user; both pages load /dev_basic/how-to.js and neither controller owns panel code any more.
 2. `<details>` still does the opening, so the manual is in the HTML before any script runs and Tab + Enter work with no JS.
 3. Hover was ADDED, never substituted for click: hover in opens, hover out closes, a click PINS it open, Escape or an outside click closes and unpins.
 4. Hover is gated behind `(hover: hover) and (pointer: fine)`. A touch device reports neither — without that gate the manual would be unreachable on a phone.
@@ -112,13 +112,13 @@ Current status only. Not history — daily detail in .claude/log/.
 ## CSV / TSV import and export — added 2026-09-04, shared same day
 
 1. Advanced page only. The basic page is untouched, so its "nothing is uploaded" claim is unaffected either way — these are local file operations and never reach the server.
-1a. The code lives in dev_basic/csv.ts, one entry point: initCsvIo({slug, level, input, output}). It finds its own buttons by id and knows nothing about interpolation.
+1a. The code lives in scientific_cal/dev_basic/csv.ts, one entry point: initCsvIo({slug, level, input, output}). It finds its own buttons by id and knows nothing about interpolation.
 1b. It has ONE caller. That is a deliberate exception to the extract-on-second-use rule, taken by the user because the next user is a new topic rather than a second page of this one.
 1c. The buttons read "import" and "export". The formats are named in the how-to panel instead, and a test asserts the labels so a relabel is a decision, not drift.
 1d. seo.spec.ts's required terms — csv, tsv, copy and paste — come from the <summary>, never from the button labels. Checked before the relabel.
 1e. Events carry slug AS WELL AS level. A shared component firing an event that named only the level could not say which topic produced it.
-1f. .panel-actions, .ghost-btn and .ghost-select moved to dev_basic/style.css with the code.
-1g. applyColumnLock exists but is UNPROVEN: setData hard-resets numCols and walks past fixedColCount, so a locked grid would silently widen on import while a paste alerts and truncates. The advanced grid is unlocked, so no test reaches that branch. First locked-grid caller must test it.
+1f. .panel-actions, .ghost-btn and .ghost-select moved to scientific_cal/dev_basic/style.css with the code.
+1g. applyColumnLock was WRONG, not merely unproven. Fixed 2026-09-05 when the basic page became the second caller. setData hard-resets numCols from the incoming array, so a locked grid moved in BOTH directions: a wide file widened it, a narrow file shrank it. It now squares every row off to exactly numCols. Too wide still alerts, matching grid.ts; too narrow pads silently, because a narrow paste says nothing either.
 2. Import: a hidden `<input type=file>` behind an `import CSV / TSV` button on the Input panel. `accept` filters the explorer; it is a hint, never a guarantee, so the parser takes whatever arrives.
 3. `parseDelimited` in page_adv.ts is lifted from grid.ts `_onPaste` — tab if the first line has one, else comma. Deliberate duplication of behaviour, not of code ownership: a file and a paste of the same bytes must give the same grid.
 4. Quoted fields containing a comma still split wrongly. That bug is grid.ts's too. Fixing it here alone would make file and clipboard disagree, which is worse than the bug.
@@ -133,13 +133,52 @@ Current status only. Not history — daily detail in .claude/log/.
 13. Cancel is a decision, not a failure: AbortError is swallowed, no status is set, and no `csv_export` event fires.
 14. Export writes NO header row. test_in_data.md is headerless, so an export re-imports and round-trips through app.py unchanged.
 15. types/globals.d.ts carries a minimal File System Access declaration. TS 5.4's DOM lib has none, and the full spec types are far more than the four members used.
-16. `.ghost-btn` and `.ghost-select` live in interpolation_style.css — one user so far. Second page to want them moves both to dev_basic/style.css.
+16. `.ghost-btn` and `.ghost-select` live in interpolation_style.css — one user so far. Second page to want them moves both to scientific_cal/dev_basic/style.css.
 17. tests/interpolation/csv.spec.ts, 13 tests. Playwright cannot drive a native save dialog, so the picker is stubbed per test: a fake handle named out.tsv/out.csv for the dialog path, `delete window.showSaveFilePicker` for the fallback path.
 18. Events: `csv_import` {level, format, rows} and `csv_export` {level, format, method, rows}. Both consent-gated.
 
+## CSV / TSV on interpolate_cal — added 2026-09-05
+
+1. Both calculators now import and export. The component was already shared; this was one `initCsvIo` call in page.ts, the two `.panel-actions` blocks copied from the advanced page, and one script tag.
+2. The basic page's "nothing is uploaded" wording is UNAFFECTED and stays. Import and export are local file operations; nothing new reaches the server.
+3. The real work was the applyColumnLock fix. See the CSV section's 1g.
+4. Wiring rule, and it is the whole reason this was small: `setData` emits `change`, so the existing plot and demoPristine handlers already cover the import path. A caller adds NOTHING beside the initCsvIo line.
+5. The how-to panel gained the file route in step 1 of its list, and its four-column note now covers import as well as paste. seo.spec.ts's required terms come from the `<summary>`, which was not touched.
+6. calculator.spec.ts now matches the panel headings by PREFIX, not equality. Input and Output carry their action buttons inside the h2, so `toHaveText(['Input', ...])` no longer holds. The heading's own label is what that assertion guards.
+7. The narrow-import test was run against the pre-fix code and observed to FAIL — the grid came back 2 columns wide. It is a real regression guard, not a tautology.
+
+## scientific_cal/dev_basic/calc-page.ts — shared scaffold, 2026-09-05
+
+1. Both calculator controllers are built on it. page.ts went 134 -> 61 lines, page_adv.ts 196 -> 94.
+2. It owns: finding the markup, both grids, the chart, plotBoth, setStatus, the initCsvIo call, the demo seed, and the capture-phase paste clear.
+3. It owns NO math and loads no engine. That is the constraint, not a coincidence — the advanced page's status line names the method the SERVER ran, so a client-side fallback would make the page lie. interpolate_adv.html still carries only a comment where interp_engine.js would go.
+4. `level` does three jobs: names the analytics level, picks `spec[level].dataset` and `spec[level].range`, and tags the console warning. That single key is what collapsed two different demo-seeding blocks into one.
+5. The basic page has no `calculator.range` in spec.json, so its Output X inputs keep their HTML values. Same code path as the advanced page's `advanced.range`, no special case.
+6. `#status` is now REQUIRED by the guard on both pages. page.ts did not require it before; both pages have always had it.
+7. `#methodSelect` is optional, returned as `method: HTMLSelectElement | null`. page_adv.ts checks for it itself, because every advanced method goes over the wire.
+8. What stayed in each topic file: the InterpEngine call in page.ts, the fetch round trip in page_adv.ts, and one wiring line each — `input.on('change', ...)` recomputes on the basic page and only re-plots on the advanced one.
+9. Load order in the HTML: grid, csv, chart, dual-chart, calc-page, then the page controller. calc-page constructs all three and calls initCsvIo, so it comes after them.
+10. Pure refactor, proven: 105/105 with ZERO test edits, and the client/API agreement re-measured at 1001 rows both sides, max absolute difference 0.000e+00.
+
+## The move to /scientific_cal — 2026-09-05
+
+1. Sections are REAL DIRECTORIES, not a URL prefix nginx strips. `scientific_cal/dev_basic/grid.js` on disk is `/scientific_cal/dev_basic/grid.js` on the web. No `<base>` tag, no rewrite, no alias.
+2. Moved under it: index.html, home.ts/.js, scientific_cal/dev_basic/, src/, scientific_cal/topics/. Everything else stayed at the repo root.
+3. Stayed at the root ON PURPOSE: app.py (the backend is the site's, not a section's), tests/, types/, tsconfig.json, robots.txt, sitemap.xml, and the favicons — a browser requests /favicon.ico regardless of page path.
+4. The repo root index.html is a NEW umbrella page listing sections. Static, no JS, and it carries the Google Search Console verification meta tag, which must live at the property ROOT. Removing that tag un-verifies the property.
+5. The section home is /scientific_cal/ and still renders its rows from topics.json. A topic page's home button goes THERE, not to the umbrella.
+6. app.py's Flask routes are UNCHANGED and still start with /api/. nginx maps the prefix instead: `proxy_pass http://127.0.0.1:<port>/api/` in the /scientific_cal/api/ block. Drop that trailing /api/ and every call 404s inside Flask.
+7. The unprefixed /api/ block is kept as well. The backend belongs to the site, and /api/health is how you tell "nginx has no route" (404) from "route exists, nobody answered" (502).
+8. app.py imports `from scientific_cal.topics.interpolation import api_interp` now, and scientific_cal/ carries an __init__.py for it.
+9. Old public URLs 301 to their new homes. KEEP those three blocks — they are indexed, and a permanent redirect passes the ranking on.
+10. tests/helpers/spec.ts exports SECTION_ROOT = '/scientific_cal/'. A test that wants the topic cards wants that, never '/': the umbrella has no topic list.
+11. CORS is still NOT needed and none was added. Page and API share an origin, and app.py records why flask_cors is absent. If the API ever gets its own origin, the fix is an exact-origin `add_header` in the nginx /api/ block — never a wildcard, never in app.py, which has caps but no auth.
+12. Every leading-slash path was swept, scientific_cal/src/shell/seo.ts's spec.json fetch included. The one that would have failed SILENTLY is page_adv.ts's `/api/...`: the kept site-wide block would have served it, so a wrong path would have passed the tests.
+13. Proven before handover, not after: the generated config was run as a throwaway nginx on port 18443 and the whole suite passed against it, 105/105. Old URLs returned 301 to the right targets.
+
 ## Blueprints — one per topic, 2026-09-04
 
-1. topics/<slug>/<slug>_blueprint.md. ONE file per topic, every level in it. interpolation_cal_blueprint.md and interpolation_adv_blueprint.md were merged into it and deleted.
+1. scientific_cal/topics/<slug>/<slug>_blueprint.md. ONE file per topic, every level in it. interpolation_cal_blueprint.md and interpolation_adv_blueprint.md were merged into it and deleted.
 2. Shape, and it is the user's: numbered requests, level-parallel numbering so cal 2-x lines up against adv 3-x item for item, "(later)" on anything deferred.
 3. Section 1-2-*-N is a per-method template — In plain words / Basic idea / Important characteristics / Advantages / Disadvantages. Every method section in every topic blog follows it.
 4. The first merged version was mine and had drifted into map territory, citing test names and work already done. The user rewrote it shorter; that rewrite is what the file now holds.
@@ -149,7 +188,7 @@ Current status only. Not history — daily detail in .claude/log/.
 
 ## topics/FFT — blueprint only, 2026-09-04
 
-1. topics/FFT/FFT_blueprint.md exists. Nothing else does: no spec.json, no topics.json entry, no pages, no api module.
+1. scientific_cal/topics/FFT/FFT_blueprint.md exists. Nothing else does: no spec.json, no topics.json entry, no pages, no api module.
 2. Written from ./260829_my_webUI_FFT.md and the contents of fft.zip. The zip was listed and piped, never extracted — nginx serves the repo root, so anything unpacked there is instantly public.
 3. fft.zip carries a finished blog: fft_blog.md, fft_blog.html, 8 SVG figures, gen_figs.py, build_html.py. Same shape interpolation.zip arrived in, so the same treatment applies — drop its css, its nav row and any CDN tag.
 4. The two markdown sources are the same text at different drafts. Keep the newer, delete the other.
@@ -159,10 +198,10 @@ Current status only. Not history — daily detail in .claude/log/.
 8. Section 6 of that file lists four unresolved decisions. Building before they are answered means guessing at the output contract.
 
 ## vendor/mathjax
-1. topics/interpolation/vendor/mathjax/tex-mml-svg.js, MathJax 3, 2.1 MB, committed.
+1. scientific_cal/topics/interpolation/vendor/mathjax/tex-mml-svg.js, MathJax 3, 2.1 MB, committed.
 2. Self-hosted on purpose — the site ships no third-party runtime scripts.
 3. tex-mml-svg, not tex-mml-chtml: SVG output needs no web-font directory, so self-hosting is one file.
-4. Second topic needing math -> move it to dev_basic/vendor/ and delete this copy.
+4. Second topic needing math -> move it to scientific_cal/dev_basic/vendor/ and delete this copy.
 
 ## favicon — added 2026-09-03
 1. favicon.svg is the source of record. Edit that, never the .ico.
@@ -186,15 +225,16 @@ Current status only. Not history — daily detail in .claude/log/.
 1. Ownership verified by meta tag in index.html. DO NOT REMOVE — removing un-verifies.
 2. Sitemap submitted. "Couldn't fetch" right after submit is normal, clears in ~2 days.
 3. Indexing requested: homepage only. Daily quota hit.
-4. TODO next session: request indexing for /interpolate_cal and /interpolate_blog.
+4. TODO next session: request indexing for /scientific_cal/interpolate_cal and /scientific_cal/interpolate_blog.
 5. Then wait 1-2 weeks before judging search results.
 
 ## nginx
-1. The master copy is ~/nix/nginx/configs/nginx.conf, NOT webUI/nginx.conf. The repo-root HANDOVER owns this fact.
-2. webUI/nginx.conf is a near-copy kept for reference. The two already differ.
-3. Deploy from ~/nix/nginx with `nix run --impure .#update_nginx_conf`. That is outside webUI scope — ask first.
-4. It denies *.conf only.
-5. Every public URL needs its own `location =` block. A new topic page is invisible without one.
+1. The master and ONLY copy is ~/nix/nginx/configs/nginx.conf. There is no copy in this repo.
+2. webUI/nginx.conf was DELETED 2026-09-05, by the user. A near-copy that drifts from the master is worse than no copy — it reads like a source of truth and is not one.
+3. Any path or URL change means READING the master and handing the user an updated version of it. Never edit it in place: it is outside webUI scope.
+4. Deploy is the user's, from ~/nix/nginx: `nix run --impure .#update_nginx_conf`.
+5. It denies *.conf only.
+6. Every public URL needs its own `location =` block. A new topic page is invisible without one.
 
 ## TypeScript — migrated 2026-08-21
 1. Strict, target ES2020.
@@ -243,15 +283,14 @@ nix flake update nixpkgs-unstable
 3. interpolate_cal.html body was one paragraph. The How-to panel added a real manual on 2026-09-02; still short next to the blog.
 4. Mobile friendliness never scored. Cal page is a full-height 3-panel grid with body { overflow: hidden }. The blog article was never checked on a phone either — its figures are fixed-ratio SVG.
 5. No SERP rank monitoring at all.
-6. /interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical.
+6. /scientific_cal/interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical.
 7. test_data.csv orphaned. Keep or delete undecided.
 8. Files served from repo root are public: CLAUDE.md, .claude/, flake.nix, Claude.local.md. Known, accepted.
-9. /interpolate_blog title and description both changed on 2026-09-02. Re-request indexing in Search Console.
-10. /interpolate_adv is new as of 2026-09-03 and is in the sitemap. It computes now, so requesting indexing is unblocked.
-11. NOTHING STARTS app.py ON BOOT. After a reboot /api/ returns 502 until someone runs `nix run .` by hand. A systemd unit is the fix and lives outside webUI — ask first.
+9. EVERY public URL changed on 2026-09-05. All of them need re-requesting in Search Console, once the nginx config is deployed.
+10. The sitemap now lists the umbrella, the section home, and the three moved pages. All five need indexing requested.
+11. NOTHING STARTS app.py ON BOOT. After a reboot /api/ returns 502 until someone runs `nix run .` by hand. DECIDED 2026-09-05: manual, by the user. No systemd unit.
 12. app.py runs Flask's DEVELOPMENT server, single-threaded, and says so on startup. Fine behind loopback; a production WSGI server is a new flake dependency and needs permission.
 13. CSV import cannot read a quoted field containing a comma. Same limit as clipboard paste, and they must be fixed together or not at all.
-14. /interpolate_cal has no import or export. The user decided against adding it; the component is shared already, so wiring it there is now a one-line call whenever they want it.
 15. FFT_blueprint.md section 6 lists four decisions that must be made before any FFT page is built.
 
 ## Confirmed, don't touch
@@ -269,10 +308,11 @@ nix flake update nixpkgs-unstable
 12. test_in_data.md carries 10 columns, so the basic page only ever sees X + 3 series.
 
 ## Next
-1. Decide how app.py stays up: a systemd unit, or start it by hand each time. Until then a reboot means 502.
-2. Request indexing for /interpolate_adv, /interpolate_cal and /interpolate_blog in Search Console.
-3. og:image is still missing on every page — social previews have no picture. The favicon mark added 2026-09-03 is something to build one from.
-4. Mobile is still unscored on all three pages.
-5. topics/FFT/fft.zip has never been opened. FFT is the obvious next topic, and the backend takes a second one with a single import line.
-6. Answer the four open decisions in topics/FFT/FFT_blueprint.md section 6. Nothing FFT can be built before they are settled.
-7. One topic at a time.
+1. DEPLOY THE NGINX CONFIG. Until then every public page 404s. `cd ~/nix/nginx && nix run --impure .#update_nginx_conf`. The updated file was handed over on 2026-09-05 and proven against a throwaway nginx, 105/105.
+2. Then re-run the suite against the live site: `run-browser-tests`.
+3. og:image is missing on every page including the new umbrella. The favicon mark is what to build it from. Next planned step.
+4. Mobile is unscored and there is not one @media rule in the codebase. PC and large tablet are the target; mobile is best-effort. Step after og:image.
+5. Search Console LAST, once the URLs are final: request indexing for /, /scientific_cal/, and the three /scientific_cal/interpolate_* pages, and resubmit the sitemap.
+6. app.py stays MANUAL by the user's decision — `cd ~/nix/webUI && nix run .`. A reboot means 502 until they run it.
+7. FFT waits until all of the above is done and validated. Its four open decisions in scientific_cal/topics/FFT/FFT_blueprint.md section 6 are still unanswered, and its source zip now lives at ~/transfer/ryunote/fft.zip, outside this repo.
+8. One topic at a time.

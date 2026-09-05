@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { stubThirdParty, setConsent, collectConsoleErrors, preparePage } from '../helpers/page-setup';
 import { pasteIntoGrid, waitForGrid, outputCell } from '../helpers/grid';
-import { loadSpec } from '../helpers/spec';
+import { loadSpec, SECTION_ROOT } from '../helpers/spec';
 
 /**
  * Consent gating, from the CLAUDE.md hard rules: analytics live in src/shell/
@@ -112,7 +112,7 @@ test('undecided visitors get the banner, and Accept stores the choice', async ({
 test('opening the interpolation card on the home page reports it', async ({ page }) => {
   await preparePage(page, 'granted');
 
-  await page.goto('/');
+  await page.goto(SECTION_ROOT);
   const card = page.locator('.topic-item', { hasText: spec.name });
   await card.locator('.topic-toggle').click();
 
@@ -130,7 +130,7 @@ for (const [level, url] of Object.entries(spec.pages)) {
     expect(html).not.toContain('googletagmanager.com');
     expect(html).not.toContain('gtag(');
     expect(html).not.toContain('clarity');
-    expect(html).toContain('/src/shell/analytics.js');
-    expect(html).toContain('/src/shell/consent.js');
+    expect(html).toContain('/scientific_cal/src/shell/analytics.js');
+    expect(html).toContain('/scientific_cal/src/shell/consent.js');
   });
 }

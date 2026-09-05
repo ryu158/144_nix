@@ -30,7 +30,7 @@ export interface Spec {
 const REPO_ROOT = path.resolve(__dirname, '../..');
 
 export function loadSpec(slug: string): Spec {
-  return JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'topics', slug, 'spec.json'), 'utf8'));
+  return JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'scientific_cal', 'topics', slug, 'spec.json'), 'utf8'));
 }
 
 export function meta(spec: Spec, level: string): SpecMeta {
@@ -39,3 +39,11 @@ export function meta(spec: Spec, level: string): SpecMeta {
 
 /** The public origin baked into canonical/og:url tags. Not the test baseURL. */
 export const CANONICAL_ORIGIN = 'https://ryuora144.duckdns.org';
+
+/**
+ * The section's own home, one level under the site root.
+ *
+ * The bare '/' is the umbrella page listing sections; it carries no topic
+ * list, so a test that wants the topic cards wants this.
+ */
+export const SECTION_ROOT = '/scientific_cal/';

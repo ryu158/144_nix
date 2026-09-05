@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://ryuora144.duckdns.org/interpolate_cal">
+<link rel="canonical" href="https://ryuora144.duckdns.org/scientific_cal/interpolate_cal">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
 
@@ -14,7 +14,7 @@
 <meta name="description" content="Free interpolation calculator. Copy and paste CSV, TSV, or spreadsheet data, compute multiple lines and matrix data at once, and plot results. No upload.">
 
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://ryuora144.duckdns.org/interpolate_cal">
+<meta property="og:url" content="https://ryuora144.duckdns.org/scientific_cal/interpolate_cal">
 <meta property="og:title" content="Online Interpolation Calculator, Multiple line, Vector, Matrix, Sheet type data, Fast calculation &amp; Plot results (Graph)">
 <meta property="og:description" content="Free interpolation calculator. Copy and paste CSV, TSV, or spreadsheet data, compute multiple lines and matrix data at once, and plot results. No upload.">
 <meta name="twitter:card" content="summary">
@@ -27,7 +27,7 @@
   "@type": "WebApplication",
   "name": "Online Interpolation Calculator",
   "description": "Free interpolation calculator. Copy and paste CSV, TSV, or spreadsheet data, compute multiple lines and matrix data at once, and plot results. No upload.",
-  "url": "https://ryuora144.duckdns.org/interpolate_cal",
+  "url": "https://ryuora144.duckdns.org/scientific_cal/interpolate_cal",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any (browser-based)",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
@@ -35,11 +35,11 @@
 }
 </script>
 
-<link rel="stylesheet" href="/dev_basic/style.css">
-<link rel="stylesheet" href="/topics/interpolation/interpolation_style.css">
-<script src="/src/shell/seo.js" data-slug="interpolation" data-level="calculator"></script>
-<script src="/src/shell/analytics.js"></script>
-<script src="/src/shell/consent.js"></script>
+<link rel="stylesheet" href="/scientific_cal/dev_basic/style.css">
+<link rel="stylesheet" href="/scientific_cal/topics/interpolation/interpolation_style.css">
+<script src="/scientific_cal/src/shell/seo.js" data-slug="interpolation" data-level="calculator"></script>
+<script src="/scientific_cal/src/shell/analytics.js"></script>
+<script src="/scientific_cal/src/shell/consent.js"></script>
 </head>
 <body>
 	<div id="app">
@@ -48,16 +48,16 @@
 				<div class="field">
 					<h1>Interpolate Calculator</h1>
 				</div>
-				<!-- <a href="https://ryuora144.duckdns.org/interpolate_blog" target="_blank" rel="noopener" class="teal-button-link">
+				<!-- <a href="https://ryuora144.duckdns.org/scientific_cal/interpolate_blog" target="_blank" rel="noopener" class="teal-button-link">
 					<strong>❓interpolation</strong>
 				</a> -->
-				<a href="/interpolate_blog" class="teal-button-link">
+				<a href="/scientific_cal/interpolate_blog" class="teal-button-link">
 					<strong>❓interpolation</strong>
 				</a>
-				<a href="/" class="teal-button-link">
+				<a href="/scientific_cal/" class="teal-button-link">
 					<strong>🏠Home</strong>
 				</a>
-				<a href="/interpolate_adv" class="teal-button-link">
+				<a href="/scientific_cal/interpolate_adv" class="teal-button-link">
 					<strong>🪄Advanced</strong>
 				</a>
 			</div>
@@ -80,12 +80,15 @@
 					estimates the values in between, for several series at once, then plots them.
 					It runs entirely in your browser — nothing is uploaded, nothing is stored, and
 					there is no limit on how often you use it. If you want the reasoning rather than
-					the answer, the <a href="/interpolate_blog">interpolation article</a> walks
+					the answer, the <a href="/scientific_cal/interpolate_blog">interpolation article</a> walks
 					through the methods and where each one goes wrong.
 				</p>
 				<ol>
 					<li><strong>Paste your data</strong> into the Input grid — straight from a
-						spreadsheet, or as CSV/TSV text. First column is x, the rest are y series.</li>
+						spreadsheet, or as CSV/TSV text. First column is x, the rest are y series.
+						Working from a file instead? <strong>import</strong> above the Input grid
+						reads a CSV or TSV file, and <strong>export</strong> above the Output grid
+						saves the result back out as either. Both stay on your machine.</li>
 					<li><strong>Set the output range.</strong> Output X start, finish, and interval
 						decide which x values you get back.</li>
 					<li><strong>Pick a method</strong> in the Method select, then press
@@ -93,8 +96,9 @@
 					<li><strong>Read the result.</strong> Values land in the Output grid; the same
 						curves plot under Results.</li>
 				</ol>
-				<p>The Input grid holds four columns: x plus three y series. Paste more and the
-					extra columns are dropped with a warning.</p>
+				<p>The Input grid holds four columns: x plus three y series. Paste or import more
+					and the extra columns are dropped with a warning. Fewer is fine — the unused
+					columns are simply left blank.</p>
 				<p>Output x values outside the range of your data are left blank. This
 					interpolates between your points, it does not extrapolate past them.</p>
 			</div>
@@ -130,11 +134,30 @@
 
 		<div class="app-main">
 			<section class="panel panel-grid" style="flex: 1;">
-				<h2>Input</h2>
+				<h2>Input
+					<span class="panel-actions">
+						<button id="importBtn" class="ghost-btn" type="button">import</button>
+						<!-- Hidden: the styled button proxies the click. accept is a hint only,
+						     never a guarantee - parseDelimited handles whatever arrives. -->
+						<input id="importFile" type="file"
+						       accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values" hidden>
+					</span>
+				</h2>
 				<div id="gridContainer" class="panel-body"></div>
 			</section>
 			<section class="panel panel-grid" style="flex: 1;">
-				<h2>Output</h2>
+				<h2>Output
+					<span class="panel-actions">
+						<button id="exportBtn" class="ghost-btn" type="button">export</button>
+						<!-- Shown only when showSaveFilePicker is missing (Firefox, Safari):
+						     those browsers cannot offer a type dropdown in the save dialog, so
+						     the choice has to live on the page. csv.ts unhides it. -->
+						<select id="exportFormat" class="ghost-select" hidden>
+							<option value="csv">CSV</option>
+							<option value="tsv">TSV</option>
+						</select>
+					</span>
+				</h2>
 				<div id="gridContainer_2" class="panel-body"></div>
 			</section>
 			<section class="panel panel-chart">
@@ -154,12 +177,14 @@
 		});
 	</script>
 
-	<script src="/dev_basic/how-to.js"></script>
-	<script src="/dev_basic/grid.js"></script>
-	<script src="/dev_basic/chart.js"></script>
-	<script src="/dev_basic/dual-chart.js"></script>
-	<script src="/topics/interpolation/interp_engine.js"></script>
-	<script src="/topics/interpolation/page.js"></script>
+	<script src="/scientific_cal/dev_basic/how-to.js"></script>
+	<script src="/scientific_cal/dev_basic/grid.js"></script>
+	<script src="/scientific_cal/dev_basic/csv.js"></script>
+	<script src="/scientific_cal/dev_basic/chart.js"></script>
+	<script src="/scientific_cal/dev_basic/dual-chart.js"></script>
+	<script src="/scientific_cal/dev_basic/calc-page.js"></script>
+	<script src="/scientific_cal/topics/interpolation/interp_engine.js"></script>
+	<script src="/scientific_cal/topics/interpolation/page.js"></script>
 
 </body>
 </html>

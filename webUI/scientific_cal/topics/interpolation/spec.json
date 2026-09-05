@@ -2,9 +2,9 @@
   "slug": "interpolation",
   "name": "Interpolation",
   "pages": {
-    "blog": "/interpolate_blog",
-    "calculator": "/interpolate_cal",
-    "advanced": "/interpolate_adv"
+    "blog": "/scientific_cal/interpolate_blog",
+    "calculator": "/scientific_cal/interpolate_cal",
+    "advanced": "/scientific_cal/interpolate_adv"
   },
   "blog": {
     "title": "Interpolation Methods",

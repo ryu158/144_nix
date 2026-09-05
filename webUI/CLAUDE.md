@@ -38,12 +38,15 @@ run-browser-tests
 14. That flake script uses the Nix chromium, never downloads one.
 
 ## Map
-1. index.html + home.ts — home. Renders rows from topics/topics.json -> each spec.json.
-2. dev_basic/ — shared components + style.css. Tokens in :root.
-3. topics/topics.json — slug list. Not listed = invisible on home.
-4. New topic or new level -> skill `new-topic`.
-5. Topic detail — folder shape, spec.json, SEO, validation, CSS, writing -> .claude/rules/topics.md.
-6. Chart colors and line styles -> .claude/rules/visuals.md.
+1. Sections are real directories. `scientific_cal/` is the only one; repo layout mirrors URL layout, so `/scientific_cal/dev_basic/grid.js` is that file on disk.
+2. index.html at the repo root — umbrella page listing sections. Static, no JS.
+3. scientific_cal/index.html + home.ts — section home. Renders rows from topics/topics.json -> each spec.json.
+4. scientific_cal/dev_basic/ — shared components + style.css. Tokens in :root. calc-page.ts builds a whole calculator; a page controller adds only its compute path.
+5. scientific_cal/topics/topics.json — slug list. Not listed = invisible on the section home.
+6. New topic or new level -> skill `new-topic`.
+7. Topic detail — folder shape, spec.json, SEO, validation, CSS, writing -> .claude/rules/topics.md.
+8. Chart colors and line styles -> .claude/rules/visuals.md.
+9. app.py, tests/, types/, robots.txt, sitemap.xml and the favicons stay at the repo root — they are the site's, not a section's.
 
 ## Hard rules
 1. Topics are data-driven — never hardcode a topic list.
@@ -52,8 +55,8 @@ run-browser-tests
 4. Extract on second use. First use stays in the topic. No speculative abstraction.
 5. Static-first — article text in HTML before JS runs. JS adds interaction only.
 6. SEO tags static in the page — crawlers do not run JS.
-7. Shell is global — tell user before changing src/shell/.
-8. Analytics live in src/shell/ only — never page-level.
+7. Shell is global — tell user before changing scientific_cal/src/shell/.
+8. Analytics live in scientific_cal/src/shell/ only — never page-level.
 9. One topic at a time.
 10. No new dependencies without permission.
 

@@ -1,6 +1,6 @@
 ---
 paths:
-  - "topics/**/*"
+  - "scientific_cal/topics/**/*"
 ---
 
 # Topic rules
@@ -8,7 +8,7 @@ paths:
 ## Folder shape
 
 ```
-topics/<slug>/
+scientific_cal/topics/<slug>/
   spec.json
   <slug>_blog.html
   <slug>_cal.html   + its .ts
@@ -44,7 +44,7 @@ Blog and cal both read it. Never copy a dataset, range, or default into HTML.
 
 ## Register
 
-Add slug to `topics/topics.json`. Not there = invisible on home. No build step finds the folder on its own.
+Add slug to `scientific_cal/topics/topics.json`. Not there = invisible on home. No build step finds the folder on its own.
 
 ## Validate
 
@@ -57,13 +57,13 @@ Both pages shipped titleless once. Crawlers index without running JS.
 ```html
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://ryuora144.duckdns.org/<public-url>">
+<link rel="canonical" href="https://ryuora144.duckdns.org/scientific_cal/<public-url>">
 <title>…</title>
 <meta name="description" content="…">
 <meta property="og:type|og:url|og:title|og:description" …>
 <meta name="twitter:card|twitter:title|twitter:description" …>
 <script type="application/ld+json">…</script>   <!-- Article for blog, WebApplication for cal -->
-<script src="/src/shell/seo.js" data-slug="<slug>" data-level="blog"></script>
+<script src="/scientific_cal/src/shell/seo.js" data-slug="<slug>" data-level="blog"></script>
 ```
 
 `data-slug` required — public URLs are rewritten, seo.js cannot read the slug from the path. It `console.warn`s on drift from spec.json. Fix the drift, never ignore.
@@ -82,9 +82,9 @@ Indexing takes days-weeks. Ranking weeks-months. Not instant.
 
 ## Links + sitemap
 
-Internal links use public urls (`/interpolate_cal`, `/`), never `/topics/.../*.html` — duplicates, robots-disallowed, splits ranking.
+Internal links use public urls (`/scientific_cal/interpolate_cal`, `/scientific_cal/`), never `/scientific_cal/topics/.../*.html` — duplicates, robots-disallowed, splits ranking.
 Add every new public url to `/sitemap.xml`. Hand-maintained.
-robots.txt must NOT block `/dev_basic/`, `/src/`, or topic JSON — Google renders before indexing.
+robots.txt must NOT block `/scientific_cal/dev_basic/`, `/scientific_cal/src/`, or topic JSON — Google renders before indexing.
 
 ## Body text carries the terms
 
@@ -103,8 +103,8 @@ Pageviews cannot tell a 4-second bounce from a 6-minute read. Engagement is the 
 
 ## Topic CSS
 
-1. Missing component goes in `topics/<slug>/<slug>_style.css`, loaded after `style.css`, tokens only.
-2. Second topic needs it -> move to `dev_basic/style.css`, delete both copies.
+1. Missing component goes in `scientific_cal/topics/<slug>/<slug>_style.css`, loaded after `style.css`, tokens only.
+2. Second topic needs it -> move to `scientific_cal/dev_basic/style.css`, delete both copies.
 
 ## Writing the blog
 

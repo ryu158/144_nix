@@ -153,7 +153,7 @@ test('the button is disabled while a request is in flight', async ({ page }) => 
 });
 
 test('against the real service, if it is running', async ({ page, request }) => {
-  const health = await request.get('/api/health').catch(() => null);
+  const health = await request.get('/scientific_cal/api/health').catch(() => null);
   test.skip(!health || !health.ok(),
     'no /api/ route — start the service and deploy the nginx proxy block');
 
@@ -170,7 +170,7 @@ test('against the real service, if it is running', async ({ page, request }) => 
 });
 
 test('the demo data actually separates the methods', async ({ request }) => {
-  const health = await request.get('/api/health').catch(() => null);
+  const health = await request.get('/scientific_cal/api/health').catch(() => null);
   test.skip(!health || !health.ok(),
     'no /api/ route — start the service and deploy the nginx proxy block');
 

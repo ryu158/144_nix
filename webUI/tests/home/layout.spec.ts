@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { preparePage } from '../helpers/page-setup';
+import { SECTION_ROOT } from '../helpers/spec';
 
 /**
  * Home is the same centred 720px column as a blog page: the column moves, the
@@ -12,7 +13,7 @@ const COLUMNS = ['.app-header', '.topic-list', '.dev-section'];
 test('every block on home is centred in the viewport', async ({ page }) => {
   await preparePage(page);
   await page.setViewportSize({ width: 1400, height: 900 });
-  await page.goto('/');
+  await page.goto(SECTION_ROOT);
 
   const viewport = page.viewportSize()!.width;
   for (const sel of COLUMNS) {
@@ -25,7 +26,7 @@ test('every block on home is centred in the viewport', async ({ page }) => {
 test('the blocks share one left edge', async ({ page }) => {
   await preparePage(page);
   await page.setViewportSize({ width: 1400, height: 900 });
-  await page.goto('/');
+  await page.goto(SECTION_ROOT);
 
   const lefts: number[] = [];
   for (const sel of COLUMNS) {
@@ -38,7 +39,7 @@ test('the blocks share one left edge', async ({ page }) => {
 
 test('the text inside stays left-aligned', async ({ page }) => {
   await preparePage(page);
-  await page.goto('/');
+  await page.goto(SECTION_ROOT);
 
   const align = await page.locator('.app-header h1')
     .evaluate(el => getComputedStyle(el).textAlign);

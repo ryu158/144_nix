@@ -62,19 +62,24 @@ function initCsvIo(opts) {
     /**
      * Enforce the grid's column lock, the way grid.ts's paste handler does.
      *
-     * setData hard-resets numCols, so it walks straight past fixedColCount and
-     * would silently widen a locked grid - while a paste of the same file alerts
-     * and truncates. UNPROVEN: the only caller today runs an unlocked grid, so no
-     * test exercises this branch.
+     * setData hard-resets numCols from the incoming array, so it walks straight
+     * past fixedColCount in BOTH directions: a wide file would widen a locked
+     * grid, and a narrow one would shrink it. A paste does neither. Every row is
+     * therefore squared off to exactly numCols before setData ever sees it.
+     *
+     * Too wide alerts, because grid.ts alerts and dropping data silently is worse
+     * than an interruption. Too narrow does not, because a narrow paste is
+     * ordinary and says nothing - the blanks are what an empty column looks like.
      */
     function applyColumnLock(rows) {
         if (!input.fixedColCount)
             return rows;
+        const cols = input.numCols;
         const width = Math.max(...rows.map(row => row.length));
-        if (width <= input.numCols)
-            return rows;
-        alert(`Warning: Imported data contains ${width} columns, but the grid is locked. Some columns will be truncated.`);
-        return rows.map(row => row.slice(0, input.numCols));
+        if (width > cols) {
+            alert(`Warning: Imported data contains ${width} columns, but the grid is locked. Some columns will be truncated.`);
+        }
+        return rows.map(row => Array.from({ length: cols }, (_, c) => row[c] ?? ''));
     }
     async function importFrom(file) {
         let rows;

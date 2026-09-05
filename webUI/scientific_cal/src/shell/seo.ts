@@ -23,7 +23,7 @@
     }
   }
 
-  fetch(`/topics/${slug}/spec.json`)
+  fetch(`/scientific_cal/topics/${slug}/spec.json`)
     .then(r => r.json() as Promise<Spec>)
     .then(spec => {
       const meta = spec[level] as SpecMeta | undefined;

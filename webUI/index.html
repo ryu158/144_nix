@@ -5,43 +5,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="index, follow">
 
-<!-- Google Search Console ownership proof. Do not remove - deleting it un-verifies
-     the property and cuts off indexing reports. -->
+<!-- Google Search Console ownership proof. It verifies the PROPERTY ROOT, so it
+     has to live on this page - the site root - not only on a section index.
+     Do not remove: deleting it un-verifies the property and cuts off indexing
+     reports. -->
 <meta name="google-site-verification" content="wJoB0N_b2imDqAYvxw3QUM35VWr8XgK3qqOVfco2Ysw" />
 <link rel="canonical" href="https://ryuora144.duckdns.org/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
-<title>Interactive Math &amp; Science Explainers</title>
-<meta name="description" content="Interactive explainers for computational math and science. Read the reasoning, then adjust the parameters and watch the math respond.">
-<link rel="stylesheet" href="/dev_basic/style.css">
-<script src="/src/shell/analytics.js"></script>
-<script src="/src/shell/consent.js"></script>
-<script src="/home.js" defer></script>
+<title>Interactive Tools for Computational Work</title>
+<meta name="description" content="Hand-built interactive tools and explainers for computational work. Scientific calculators today, with room for more sections as they are written.">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ryuora144.duckdns.org/">
+<meta property="og:title" content="Interactive Tools for Computational Work">
+<meta property="og:description" content="Hand-built interactive tools and explainers for computational work. Scientific calculators today, with room for more sections as they are written.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Interactive Tools for Computational Work">
+<meta name="twitter:description" content="Hand-built interactive tools and explainers for computational work.">
+
+<!-- The section owns the stylesheet today. It is the only section, so hoisting
+     dev_basic/ back to the root would be a move with one user. The second
+     section that wants these tokens is the trigger to do it. -->
+<link rel="stylesheet" href="/scientific_cal/dev_basic/style.css">
+<script src="/scientific_cal/src/shell/analytics.js"></script>
+<script src="/scientific_cal/src/shell/consent.js"></script>
 </head>
 <body class="home-page">
 
 <div id="app" style="height: auto;">
 
   <header class="app-header">
-    <h1 style="margin:0;">Interactive Math &amp; Science Explainers</h1>
+    <h1 style="margin:0;">Interactive Tools for Computational Work</h1>
   </header>
 
-  <!-- Rows are rendered by /home.js from topics/topics.json + each spec.json.
-       Never hardcode a topic here. -->
-  <main class="topic-list" id="topicList">
-    <p class="topic-detail" id="topicListStatus">Loading topics…</p>
+  <!-- Static, unlike the section home one level down: that page renders its rows
+       from topics.json, because topics come and go. Sections do not, and there
+       is no sections.json to read. Adding one would be a data-driven list of
+       two entries. -->
+  <main class="topic-list" id="sectionList">
+
+    <p class="topic-detail">
+      Each section is a small set of tools built around one idea: read the
+      reasoning, then change the numbers and watch the result move. Nothing here
+      needs an account, and the pages that compute in your browser say so.
+    </p>
+
+    <article class="topic-item">
+      <div class="topic-row">
+        <span class="topic-name">Scientific Calculators</span>
+        <span class="topic-links">
+          <a href="/scientific_cal/" class="teal-button-link"><strong>Open</strong></a>
+        </span>
+      </div>
+      <p class="topic-detail">
+        Numerical methods you can paste your own data into. Interpolation is
+        live — an article on five methods, a calculator that runs entirely in
+        your browser, and an advanced page that computes on the server.
+      </p>
+    </article>
+
   </main>
 
-  <section class="dev-section">
-    <h3>Dev</h3>
-    <div class="topic-links">
-      <a href="/dev_basic" class="teal-button-link">dev_basic</a>
-      <a href="/test" class="teal-button-link">test</a>
-    </div>
-  </section>
-
 </div>
-
 
 </body>
 </html>

@@ -34,75 +34,44 @@ http {
             deny all;
         }
 
-        # The site root is the umbrella page listing sections. Sections are real
-        # directories one level down, so try_files resolves them with no alias
-        # and no rewrite.
         location / {
             try_files $uri $uri/ =404;
         }
-
-        # ---- scientific_cal --------------------------------------------------
-        # One `location =` per public page. A new topic page is invisible until
-        # it gets one.
-        location = /scientific_cal/interpolate_blog {
-            try_files /scientific_cal/topics/interpolation/interpolate_blog.html =404;
+        
+        location = /interpolate_blog {
+            try_files /topics/interpolation/interpolate_blog.html =404;
         }
 
-        location = /scientific_cal/interpolate_cal {
-            try_files /scientific_cal/topics/interpolation/interpolate_cal.html =404;
+        location = /interpolate_cal {
+            try_files /topics/interpolation/interpolate_cal.html =404;
         }
 
-        location = /scientific_cal/interpolate_adv {
-            try_files /scientific_cal/topics/interpolation/interpolate_adv.html =404;
+         location = /interpolate_adv {
+            try_files /topics/interpolation/interpolate_adv.html =404;
         }
 
-        location /scientific_cal/dev_basic {
-            index index_dev_basic.html;
-            try_files $uri $uri/ =404;
-        }
-
-        location /scientific_cal/test {
-            try_files $uri $uri/ /scientific_cal/topics/test/index_test.html =404;
-        }
-
-        # ---- old URLs, permanently moved 2026-09-05 --------------------------
-        # 301, not 302: these are indexed, and a permanent redirect passes the
-        # ranking on instead of stranding it at a dead URL. Keep them.
-        location = /interpolate_blog { return 301 /scientific_cal/interpolate_blog; }
-        location = /interpolate_cal  { return 301 /scientific_cal/interpolate_cal;  }
-        location = /interpolate_adv  { return 301 /scientific_cal/interpolate_adv;  }
-
-        # ---- backend ---------------------------------------------------------
         # The site's one backend, shared by every topic. It binds 127.0.0.1, so
-        # these blocks are its whole public face - same arrangement as syncthing.
-        #
-        # app.py's own Flask routes still start with /api/, unchanged by the move.
-        # The TRAILING /api/ on proxy_pass is what makes that work here: nginx
-        # strips /scientific_cal/api/ and substitutes /api/. Same trick as the
-        # /syncthing/ block below. Drop that suffix and every call 404s at Flask.
-        location /scientific_cal/api/ {
+        # this block is its whole public face - same arrangement as syncthing.
+        # No trailing slash on proxy_pass: Flask's own routes start with /api/.
+        location /api/ {
             # Matches MAX_CONTENT_LENGTH in webUI/app.py. Without it the
             # server-wide 2G applies and an oversize body reaches Flask instead
             # of being refused here.
-            client_max_body_size 8m;
-            proxy_pass http://127.0.0.1:@api_port@/api/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        # Kept unprefixed as well: the backend belongs to the site, not to one
-        # section, and /api/health is how you tell "nginx has no route" (404)
-        # from "route exists, nobody answered" (502).
-        # No trailing slash here: this path already starts with /api/.
-        location /api/ {
             client_max_body_size 8m;
             proxy_pass http://127.0.0.1:@api_port@;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+       location /dev_basic {
+            index index_dev_basic.html;
+            try_files $uri $uri/ =404;
+        }
+
+        location /test {
+            try_files $uri $uri/ /topics/test/index_test.html =404;
         }
 
         # Syncthing GUI. Loopback-bound; this is its only public face.

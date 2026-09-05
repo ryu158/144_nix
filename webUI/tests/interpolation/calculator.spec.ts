@@ -14,7 +14,10 @@ test('page loads with both grids, a chart and a quiet console', async ({ page })
   await waitForGrid(page, 'gridContainer');
 
   await expect(page.locator('h1')).toHaveText('Interpolate Calculator');
-  await expect(page.locator('.panel h2')).toHaveText(['Input', 'Output', 'Results']);
+  // Prefix match, not equality: the Input and Output headings also carry their
+  // .panel-actions buttons, the same shape the advanced page has had since
+  // 2026-09-04. What this guards is the heading's own label.
+  await expect(page.locator('.panel h2')).toHaveText([/^Input\b/, /^Output\b/, /^Results\b/]);
   await expect(page.locator('#gridContainer_2 .gt-cell').first()).toBeVisible();
   await expect(page.locator('#chartContainer canvas')).toHaveCount(1);
 

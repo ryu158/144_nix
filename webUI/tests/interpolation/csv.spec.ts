@@ -2,17 +2,23 @@ import { test, expect, type Page } from '@playwright/test';
 import { preparePage, stubThirdParty, setConsent, collectConsoleErrors } from '../helpers/page-setup';
 import { loadSpec } from '../helpers/spec';
 import { copyFromGrid, parseTsv, waitForGrid } from '../helpers/grid';
+import { loadFixture, fixtureAsTsv } from '../helpers/interp-ref';
 
 /**
- * File import and export on the advanced page.
+ * File import and export, on both calculator pages.
  *
- * Both are local: the file never reaches the server, and the wire format
- * to /api/ is still JSON. What these guard is that a file and a paste of the
- * same bytes produce the same grid, and that a round trip loses nothing.
+ * Both are local: the file never reaches the server, and the advanced page's
+ * wire format to /api/ is still JSON. What these guard is that a file and a
+ * paste of the same bytes produce the same grid, and that a round trip loses
+ * nothing.
+ *
+ * The advanced grid is unlocked and the basic one is locked to 4 columns, so
+ * the two halves of this file exercise the two branches of applyColumnLock.
  */
 
 const spec = loadSpec('interpolation');
 const ADV = spec.pages.advanced;
+const CAL = spec.pages.calculator;
 
 const API = '**/api/interpolation/*';
 const CANNED = [['0', '1'], ['1', '2'], ['2', '3']];
@@ -293,4 +299,134 @@ test('the buttons say import and export, not the formats', async ({ page }) => {
   // here should be a decision, not drift.
   await expect(page.locator('#importBtn')).toHaveText('import');
   await expect(page.locator('#exportBtn')).toHaveText('export');
+});
+
+/**
+ * The locked grid.
+ *
+ * interpolate_cal builds its input with cols: 4, fixedColCount: true, and
+ * setData hard-resets numCols from whatever array it is handed. Without
+ * applyColumnLock squaring every import off first, a file would resize a grid
+ * that a paste of the same bytes would not. These are that guarantee.
+ */
+
+/** Collect alerts instead of letting Playwright silently dismiss them. */
+function collectDialogs(page: Page): string[] {
+  const seen: string[] = [];
+  page.on('dialog', async d => { seen.push(d.message()); await d.accept(); });
+  return seen;
+}
+
+test('importing a wide file into the locked grid warns and truncates', async ({ page }) => {
+  await preparePage(page);
+  await page.goto(CAL);
+  await waitForGrid(page, 'gridContainer');
+
+  const dialogs = collectDialogs(page);
+
+  // Same fixture and same expectation as the paste test in calculator.spec.ts.
+  // A file and a paste of these bytes must not disagree.
+  const rows = loadFixture('test_in_data.md').slice(0, 5);
+  await importText(page, 'wide.tsv', fixtureAsTsv(rows, 10));
+
+  await expect(page.locator('#status')).toHaveText('5 rows imported');
+  await expect.poll(() => dialogs.length).toBe(1);
+  expect(dialogs[0]).toContain('10 columns');
+  expect(dialogs[0]).toContain('locked');
+
+  // Width is read by copying the data out. The grid virtualises its columns, so
+  // a missing cell node proves nothing about the data behind it.
+  const grid = parseTsv(await copyFromGrid(page, 'gridContainer'));
+  expect(grid).toHaveLength(5);
+  expect(grid.every(row => row.length === 4)).toBe(true);
+  expect(grid[0]).toEqual(rows[0].slice(0, 4));
+});
+
+test('importing a narrow file leaves the locked grid four columns wide', async ({ page }) => {
+  await preparePage(page);
+  await page.goto(CAL);
+  await waitForGrid(page, 'gridContainer');
+
+  const dialogs = collectDialogs(page);
+
+  await importText(page, 'narrow.csv', asCsv);
+
+  await expect(page.locator('#status')).toHaveText('3 rows imported');
+
+  // Padded, not shrunk. setData would otherwise have taken the grid down to the
+  // file's 2 columns while a paste of the same bytes left it at 4.
+  expect(parseTsv(await copyFromGrid(page, 'gridContainer')))
+    .toEqual(ROWS.map(([x, y]) => [x, y, '', '']));
+
+  // And silently: a narrow paste says nothing, so a narrow import must not either.
+  expect(dialogs).toEqual([]);
+});
+
+test('the unlocked advanced grid still takes a file at its own width', async ({ page }) => {
+  await preparePage(page);
+  await page.goto(ADV);
+  await waitForGrid(page, 'gridContainer');
+
+  const dialogs = collectDialogs(page);
+
+  const rows = loadFixture('test_in_data.md').slice(0, 5);
+  await importText(page, 'wide.tsv', fixtureAsTsv(rows, 10));
+
+  // No lock, so no truncation and no warning. This is the branch the basic page
+  // does not have, and it must not regress when the locked one is fixed.
+  const grid = parseTsv(await copyFromGrid(page, 'gridContainer'));
+  expect(grid.every(row => row.length === 10)).toBe(true);
+  expect(dialogs).toEqual([]);
+});
+
+test('a basic-page export imports back unchanged', async ({ page }) => {
+  await stubPicker(page, 'out.csv');
+  await preparePage(page);
+  await page.goto(CAL);
+  await waitForGrid(page, 'gridContainer');
+
+  await importText(page, 'points.csv', asCsv);
+
+  // A small range on purpose: the page defaults to 0/1000/1, and 1001 rows say
+  // nothing more about a round trip than 3 do.
+  await page.locator('#outputXMin').fill('0');
+  await page.locator('#outputXMax').fill('2');
+  await page.locator('#outputXInterval').fill('1');
+  await page.locator('#genRangeBtn').click();
+
+  const computed = parseTsv(await copyFromGrid(page, 'gridContainer_2'));
+  expect(computed.length).toBeGreaterThan(0);
+
+  await page.locator('#exportBtn').click();
+  await expect(page.locator('#status')).toContainText('exported');
+  const [text] = await saved(page);
+
+  await importText(page, 'again.csv', text);
+
+  // No header row is what makes this hold, exactly as on the advanced page.
+  expect(parseTsv(await copyFromGrid(page, 'gridContainer'))).toEqual(computed);
+});
+
+test('the basic page carries the same two buttons', async ({ page }) => {
+  await preparePage(page);
+  await page.goto(CAL);
+
+  await expect(page.locator('#importBtn')).toHaveText('import');
+  await expect(page.locator('#exportBtn')).toHaveText('export');
+});
+
+test('with consent granted, the basic page reports its own level', async ({ page }) => {
+  await stubPicker(page, 'out.csv');
+  await stubThirdParty(page);
+  await setConsent(page, 'granted');
+  await page.goto(CAL);
+  await waitForGrid(page, 'gridContainer');
+
+  await importText(page, 'points.csv', asCsv);
+
+  // Shared component, so the event has to name the page as well as the topic.
+  // 'advanced' here would mean the two calculators were indistinguishable.
+  const events = (await gaEvents(page)).filter(e => e[0] === 'event');
+  expect(events[0][1]).toBe('csv_import');
+  expect(events[0][2]).toEqual({ slug: spec.slug, level: 'calculator', format: 'csv', rows: 3 });
 });

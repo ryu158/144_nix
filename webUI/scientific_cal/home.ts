@@ -77,11 +77,11 @@
   }
 
   function render() {
-    fetch('/topics/topics.json')
+    fetch('/scientific_cal/topics/topics.json')
       .then(r => r.json() as Promise<string[]>)
       .then(slugs => Promise.all(
         slugs.map(slug =>
-          fetch(`/topics/${slug}/spec.json`)
+          fetch(`/scientific_cal/topics/${slug}/spec.json`)
             .then(r => r.json() as Promise<Spec>)
             .catch(() => null) // one broken spec must not blank the whole page
         )

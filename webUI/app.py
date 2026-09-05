@@ -18,7 +18,7 @@ import os
 
 from flask import Flask, jsonify, request
 
-from topics.interpolation import api_interp
+from scientific_cal.topics.interpolation import api_interp
 
 # One entry per topic. The key is the URL segment.
 TOPICS = {

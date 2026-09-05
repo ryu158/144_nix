@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://ryuora144.duckdns.org/interpolate_adv">
+<link rel="canonical" href="https://ryuora144.duckdns.org/scientific_cal/interpolate_adv">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
 
@@ -14,7 +14,7 @@
 <meta name="description" content="Interpolate many series with cubic spline, PCHIP, or Akima. Paste CSV or TSV, set a range, plot the result. Your data is sent to the server to compute.">
 
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://ryuora144.duckdns.org/interpolate_adv">
+<meta property="og:url" content="https://ryuora144.duckdns.org/scientific_cal/interpolate_adv">
 <meta property="og:title" content="Advanced Interpolation Calculator - Cubic Spline, PCHIP, Akima">
 <meta property="og:description" content="Interpolate many series with cubic spline, PCHIP, or Akima. Paste CSV or TSV, set a range, plot the result. Your data is sent to the server to compute.">
 <meta name="twitter:card" content="summary">
@@ -27,7 +27,7 @@
   "@type": "WebApplication",
   "name": "Advanced Interpolation Calculator",
   "description": "Interpolate many series with cubic spline, PCHIP, or Akima. Paste CSV or TSV, set a range, plot the result. Your data is sent to the server to compute.",
-  "url": "https://ryuora144.duckdns.org/interpolate_adv",
+  "url": "https://ryuora144.duckdns.org/scientific_cal/interpolate_adv",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any (browser-based)",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
@@ -35,11 +35,11 @@
 }
 </script>
 
-<link rel="stylesheet" href="/dev_basic/style.css">
-<link rel="stylesheet" href="/topics/interpolation/interpolation_style.css">
-<script src="/src/shell/seo.js" data-slug="interpolation" data-level="advanced"></script>
-<script src="/src/shell/analytics.js"></script>
-<script src="/src/shell/consent.js"></script>
+<link rel="stylesheet" href="/scientific_cal/dev_basic/style.css">
+<link rel="stylesheet" href="/scientific_cal/topics/interpolation/interpolation_style.css">
+<script src="/scientific_cal/src/shell/seo.js" data-slug="interpolation" data-level="advanced"></script>
+<script src="/scientific_cal/src/shell/analytics.js"></script>
+<script src="/scientific_cal/src/shell/consent.js"></script>
 </head>
 <body>
 	<div id="app">
@@ -48,13 +48,13 @@
 				<div class="field">
 					<h1>Interpolate Calculator — Advanced</h1>
 				</div>
-				<a href="/interpolate_blog" class="teal-button-link">
+				<a href="/scientific_cal/interpolate_blog" class="teal-button-link">
 					<strong>❓interpolation</strong>
 				</a>
-				<a href="/" class="teal-button-link">
+				<a href="/scientific_cal/" class="teal-button-link">
 					<strong>🏠Home</strong>
 				</a>
-				<a href="/interpolate_cal" class="teal-button-link">
+				<a href="/scientific_cal/interpolate_cal" class="teal-button-link">
 					<strong>🧮Basic</strong>
 				</a>
 			</div>
@@ -68,13 +68,13 @@
 			<div class="how-to-body">
 				<p class="how-to-intro">
 					<strong>What this page adds.</strong> The
-					<a href="/interpolate_cal">basic calculator</a> draws straight lines between
+					<a href="/scientific_cal/interpolate_cal">basic calculator</a> draws straight lines between
 					your points and never leaves your browser. This page fits curves instead —
 					cubic spline, PCHIP, and Akima — and takes any number of series at once.
 					To do that it <strong>sends your table to the server</strong>, computes there,
 					and sends the numbers back. Nothing is stored, but the data does leave your
 					machine. If that matters for your data, use the basic page.
-					The <a href="/interpolate_blog">interpolation article</a> explains what each
+					The <a href="/scientific_cal/interpolate_blog">interpolation article</a> explains what each
 					method assumes and where each one goes wrong.
 				</p>
 				<ol>
@@ -182,12 +182,13 @@
 
 	<!-- No interp_engine.js here on purpose: the advanced methods are scipy's,
 	     and this page must not fall back to the basic page's linear math. -->
-	<script src="/dev_basic/how-to.js"></script>
-	<script src="/dev_basic/grid.js"></script>
-	<script src="/dev_basic/csv.js"></script>
-	<script src="/dev_basic/chart.js"></script>
-	<script src="/dev_basic/dual-chart.js"></script>
-	<script src="/topics/interpolation/page_adv.js"></script>
+	<script src="/scientific_cal/dev_basic/how-to.js"></script>
+	<script src="/scientific_cal/dev_basic/grid.js"></script>
+	<script src="/scientific_cal/dev_basic/csv.js"></script>
+	<script src="/scientific_cal/dev_basic/chart.js"></script>
+	<script src="/scientific_cal/dev_basic/dual-chart.js"></script>
+	<script src="/scientific_cal/dev_basic/calc-page.js"></script>
+	<script src="/scientific_cal/topics/interpolation/page_adv.js"></script>
 
 </body>
 </html>
