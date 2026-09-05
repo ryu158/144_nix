@@ -5,7 +5,7 @@ Current status only. Not history — daily detail in .claude/log/.
 ## Resume here
 0. THE SITE MOVED to /scientific_cal on 2026-09-05. Until the user deploys the new nginx config, every public page 404s. The config is written and proven; deploying it is theirs: `cd ~/nix/nginx && nix run --impure .#update_nginx_conf`.
 1. Pick up the queue at the bottom of this file. Anything waiting on the USER is in webUI/user_todo.md instead.
-2. The advanced page is LIVE and computes. It needs webUI/app.py running: `cd ~/nix/webUI && nix run .`. Nothing starts it on boot, so after a reboot /api/ returns 502 until you do.
+2. The advanced page is LIVE and computes. app.py runs as a systemd USER service and starts itself at boot — see the interp-api section. A 502 now means the service is failing, not that nobody started it: `systemctl --user status interp-api`.
 3. The suite is 105 tests. Some skip themselves when /api/health is unreachable — that is the service being down, not a broken test.
 4. fft.zip is NO LONGER IN THE REPO. It now sits at ~/transfer/ryunote/fft.zip, moved out on 2026-09-05 before the /scientific_cal work started. It was never tracked by git, so nothing in this repo's history holds a copy. Still never opened.
 5. webUI/app_py.md is the user's own notes on the backend, written 2026-09-04. Not a rules file, not loaded by anything.
@@ -214,6 +214,28 @@ Current status only. Not history — daily detail in .claude/log/.
 5. Measured both ways to prove it: desktop 302 : 302 : 604, one row, no scroll — identical before and after. Phone 396 / 396 / 270, stacked.
 6. Found by SCREENSHOTTING the phone layout, not by a test. The tests passed because they only asserted a lower bound on panel height. A 1428px grid satisfied `> 150` perfectly well.
 
+## interp-api systemd service — added 2026-09-05
+
+1. app.py runs as a systemd USER service, `interp-api.service`. It survives closing VS Code, logging out, and reboot. This REVERSES the "manual, no systemd unit" decision taken earlier the same day — the user asked for persistence once they saw the editor was holding it.
+2. Unit at ~/.config/systemd/user/interp-api.service. Outside webUI/, so it is not in this repo and not in git. The flake half IS in the repo.
+3. `loginctl show-user opc --property=Linger` was ALREADY yes before this work. Without lingering a user service dies at logout, whatever else is configured.
+4. Commands:
+```
+systemctl --user status interp-api
+systemctl --user restart interp-api
+journalctl --user -u interp-api -f
+```
+5. ExecStart points at an OUT-LINK, ~/.local/state/nix/interp-api, never a bare /nix/store path. That symlink is a GC ROOT. Checked before building: the python closure's only roots were /proc/<pid>/maps entries — running processes. A nix-collect-garbage while the service was stopped would have deleted the interpreter and left a unit that cannot start.
+6. Rebuild the out-link after ANY flake change, or the service keeps running the old closure:
+```
+cd ~/nix/webUI && nix build .#interp-api --out-link ~/.local/state/nix/interp-api
+```
+7. The flake's `packages.interp-api` cd's to the WORKING TREE, /home/opc/nix/webUI, NOT to ${self}. Deliberate: nginx serves this repo directly, so the API must run the same files. ${self} is a store snapshot of git-TRACKED files, which would put an uncommitted api_interp.py edit live on the page and invisible to the API at the same time. Verified: /proc/<pid>/cwd is the working tree.
+8. `nix run .` still does the old thing — cd to ${self}, committed files only. It is unchanged and remains the by-hand path. The two are NOT equivalent; prefer the service.
+9. Restart=always, RestartSec=5s. Flask's dev server is single-threaded with no clean-exit path, so any exit is a fault. Verified by kill -9: NRestarts went to 1 and /api/health answered again.
+10. PYTHONUNBUFFERED=1, or journalctl shows nothing until the buffer flushes.
+11. The port is still INTERP_API_PORT, default 35910 in app.py, and must match api_port in ~/nix/nginx/nginx-secrets.nix. The unit does NOT set it — one source, not three.
+
 ## Blueprints — one per topic, 2026-09-04
 
 1. scientific_cal/topics/<slug>/<slug>_blueprint.md. ONE file per topic, every level in it. interpolation_cal_blueprint.md and interpolation_adv_blueprint.md were merged into it and deleted.
@@ -322,7 +344,7 @@ Code facts and known gaps. Anything waiting on the USER is in webUI/user_todo.md
 1. interpolate_cal.html headings are Input / Output / Results — zero keywords.
 2. interpolate_cal.html body was one paragraph. The How-to panel added a real manual on 2026-09-02; still short next to the blog.
 3. Files served from repo root are public: CLAUDE.md, .claude/, flake.nix, Claude.local.md, user_todo.md. Known, accepted.
-4. app.py runs Flask's DEVELOPMENT server, single-threaded, and says so on startup. Fine behind loopback; a production WSGI server is a new flake dependency and needs permission.
+4. app.py runs Flask's DEVELOPMENT server, single-threaded, and says so on startup. Fine behind loopback; a production WSGI server is a new flake dependency and needs permission. Restart=always covers a crash, not the single-threadedness.
 5. CSV import cannot read a quoted field containing a comma. Same limit as clipboard paste, and they must be fixed together or not at all.
 6. Mobile works below 900px and tests/mobile.spec.ts covers it. No EXTERNAL score exists — PageSpeed and Lighthouse have never been run.
 7. TLS cert expires 2026-09-25. Nothing in this repo renews it; renewal is in ~/nix/nginx. An expired cert breaks every page, the API and the social cards at once.

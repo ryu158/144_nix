@@ -21,7 +21,7 @@
 tsc -p tsconfig.json    # watch: tsc -w
 ```
 5. No imports/exports — every .ts is a classic script, classes are global. Keep it that way.
-6. nginx root IS this repo. Build = live.
+6. nginx root IS this repo. Build = live. app.py too — it runs from the working tree as the `interp-api` systemd user service, not from a store copy.
 7. No deploy step, so .js/.js.map are committed.
 8. flake.nix gives Node/TS/Python/chromium from the nixos-24.05 pin.
 9. Always inside:

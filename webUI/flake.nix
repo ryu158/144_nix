@@ -58,6 +58,27 @@
           exec ${pkgs.nodejs}/bin/npx playwright test "$@"
         '';
 
+        # The backend, as something systemd can start.
+        #
+        # It cd's to the WORKING TREE, deliberately, NOT to ''${self}. nginx serves
+        # this repo directly - "build = live" in CLAUDE.md - so the API has to run
+        # the same files. ''${self} is a store snapshot of git-TRACKED files only,
+        # which would put an uncommitted api_interp.py edit live on the page and
+        # invisible to the API at the same time.
+        #
+        # Build it with an out-link before enabling the service:
+        #   nix build .#interp-api --out-link ~/.local/state/nix/interp-api
+        # That symlink is a GC ROOT. Without it the only thing holding the python
+        # closure is the running process, and a nix-collect-garbage while the
+        # service is stopped would delete the interpreter out from under it.
+        interpApi = pkgs.writeShellScriptBin "interp-api" ''
+          set -euo pipefail
+          cd /home/opc/nix/webUI
+          # Port comes from INTERP_API_PORT, default 35910 in app.py. It must match
+          # api_port in ~/nix/nginx/nginx-secrets.nix.
+          exec ${pythonEnv}/bin/python app.py
+        '';
+
         # Regenerate the og:image cards in og/.
         # Same reason as runBrowserTests for running in the caller's directory:
         # the store copy has no node_modules, and this needs Playwright too.
@@ -176,5 +197,9 @@
           type = "app";
           program = "${genOgImages}/bin/gen-og-images";
         };
+
+        # Referenced by ~/.config/systemd/user/interp-api.service through its
+        # out-link. See the interpApi comment above.
+        packages.interp-api = interpApi;
       });
 }
