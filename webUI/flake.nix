@@ -58,6 +58,30 @@
           exec ${pkgs.nodejs}/bin/npx playwright test "$@"
         '';
 
+        # Regenerate the og:image cards in og/.
+        # Same reason as runBrowserTests for running in the caller's directory:
+        # the store copy has no node_modules, and this needs Playwright too.
+        genOgImages = pkgs.writeShellScriptBin "gen-og-images" ''
+          set -euo pipefail
+
+          if [ ! -f tools/gen-og.js ]; then
+            echo "No tools/gen-og.js here. Run this from the webUI/ directory."
+            exit 1
+          fi
+
+          if [ ! -d node_modules/@playwright/test ]; then
+            echo "Playwright is not installed."
+            echo "Run:"
+            echo "  npm ci"
+            exit 1
+          fi
+
+          export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+          export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=${pkgs.chromium}/bin/chromium
+
+          exec ${pkgs.nodejs}/bin/node tools/gen-og.js "$@"
+        '';
+
       in
       {
         devShells.default = pkgs.mkShell {
@@ -86,6 +110,10 @@
             # would copy the repo into the store every time the shell starts.
             # Use `nix run .` for the Flask app.
             runBrowserTests
+
+            # og:image cards. Rebuild after any spec.json `card` change - the
+            # images carry that text, so a stale card is a wrong social preview.
+            genOgImages
           ];
 
           shellHook = ''
@@ -120,6 +148,10 @@
             echo "  run-browser-tests"
 
             echo ""
+            echo "Social cards:"
+            echo "  gen-og-images             # rebuilds og/*.png from spec.json"
+
+            echo ""
             echo "YouTube summary:"
             echo "  yt-dlp --write-auto-subs --sub-langs en,ko \\"
             echo "    --sub-format vtt --skip-download URL"
@@ -138,6 +170,11 @@
         apps.browser-test = {
           type = "app";
           program = "${runBrowserTests}/bin/run-browser-tests";
+        };
+
+        apps.gen-og-images = {
+          type = "app";
+          program = "${genOgImages}/bin/gen-og-images";
         };
       });
 }

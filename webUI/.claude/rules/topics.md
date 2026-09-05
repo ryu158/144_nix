@@ -25,8 +25,8 @@ Blog and cal both read it. Never copy a dataset, range, or default into HTML.
   "slug": "interpolation",
   "name": "Interpolation",
   "pages": { "blog": "/interpolate_blog", "calculator": "/interpolate_cal" },
-  "blog":       { "title": "<~60 char, question-shaped>", "description": "<~155 char>" },
-  "calculator": { "title": "<~60 char>", "description": "<~155 char>" },
+  "blog":       { "card": "<~30 char>", "title": "<~60 char, question-shaped>", "description": "<~155 char>" },
+  "calculator": { "card": "<~30 char>", "title": "<~60 char>", "description": "<~155 char>" },
   "category": "numerical-methods",
   "difficulty": "intro",
   "prerequisites": [],
@@ -39,6 +39,7 @@ Blog and cal both read it. Never copy a dataset, range, or default into HTML.
 ```
 
 `name` — short, home card. `blog.title` is the long SEO one, too long for a card.
+`card` — the og:image headline, per level. REQUIRED: gen-og.js throws without it rather than falling back to `title`, which can be 120 characters.
 `pages` — public URL per level. Filenames do NOT follow the slug (slug `interpolation`, file `interpolate_blog.html`), so declare them.
 `levels` — which pages exist. Home renders one button per level. Level with no `pages` entry is skipped.
 
@@ -61,7 +62,12 @@ Both pages shipped titleless once. Crawlers index without running JS.
 <title>…</title>
 <meta name="description" content="…">
 <meta property="og:type|og:url|og:title|og:description" …>
-<meta name="twitter:card|twitter:title|twitter:description" …>
+<meta property="og:image" content="https://ryuora144.duckdns.org/og/<slug>_<level>.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="…">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title|twitter:description" …>
 <script type="application/ld+json">…</script>   <!-- Article for blog, WebApplication for cal -->
 <script src="/scientific_cal/src/shell/seo.js" data-slug="<slug>" data-level="blog"></script>
 ```
@@ -69,6 +75,9 @@ Both pages shipped titleless once. Crawlers index without running JS.
 `data-slug` required — public URLs are rewritten, seo.js cannot read the slug from the path. It `console.warn`s on drift from spec.json. Fix the drift, never ignore.
 
 No analytics tags in the page — shell only.
+
+`twitter:card` is `summary_large_image`, never `summary` — `summary` crops the 1200x630 card to a small square.
+The og/ PNG is built by `gen-og-images`, not by hand. Re-run it after any `card` change.
 
 ## SEO validate, in order
 

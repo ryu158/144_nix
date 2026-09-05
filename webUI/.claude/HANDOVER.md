@@ -176,6 +176,40 @@ Current status only. Not history — daily detail in .claude/log/.
 12. Every leading-slash path was swept, scientific_cal/src/shell/seo.ts's spec.json fetch included. The one that would have failed SILENTLY is page_adv.ts's `/api/...`: the kept site-wide block would have served it, so a wrong path would have passed the tests.
 13. Proven before handover, not after: the generated config was run as a throwaway nginx on port 18443 and the whole suite passed against it, 105/105. Old URLs returned 301 to the right targets.
 
+## og:image social cards — added 2026-09-05
+
+1. og/ at the REPO ROOT, five 1200x630 PNGs, beside favicon.svg/.ico. They are site metadata, the same class as the favicons, and one of the five belongs to the root umbrella page which is in no section. 184 KB for all five.
+2. A visitor never downloads them. Only a scraper does, once, when someone pastes a link. Zero page-weight cost.
+3. tools/gen-og.js builds them. Rebuild with `gen-og-images` (flake devShell script) or `nix run .#gen-og-images`. Regeneration is byte-identical, so a rebuild never shows up as a spurious diff.
+4. UNLIKE the favicon script, this one is KEPT. The favicon was a one-off; these carry text from spec.json, so a title change means re-running a command — and a script that exists only in a log entry cannot be re-run.
+5. spec.json gained a `card` field per level. It is REQUIRED, and a missing one throws. Falling back to `title` was deliberately refused: calculator.title is 120 characters and would render as a wall on a 1200px card.
+6. Re-run gen-og-images after ANY `card` change. The text is baked into the PNG, so a stale card is a wrong social preview that nothing else will catch.
+7. `twitter:card` must stay `summary_large_image` on every page. With `summary` a 1200x630 image is cropped to a small square, which throws the card away.
+8. The mark is copied from favicon.svg into gen-og.js. Two copies of one path — if the favicon is ever redrawn, both change.
+9. seo.spec.ts covers all five pages, umbrella and section home included. The assertion that earns its place is the 200: a declared og:image that 404s looks exactly like a working one until somebody shares the link. Proven by moving a PNG aside and watching it fail.
+10. The size check reads the PNG's own IHDR bytes, so a card regenerated at the wrong size cannot ship with the tag still claiming 1200x630.
+11. og:image is NOT a ranking factor. It buys click-through and credibility when a link is shared, nothing else.
+
+## Mobile — added 2026-09-05
+
+1. ONE `@media (max-width: 900px)` block at the end of scientific_cal/dev_basic/style.css. It was the first @media rule in the codebase.
+2. Purely ADDITIVE: it changes no existing rule, so a desktop viewport never reaches it. The two `the desktop layout is untouched` tests in tests/mobile.spec.ts are what enforce that, and they are the half of that file to keep if anything is ever cut.
+3. PC and large tablet stay the reference layout, by the user's decision. Mobile is best-effort.
+4. What it does: body scrolls instead of `overflow: hidden`, html/body drop `height: 100%`, `.app-main` becomes a column, panels take explicit heights, padding drops to 12px, the header wraps, and the ad rail is hidden.
+5. THE TRAP, and it is not obvious: calc-page.ts builds both grids with `viewportHeight: '100%'`, and 100% of an auto height is ZERO. Without an explicit height on .panel-grid / .panel-chart the grids render empty while still existing in the DOM. Only a height assertion catches it.
+6. The page must never scroll sideways. A grid scrolling sideways INSIDE its own panel is correct and expected — that is what a spreadsheet does on a phone.
+7. tests/mobile.spec.ts, 14 tests at 390x844 and 1280x900. Four were observed to fail with the media block removed; the rest are regression guards that already passed.
+8. The how-to panel needed NO change. `width: min(760px, calc(100vw - 60px))` and `max-height: min(60vh, 520px)` were already viewport-relative. Hover is already gated behind `(hover: hover) and (pointer: fine)`, so touch keeps click.
+
+## .panel-grid inline flex — fixed 2026-09-05
+
+1. Every `.panel-grid` section carried `style="flex: 1"` in the HTML. Six of them, across interpolate_cal.html, interpolate_adv.html and index_dev_basic.html.
+2. So `.panel-grid { flex: 3 }` in style.css was DEAD CODE and always had been. The desktop row has always been 1 : 1 : 2, never 3 : 3 : 2.
+3. The lesson, and it is the reusable one: **an inline style cannot be overridden by a media query without !important.** The mobile block's `flex: none` lost, so the phone grid rendered 1428px tall instead of the intended 55vh.
+4. Fixed by moving the value into CSS as `.panel-grid { flex: 1 }` and deleting all six inline styles. Computed desktop result is unchanged by construction.
+5. Measured both ways to prove it: desktop 302 : 302 : 604, one row, no scroll — identical before and after. Phone 396 / 396 / 270, stacked.
+6. Found by SCREENSHOTTING the phone layout, not by a test. The tests passed because they only asserted a lower bound on panel height. A 1428px grid satisfied `> 150` perfectly well.
+
 ## Blueprints — one per topic, 2026-09-04
 
 1. scientific_cal/topics/<slug>/<slug>_blueprint.md. ONE file per topic, every level in it. interpolation_cal_blueprint.md and interpolation_adv_blueprint.md were merged into it and deleted.
@@ -278,10 +312,9 @@ nix flake update nixpkgs-unstable
 6. Downloads go to the scratchpad, NEVER into webUI/. nginx serves the repo root, so a file dropped here is instantly public.
 
 ## Not done
-1. og:image / socialImage missing — social previews have no picture.
 2. interpolate_cal.html headings are Input / Output / Results — zero keywords.
 3. interpolate_cal.html body was one paragraph. The How-to panel added a real manual on 2026-09-02; still short next to the blog.
-4. Mobile friendliness never scored. Cal page is a full-height 3-panel grid with body { overflow: hidden }. The blog article was never checked on a phone either — its figures are fixed-ratio SVG.
+4. Mobile is DONE below 900px and covered by tests/mobile.spec.ts. Never scored by an external tool (PageSpeed/Lighthouse) — that is still open.
 5. No SERP rank monitoring at all.
 6. /scientific_cal/interpolate_cal URL abbreviates "calculator". Crawler reads the URL. Changing it costs a redirect + sitemap + canonical.
 7. test_data.csv orphaned. Keep or delete undecided.
@@ -300,7 +333,7 @@ nix flake update nixpkgs-unstable
 4. --label-fg (#444) is the toolbar label colour, extracted from .field label on second use. The How-to summary shares it on purpose — the two must read as one control.
 5. Home and blog are both a 720px column centred with auto margins; the text inside stays left-aligned. Never add text-align to .post or .topic-list.
 6. Every centred block carries width: 100% — .post, .topic-list, .dev-section, and .app-header on both page types. Auto margins cancel a flex item's default stretch, so without it a block shrinks to its content and centres at its own width, off the column's left edge. The blog header hit exactly that: 555px instead of 720px.
-7. tests/interpolation/blog-layout.spec.ts and tests/home/layout.spec.ts guard centring, the shared left edge, and left-aligned text on both pages.
+7. tests/interpolation/blog-layout.spec.ts and tests/home/layout.spec.ts guard centring, the shared left edge, and left-aligned text on both pages. tests/mobile.spec.ts guards the narrow-viewport half: the column gives way rather than overflowing, and the blog's fixed-ratio SVG figures stay inside it.
 8. The ~80px gap under the last topic row is .topic-list padding-bottom plus .dev-section margin/padding. Deliberate spacing, not a layout bug.
 9. interpolate_cal input grid locked to 4 columns (cols: 4, fixedColCount: true) — intentional.
 10. Pasting more alerts and truncates. A Playwright test asserts that.
@@ -308,11 +341,9 @@ nix flake update nixpkgs-unstable
 12. test_in_data.md carries 10 columns, so the basic page only ever sees X + 3 series.
 
 ## Next
-1. DEPLOY THE NGINX CONFIG. Until then every public page 404s. `cd ~/nix/nginx && nix run --impure .#update_nginx_conf`. The updated file was handed over on 2026-09-05 and proven against a throwaway nginx, 105/105.
-2. Then re-run the suite against the live site: `run-browser-tests`.
-3. og:image is missing on every page including the new umbrella. The favicon mark is what to build it from. Next planned step.
-4. Mobile is unscored and there is not one @media rule in the codebase. PC and large tablet are the target; mobile is best-effort. Step after og:image.
-5. Search Console LAST, once the URLs are final: request indexing for /, /scientific_cal/, and the three /scientific_cal/interpolate_* pages, and resubmit the sitemap.
-6. app.py stays MANUAL by the user's decision — `cd ~/nix/webUI && nix run .`. A reboot means 502 until they run it.
-7. FFT waits until all of the above is done and validated. Its four open decisions in scientific_cal/topics/FFT/FFT_blueprint.md section 6 are still unanswered, and its source zip now lives at ~/transfer/ryunote/fft.zip, outside this repo.
-8. One topic at a time.
+1. Search Console, and it is the last step of this whole round. Request indexing for /, /scientific_cal/, and the three /scientific_cal/interpolate_* pages. Resubmit sitemap.xml. Confirm the three 301s in the URL inspector. Daily quota is limited, so this spans a few days; wait 1-2 weeks before judging.
+2. Paste a page link into Slack or KakaoTalk once. A scraper's cache is the one thing no local test covers.
+3. Score mobile with an external tool. The layout works and is tested, but PageSpeed/Lighthouse has never been run against any page.
+4. app.py stays MANUAL by the user's decision — `cd ~/nix/webUI && nix run .`. A reboot means 502 until they run it.
+5. FFT is next after that. Its four open decisions in scientific_cal/topics/FFT/FFT_blueprint.md section 6 are still unanswered, and its source zip now lives at ~/transfer/ryunote/fft.zip, outside this repo.
+6. One topic at a time.

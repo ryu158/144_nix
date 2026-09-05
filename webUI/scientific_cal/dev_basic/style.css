@@ -95,7 +95,12 @@ body {
   min-height: 0;
 }
 
-.panel-grid { flex: 3; }
+/* 1 : 1 : 2 across the row. This said `flex: 3` until 2026-09-05 and was dead
+   the whole time: every .panel-grid section carried an inline `style="flex: 1"`
+   that won. The inline styles are gone and the value moved here unchanged, so
+   the desktop layout is identical - but it can now be overridden below 900px,
+   which an inline style could not be without !important. */
+.panel-grid { flex: 1; }
 .panel-chart { flex: 2; }
 
 .panel-ad {
@@ -626,4 +631,68 @@ body.home-page .app-header {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+}
+
+/* ==========================================================================
+   Narrow screens
+   ==========================================================================
+   PC and large tablet are the reference layout and everything above this line
+   is theirs. This block is purely additive: it changes no existing rule, so a
+   desktop viewport never reaches any of it and cannot regress.
+
+   The calculator is a three-panel row pinned to the viewport, which is exactly
+   what a phone cannot show. Below the breakpoint it becomes a scrolling column.
+   The grids still scroll sideways inside their own panels - that is what a
+   spreadsheet does on a phone - but the PAGE must never scroll sideways. */
+@media (max-width: 900px) {
+
+  /* The rule that made the calculator unreachable rather than merely cramped:
+     height:100% plus body{overflow:hidden} means a narrow viewport shows the
+     header and nothing else, with no way to scroll to the panels. */
+  html, body {
+    height: auto;
+    min-height: 100%;
+  }
+
+  body {
+    overflow: auto;
+    /* 40px of horizontal padding is a tenth of a 390px screen. */
+    padding: 12px;
+  }
+
+  #app {
+    height: auto;
+    gap: 10px;
+  }
+
+  /* Title and nav buttons stop competing for one line. */
+  .app-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .app-header h1 {
+    font-size: 20px;
+    line-height: 1.25;
+  }
+
+  .app-main {
+    flex-direction: column;
+  }
+
+  /* flex: 3 / flex: 2 divided the horizontal axis. Once the axis is vertical
+     inside an auto-height column those ratios mean nothing, so each panel takes
+     an explicit height instead.
+
+     This is also the trap in stacking: calc-page.ts builds both grids with
+     viewportHeight: '100%', and 100% of an auto height is zero. Without a real
+     height here the grids render empty. */
+  .panel-grid,
+  .panel-chart {
+    flex: none;
+  }
+  .panel-grid { height: 55vh; min-height: 300px; }
+  .panel-chart { height: 40vh; min-height: 240px; }
+
+  /* Ads are a desktop-only column; a 160px rail on a phone is pure cost. */
+  .panel-ad { display: none; }
 }

@@ -7,14 +7,18 @@
     "advanced": "/scientific_cal/interpolate_adv"
   },
   "blog": {
+    "//card": "Short title for the og:image card. The SEO title is what a search result needs; a 1200x630 card needs a phrase that fits. tools/gen-og.js reads this.",
+    "card": "Interpolation Methods",
     "title": "Interpolation Methods",
     "description": "Five ways to draw a curve through the same set of points — linear, cubic spline, PCHIP, Akima, and FFT resampling — and what each one assumes about the data you didn't measure."
   },
   "calculator": {
+    "card": "Interpolation Calculator",
     "title": "Online Interpolation Calculator, Multiple line, Vector, Matrix, Sheet type data, Fast calculation & Plot results (Graph)",
     "description": "Free interpolation calculator. Copy and paste CSV, TSV, or spreadsheet data, compute multiple lines and matrix data at once, and plot results. No upload."
   },
   "advanced": {
+    "card": "Advanced Interpolation",
     "title": "Advanced Interpolation Calculator - Cubic Spline, PCHIP, Akima",
     "description": "Interpolate many series with cubic spline, PCHIP, or Akima. Paste CSV or TSV, set a range, plot the result. Your data is sent to the server to compute.",
     "//methods": "Static copy sits in the Method select. No FFT: it needs a uniform x grid.",

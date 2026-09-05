@@ -46,7 +46,9 @@ run-browser-tests
 6. New topic or new level -> skill `new-topic`.
 7. Topic detail — folder shape, spec.json, SEO, validation, CSS, writing -> .claude/rules/topics.md.
 8. Chart colors and line styles -> .claude/rules/visuals.md.
-9. app.py, tests/, types/, robots.txt, sitemap.xml and the favicons stay at the repo root — they are the site's, not a section's.
+9. app.py, tests/, types/, robots.txt, sitemap.xml, og/ and the favicons stay at the repo root — they are the site's, not a section's.
+10. tools/ — build scripts that are not served. gen-og.js rebuilds og/ from spec.json; run it with `gen-og-images`.
+11. Responsive: one @media (max-width: 900px) block at the end of scientific_cal/dev_basic/style.css. Additive only — never edit a desktop rule to fix a phone.
 
 ## Hard rules
 1. Topics are data-driven — never hardcode a topic list.

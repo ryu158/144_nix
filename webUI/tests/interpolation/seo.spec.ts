@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { preparePage } from '../helpers/page-setup';
-import { loadSpec, meta, CANONICAL_ORIGIN } from '../helpers/spec';
+import { loadSpec, meta, CANONICAL_ORIGIN, SECTION_ROOT } from '../helpers/spec';
 
 /**
  * The SEO contract from .claude/rules/topics.md, automated for both levels.
@@ -117,3 +117,49 @@ test('the calculator body says the words its description promises', async ({ pag
     expect(body, `body text must contain "${term}"`).toContain(term);
   }
 });
+
+/**
+ * Social cards.
+ *
+ * Every public page, not just the topic's — a shared link to the umbrella or
+ * the section home is as likely as one to a calculator. The assertion that
+ * earns its place is the 200: a declared og:image that 404s looks exactly like
+ * a working one until somebody pastes the link somewhere.
+ */
+
+const SOCIAL_PAGES = ['/', SECTION_ROOT, ...spec.levels.map(l => spec.pages[l])];
+
+for (const url of SOCIAL_PAGES) {
+  test(`${url} declares a complete og:image`, async ({ request }) => {
+    const html = await (await request.get(url)).text();
+
+    const src = tagContent(html, 'property', 'og:image');
+    expect(src, 'og:image missing').toBeTruthy();
+    expect(src!.startsWith(`${CANONICAL_ORIGIN}/og/`), `og:image not absolute: ${src}`).toBe(true);
+
+    // Dimensions are not decoration: without them some scrapers fetch the image
+    // before they will render a card at all.
+    expect(tagContent(html, 'property', 'og:image:width')).toBe('1200');
+    expect(tagContent(html, 'property', 'og:image:height')).toBe('630');
+    expect(tagContent(html, 'property', 'og:image:alt')).toBeTruthy();
+
+    // summary crops 1200x630 to a small square, which throws the card away.
+    expect(tagContent(html, 'name', 'twitter:card')).toBe('summary_large_image');
+  });
+
+  test(`${url} og:image really serves, at the size it claims`, async ({ request }) => {
+    const html = await (await request.get(url)).text();
+    const src = tagContent(html, 'property', 'og:image')!;
+
+    const res = await request.get(new URL(src).pathname);
+    expect(res.status(), `${src} did not serve`).toBe(200);
+    expect(res.headers()['content-type']).toContain('image/png');
+
+    // PNG IHDR: 8-byte signature, 4-byte length, 4-byte type, then width and
+    // height as big-endian uint32. A regenerated card at the wrong size would
+    // otherwise ship with the tag still claiming 1200x630.
+    const buf = await res.body();
+    expect(buf.readUInt32BE(16)).toBe(1200);
+    expect(buf.readUInt32BE(20)).toBe(630);
+  });
+}

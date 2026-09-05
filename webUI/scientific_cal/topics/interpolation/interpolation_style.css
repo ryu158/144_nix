@@ -30,7 +30,12 @@
   left: 0;
   z-index: 30;
   width: min(760px, calc(100vw - 60px));
-  /* body is overflow:hidden, so an over-tall panel would be unreachable */
+  /* Both values are viewport-relative, so this panel was already responsive
+     before anything else was. Keep it that way.
+     The cap was written because body is overflow:hidden and an over-tall panel
+     would be unreachable. Below 900px the body scrolls instead, but the cap
+     still earns its place: a manual taller than the screen, floating over the
+     grids, is worse than one that scrolls inside itself. */
   max-height: min(60vh, 520px);
   overflow-y: auto;
   padding: 14px 18px;
